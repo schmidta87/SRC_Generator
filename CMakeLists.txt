@@ -7,5 +7,8 @@ find_package(ROOT REQUIRED)
 
 project (SRC_Generator)
 
+set(INCLUDES ${ROOT_INCLUDE_DIR} ${CMAKE_SOURCE_DIR}/include )
+include_directories(${INCLUDES})
+
 add_executable(gen_weight gen_weight.cpp )
 target_link_libraries(gen_weight ${ROOT_LIBRARIES} )
