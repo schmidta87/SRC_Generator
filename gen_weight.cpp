@@ -23,18 +23,18 @@ double sigmaCC1(double Ebeam, TVector3 k, TVector3 p, bool isProton);
 
 int main(int argc, char ** argv)
 {
-  if (argc !=4)
+  if (argc !=5)
     {
       cerr << "Wrong number of arguments. Insteady try\n\t"
-	   << "gen_weight [Beam energy (GeV)] /path/to/output/file [# of events]\n\n";
+	   << "gen_weight [A] [Beam energy (GeV)] /path/to/output/file [# of events]\n\n";
       return -1;
     }
 
   // Read in the arguments
-  const double Ebeam=atof(argv[1]);
+  const double Ebeam=atof(argv[2]);
   const TVector3 v1(0.,0.,Ebeam);
-  int nEvents = atoi(argv[3]);
-  TFile * outfile = new TFile(argv[2],"RECREATE");
+  int nEvents = atoi(argv[4]);
+  TFile * outfile = new TFile(argv[3],"RECREATE");
 
   // Set up the tree
   TTree * outtree = new TTree("T","Generator Tree");
@@ -66,7 +66,7 @@ int main(int argc, char ** argv)
 
   // Other chores
   TRandom3 myRand(0);
-  Nuclear_Info myInfo(12);
+  Nuclear_Info myInfo(atoi(argv[1]));
   const double mA = myInfo.get_mA();
   const double mAm2 = myInfo.get_mAm2();
   const double sigCM = myInfo.get_sigmaCM();
