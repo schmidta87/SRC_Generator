@@ -10,9 +10,14 @@ class Nuclear_Info
   double get_pn(double k_rel);
   double get_pn0(double k_rel);
   double get_pn1(double k_rel);
-  
+  double get_mA();
+  double get_mAm2();
+  double get_sigmaCM();
+
  private:
   int A;
+  double mA;
+  double mAm2;
   double sigmaCM;
   double phiSq_pp0[100];
   double phiSq_pn0[100];

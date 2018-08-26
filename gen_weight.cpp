@@ -67,7 +67,10 @@ int main(int argc, char ** argv)
   // Other chores
   TRandom3 myRand(0);
   Nuclear_Info myInfo(12);
-
+  const double mA = myInfo.get_mA();
+  const double mAm2 = myInfo.get_mAm2();
+  const double sigCM = myInfo.get_sigmaCM();
+  
   // Loop over events
   for (int event=0 ; event < nEvents ; event++)
     {

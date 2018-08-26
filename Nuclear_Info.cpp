@@ -16,6 +16,8 @@ Nuclear_Info::Nuclear_Info(int thisA)
       Cpp0=0.;
       Cpn0=0.;
       Cpn1=1.;
+      mA=m_2H;
+      mAm2=0.;
     }
   else if (A==4)
     {
@@ -23,6 +25,8 @@ Nuclear_Info::Nuclear_Info(int thisA)
       Cpp0=0.65;
       Cpn0=0.69;
       Cpn1=12.3;
+      mA=m_4He;
+      mAm2=m_2H;
     }
   else if (A==12)
     {
@@ -30,6 +34,8 @@ Nuclear_Info::Nuclear_Info(int thisA)
       Cpp0 = 1.3;
       Cpn0 = 1.4;
       Cpn1 = 16.8;
+      mA = m_12C;
+      mAm2 = m_10B;
     }
   else
     {
@@ -41,6 +47,21 @@ Nuclear_Info::Nuclear_Info(int thisA)
 
 Nuclear_Info::~Nuclear_Info()
 {
+}
+
+double Nuclear_Info::get_mA()
+{
+  return mA;
+}
+
+double Nuclear_Info::get_mAm2()
+{
+  return mAm2;
+}
+
+double Nuclear_Info::get_sigmaCM()
+{
+  return sigmaCM;
 }
 
 double Nuclear_Info::get_pp(double k_rel)

@@ -8,12 +8,15 @@ const double GeVfm=0.1973;
 const double alpha=0.0072973525664;
 const double cmSqGeVSq = GeVfm*GeVfm*1.E-26;
 
-// for C
-const double mA=12.*mU;
-const double mAm2=10.0129370*mU;
-const double sigCM=0.15;
-const double Cpp0 = 1.3;
-const double Cpn0 = 1.4;
-const double Cpn1 = 16.8;
+// nuclear masses
+const double m_1H = mN;
+const double m_2H = 2.01410178*mU;
+const double m_4He = 4.00260325415 * mU ;
+const double m_6Li = 6.015122795 * mU;
+const double m_8Be = 8.00530510 * mU;
+const double m_10B = 10.0129370 * mU;
+const double m_12C = 12.*mU;
+const double m_14N = 14.0030740048*mU;
+const double m_16O = 15.99491461956*mU;
 
 #endif
