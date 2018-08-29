@@ -15,12 +15,19 @@ Nuclear_Info::Nuclear_Info(int thisA)
       sigmaCM=0.;
       Cpp0=0.;
       Cpn0=0.;
-      Cpn1=1.;
+      Cpn1=4.;
       mA=m_2H;
       mAm2=0.;
     }
   else if (A==4)
     {
+      //sigmaCM=0.;
+      //Cpp0=0.;
+      //Cpn0=0.;
+      //Cpn1=16.0;
+      //mA=m_2H;
+      //mAm2=m_2H;
+
       sigmaCM=0.1;
       Cpp0=0.65;
       Cpn0=0.69;
@@ -30,6 +37,13 @@ Nuclear_Info::Nuclear_Info(int thisA)
     }
   else if (A==12)
     {
+      //sigmaCM=0.;
+      //Cpp0 = 0.;
+      //Cpn0 = 0.;
+      //Cpn1 = 16.;
+      //mA = m_12C;
+      //mAm2 = m_10B;
+
       sigmaCM=0.15;
       Cpp0 = 1.3;
       Cpn0 = 1.4;
@@ -66,7 +80,7 @@ double Nuclear_Info::get_sigmaCM()
 
 double Nuclear_Info::get_pp(double k_rel)
 {
-  return Cpp0 * get_phiSq(phiSq_pp0,k_rel);
+  return 0.5*A*Cpp0 * get_phiSq(phiSq_pp0,k_rel);
 }
 
 double Nuclear_Info::get_pn(double k_rel)
@@ -76,12 +90,12 @@ double Nuclear_Info::get_pn(double k_rel)
 
 double Nuclear_Info::get_pn0(double k_rel)
 {
-  return Cpn0 * get_phiSq(phiSq_pn0,k_rel);
+  return 0.5*A*Cpn0 * get_phiSq(phiSq_pn0,k_rel);
 }
 
 double Nuclear_Info::get_pn1(double k_rel)
 {
-  return Cpn1 * get_phiSq(phiSq_pn1,k_rel);
+  return 0.5*A*Cpn1 * get_phiSq(phiSq_pn1,k_rel);
 }
 
 double Nuclear_Info::get_phiSq(double *phiPtr, double k_rel)

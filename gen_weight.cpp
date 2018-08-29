@@ -191,16 +191,16 @@ int main(int argc, char ** argv)
 	      double Erec = sqrt(sq(mN) + vRec.Mag2());
 
 	      // Calculate the weight
-	      weight *= sigmaCC1(Ebeam, v3, vLead, (lead_type==2122)) * // eN cross section
-		((lead_type==rec_type) ? myInfo.get_pp(pRel_Mag) : myInfo.get_pn(pRel_Mag)) * // contacts
-		nu/(2.*xB*Ebeam*pe_Mag) * (Qmax-Qmin) * (Xmax-Xmin)/ // Jacobian for QSq,xB
-		(4.*sq(M_PI) * fabs(Erec*(pRec_Mag - pCM_Mag* cos(vCM.Angle(vRec))) + Elead*pRec_Mag));
+	      weight *= sigmaCC1(Ebeam, v3, vLead, (lead_type==2122)) // eN cross section
+		* nu/(2.*xB*Ebeam*pe_Mag) * (Qmax-Qmin) * (Xmax-Xmin) // Jacobian for QSq,xB
+		* 1./(4.*sq(M_PI)) // Angular terms
+		* ((lead_type==rec_type) ? myInfo.get_pp(pRel_Mag) : myInfo.get_pn(pRel_Mag)) // Contacts
+		* vRec.Mag2() * Erec * Elead / fabs(Erec*(pRec_Mag - Z*cosThetaZRec) + Elead*pRec_Mag); // Jacobian for delta fnc.
 	    }
 	}
       // Fill the tree
       outtree->Fill();      
-    } 
-	  
+    } 	  
 
   // Clean up
   outtree->Write();
