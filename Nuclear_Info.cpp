@@ -80,7 +80,7 @@ double Nuclear_Info::get_sigmaCM()
 
 double Nuclear_Info::get_pp(double k_rel)
 {
-  return 0.5*A*Cpp0 * get_phiSq(phiSq_pp0,k_rel);
+  return 2. * 0.5*A*Cpp0 * get_phiSq(phiSq_pp0,k_rel); // The 2 comes from contact definition
 }
 
 double Nuclear_Info::get_pn(double k_rel)
