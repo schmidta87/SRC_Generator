@@ -63,6 +63,16 @@ Nuclear_Info::~Nuclear_Info()
 {
 }
 
+void Nuclear_Info::setCustomValues(double newSigma, double newEstar, double newCpp0, double newCpn0, double newCpn1){
+
+  sigmaCM = newSigma;
+  mAm2 += newEstar;
+  Cpp0 = newCpp0;
+  Cpn0 = newCpn0;
+  Cpn1 = newCpn1;
+
+}
+
 double Nuclear_Info::get_mA()
 {
   return mA;
