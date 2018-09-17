@@ -23,19 +23,29 @@ double sigmaCC1(double Ebeam, TVector3 k, TVector3 p, bool isProton);
 
 int main(int argc, char ** argv)
 {
-  if (argc !=5)
+  if ((argc !=5)&&(argc != 10))
     {
-      cerr << "Wrong number of arguments. Insteady try\n\t"
-	   << "gen_weight [A] [Beam energy (GeV)] /path/to/output/file [# of events]\n\n";
+	      cerr << "Wrong number of arguments. Insteady try\n\t"
+	   << "gen_weight [A] [Beam energy (GeV)] /path/to/output/file [# of events]\n\n"
+		   <<"Custom Arguments:\n sigmaCM E_Star Cpp0 Cpn0 Cpn1\n\n";
       return -1;
     }
-
+      
+     
+   
+   
   // Read in the arguments
+  Nuclear_Info myInfo(atoi(argv[1]));
   const double Ebeam=atof(argv[2]);
   const TVector3 v1(0.,0.,Ebeam);
-  int nEvents = atoi(argv[4]);
   TFile * outfile = new TFile(argv[3],"RECREATE");
+  int nEvents = atoi(argv[4]);
+  
+  if(argc == 10){
+    myInfo.setCustomValues(atof(argv[5]),atof(argv[6]),atof(argv[7]),atof(argv[8]),atof(argv[9]));
 
+  }
+  
   // Set up the tree
   TTree * outtree = new TTree("T","Generator Tree");
   Double_t pe[3], q[3], pLead[3], pRec[3], pMiss[3], pCM[3], pRel[3];
@@ -66,10 +76,10 @@ int main(int argc, char ** argv)
 
   // Other chores
   TRandom3 myRand(0);
-  Nuclear_Info myInfo(atoi(argv[1]));
-  const double mA = myInfo.get_mA();
   const double mAm2 = myInfo.get_mAm2();
-  const double sigCM = myInfo.get_sigmaCM();
+  const double mA = myInfo.get_mA();
+  const double sigCM =myInfo.get_sigmaCM();
+
   
   // Loop over events
   for (int event=0 ; event < nEvents ; event++)

@@ -14,6 +14,9 @@ class Nuclear_Info
   double get_mAm2();
   double get_sigmaCM();
 
+  void setCustomValues(double newSigma, double newEstar, double newCpp0, double newCpn0, double newCpn1);
+
+  
  private:
   int A;
   double mA;
