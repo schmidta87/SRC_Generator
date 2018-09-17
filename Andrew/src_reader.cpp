@@ -4,17 +4,26 @@
 #include "TF1.h"
 
 #include <iostream>
+#include <cstdlib>
 
 using namespace std;
 
 
 int main(int argc, char ** argv){
 
+  if( argc != 5){
+    
+    cerr<<"Wrong number of arguments. Instead try:\n\t"
+	<< "src_reader /path/to/input/nucleus/file /path/to/input/deuterium/file /path/to/output/file [A] \n";
+    
+  }
+  
   //Get Data from the three nuclei and define new file for Histogram
-  TFile * DataH = new TFile("srcProject/He_2md_sig000_E030_P1.root");
-  TFile * DataD = new TFile("srcProject/D_P1.root");
-  TFile * histfile = new TFile("srcProject/Hist_2md_sig000_E030_p1.root","RECREATE");
-
+  TFile * DataH = new TFile(argv[1]);
+  TFile * DataD = new TFile(argv[2]);
+  TFile * histfile = new TFile(argv[3],"RECREATE");
+  double A = atof(argv[4]);
+  
   //Make trees and histograms for the nuclei
   TTree * TreeH = (TTree*)DataH->Get("T");
   TTree * TreeD = (TTree*)DataD->Get("T");
@@ -67,7 +76,7 @@ int main(int argc, char ** argv){
   //Make histogram for ratio and divide it
   TH1D * Hratio = (TH1D*)hH->Clone("ratioHelium");
   Hratio->Divide(hD);
-  Hratio->Scale(0.5);
+  Hratio->Scale(2/A);
   
   //Fit it to a function and find a2
   TF1 * p0H = new TF1("Hfit","[0]");
