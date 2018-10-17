@@ -74,7 +74,7 @@ int main(int argc, char ** argv)
   outtree->Branch("theta_pmq",&theta_pmq,"theta_pmq/D");
   outtree->Branch("theta_prq",&theta_prq,"theta_prq/D");
 
-  // Other chores
+  // Masses and sigma of CM momentum
   TRandom3 myRand(0);
   const double mAm2 = myInfo.get_mAm2();
   const double mA = myInfo.get_mA();
@@ -99,7 +99,7 @@ int main(int argc, char ** argv)
 
       // Pick random x, QSq to set up the electron side
       QSq = Qmin + (Qmax-Qmin)*myRand.Rndm();
-      xB = Xmin + (Xmax - Xmin)*myRand.Rndm();
+      xB = Xmin + (Xmax - Xmin)*sqrt(myRand.Rndm());
       nu = QSq/(2.*mN*xB);
       pe_Mag = Ebeam - nu;
       double cosTheta3 = 1. - QSq/(2.*Ebeam*pe_Mag);
@@ -202,7 +202,7 @@ int main(int argc, char ** argv)
 
 	      // Calculate the weight
 	      weight *= sigmaCC1(Ebeam, v3, vLead, (lead_type==2122)) // eN cross section
-		* nu/(2.*xB*Ebeam*pe_Mag) * (Qmax-Qmin) * (Xmax-Xmin) // Jacobian for QSq,xB
+		* nu/(2.*xB*Ebeam*pe_Mag) * (Qmax-Qmin) * ((sq(Xmax-Xmin))/(2*(xB-Xmin))) // Jacobian for QSq,xB
 		* 1./(4.*sq(M_PI)) // Angular terms
 		* ((lead_type==rec_type) ? myInfo.get_pp(pRel_Mag) : myInfo.get_pn(pRel_Mag)) // Contacts
 		* vRec.Mag2() * Erec * Elead / fabs(Erec*(pRec_Mag - Z*cosThetaZRec) + Elead*pRec_Mag); // Jacobian for delta fnc.
