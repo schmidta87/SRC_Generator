@@ -202,9 +202,10 @@ int main(int argc, char ** argv)
 
 	      // Calculate the weight
 	      weight *= sigmaCC1(Ebeam, v3, vLead, (lead_type==2122)) // eN cross section
-		* nu/(2.*xB*Ebeam*pe_Mag) * (Qmax-Qmin) * ((sq(Xmax-Xmin))/(2*(xB-Xmin))) // Jacobian for QSq,xB
+		* nu/(2.*xB*Ebeam*pe_Mag) // Jacobian for QSq,xB from electron angle and momentum
+		* (Qmax-Qmin) * ((sq(Xmax-Xmin))/(2*(xB-Xmin))) // Normalization over range
 		* 1./(4.*sq(M_PI)) // Angular terms
-		* ((lead_type==rec_type) ? myInfo.get_pp(pRel_Mag) : myInfo.get_pn(pRel_Mag)) // Contacts
+		* ((lead_type==rec_type) ? myInfo.get_pp(pRel_Mag) : myInfo.get_pn(pRel_Mag)) // Relative pair probability (from contacts)
 		* vRec.Mag2() * Erec * Elead / fabs(Erec*(pRec_Mag - Z*cosThetaZRec) + Elead*pRec_Mag); // Jacobian for delta fnc.
 	    }
 	}
