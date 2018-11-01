@@ -93,9 +93,10 @@ int main(int argc, char ** argv){
 
     
     TreeH->GetEntry(i);
+
+    if(weight == 0) continue;
     
     //Apply first cuts
-    if(QSq < 2) continue;
     if(xB < 1.15) continue;
     
     //Calculate desired variables
