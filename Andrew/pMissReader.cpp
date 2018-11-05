@@ -37,8 +37,8 @@ int main(int argc, char ** argv){
   cerr<<"Nucleus file has been opened from: "<<argv[1]<<"\n";
   
   //Number of bins
-  Double_t nPBins = 100;
-  Double_t nPMin = 0.05;
+  Double_t nPBins = 50;
+  Double_t nPMin = 0.2;
   Double_t nPMax = 0.6;
   Double_t nPDelta = (nPMax-nPMin)/nPBins;
   Double_t nMassBins = 150;
