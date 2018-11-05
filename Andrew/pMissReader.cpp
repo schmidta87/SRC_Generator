@@ -15,10 +15,10 @@ using namespace std;
 double sq(double x){ return x*x; };
 int main(int argc, char ** argv){
 
-  if( argc != 5){
+  if( argc != 7){
     
     cerr<<"Wrong number of arguments. Instead try:\n\t"
-	<< "pMissReader /path/to/input/nucleus/file /path/to/output/text/file /path/to/output/root/file [A] \n";
+	<< "pMissReader /path/to/input/nucleus/file /path/to/output/text/file /path/to/output/root/file [A] [Mass Min] [Mass Max]\n";
 
     return -1;
     
@@ -30,18 +30,18 @@ int main(int argc, char ** argv){
   file.open(argv[2]);
   TFile * outfile = new TFile(argv[3],"RECREATE");
   double A = atof(argv[4]);
+  Double_t nMassMin = atof(argv[5]);
+  Double_t nMassMax = atof(argv[6]);
   
 
   cerr<<"Nucleus file has been opened from: "<<argv[1]<<"\n";
   
   //Number of bins
-  Double_t nPBins = 40;
+  Double_t nPBins = 100;
   Double_t nPMin = 0.05;
   Double_t nPMax = 0.6;
   Double_t nPDelta = (nPMax-nPMin)/nPBins;
-  Double_t nMassBins = 40;
-  Double_t nMassMin = 0.2;
-  Double_t nMassMax = 1.8;
+  Double_t nMassBins = 150;
 
   //Make trees and histograms for the nuclei
   TTree * TreeH = (TTree*)DataH->Get("T");
@@ -60,7 +60,7 @@ int main(int argc, char ** argv){
   Int_t neunum = 2112, pronum = 2112;
 
   //Nucleon Mass
-  const double Mn = 0.938;
+  const double Mn = 0.9389;
 
 
   //Set int addresses for TreeH
@@ -89,9 +89,8 @@ int main(int argc, char ** argv){
 
     //Display completed
     if((i*100)%fin == 0){
-      cerr << (i*100)/fin <<"% complete \n";
+    cerr << (i*100)/fin <<"% complete \n";
     }
-
     
     TreeH->GetEntry(i);
 
@@ -110,7 +109,7 @@ int main(int argc, char ** argv){
     Double_t mMiss = sqrt(mMissSq);
     
     //Apply cut to pMiss given in paper
-    if( (pMiss_Mag < 0.05) || (pMiss_Mag > 0.6) ) continue;
+    if( (pMiss_Mag < nPMin) || (pMiss_Mag > nPMax) ) continue;
 
     //Fill 2D histogram
     hH->Fill(pMiss_Mag,mMiss,weight);
@@ -144,9 +143,9 @@ int main(int argc, char ** argv){
 
       file<<pAct<<" "<<mean<<" "<<mean_error<<" "<<sigma<<" "<<sigma_error<<"\n";
 
-      if(j==30){
-	hMass->Write();
-      }
+      
+      hMass->Write();
+
     }
   
 
