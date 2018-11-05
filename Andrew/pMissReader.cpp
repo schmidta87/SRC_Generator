@@ -4,6 +4,7 @@
 #include <string>
 #include <cmath>
 
+#include "TMath.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TH2.h"
@@ -59,8 +60,9 @@ int main(int argc, char ** argv){
   //Set proton and neutron numbers
   Int_t neunum = 2112, pronum = 2112;
 
-  //Nucleon Mass
-  const double Mn = 0.9389;
+  //Nucleon Masses
+  const double Mp = 0.9383;
+  const double Mn = 0.9396;
 
 
   //Set int addresses for TreeH
@@ -94,15 +96,20 @@ int main(int argc, char ** argv){
     
     TreeH->GetEntry(i);
 
-    if(weight == 0) continue;
-    
     //Apply first cuts
+    if(weight <= 0.) continue;
+    if(lead_type == 2112) continue;    
     if(xB < 1.15) continue;
+    if(((pLead_Mag/q_Mag) < 0.62) || ((pLead_Mag/q_Mag) > 0.96)) continue;
+
+    Double_t cosThetaplq = ((q[0]*pLead[0]) + (q[1]*pLead[1]) + (q[2]*pLead[2]))/(pLead_Mag * q_Mag);
+    Double_t thetaplq = (180/3.14159265) * (TMath::ACos(cosThetaplq));
+    if(thetaplq > 25) continue;
     
     //Calculate desired variables
-    Double_t Ep = sqrt(sq(Mn) + sq(pLead_Mag));
+    Double_t Ep = sqrt(sq(Mp) + sq(pLead_Mag));
     Double_t pMiss_Mag = sqrt( sq(q[0]-pLead[0]) + sq(q[1]-pLead[1]) + sq(q[2]-pLead[2]) );
-    Double_t mMissSq = sq(nu + (2*Mn) - Ep) - sq(pMiss_Mag);
+    Double_t mMissSq = sq(nu + (Mp+Mn) - Ep) - sq(pMiss_Mag);
 
     //Get positive mass squared
     if(mMissSq < 0 ) continue;
