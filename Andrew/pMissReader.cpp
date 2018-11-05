@@ -144,6 +144,9 @@ int main(int argc, char ** argv){
 
       file<<pAct<<" "<<mean<<" "<<mean_error<<" "<<sigma<<" "<<sigma_error<<"\n";
 
+      if(j==30){
+	hMass->Write();
+      }
     }
   
 
