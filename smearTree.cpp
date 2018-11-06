@@ -3,8 +3,8 @@
 #include <cstdlib>
 #include <string>
 #include <cmath>
-#include <Tmath>
 
+#include "TMath.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TH2.h"
@@ -40,7 +40,7 @@ int main(int argc, char ** argv){
 
   //Make get tree and Random number generator
   TTree * TreeH = (TTree*)inData->Get("T");
-  TTree * outTree = new TTree("Smear","Smear Data Tree");
+  TTree * outtree = new TTree("Smear","Smear Data Tree");
   TRandom3 myRand(0);  
 
   cerr<<"Trees successfully created\n";
@@ -119,7 +119,7 @@ int main(int argc, char ** argv){
 
   int fin = TreeH->GetEntries();
   TreeH->GetEntry(0);
-  const Double_t Ebeam[3] = (0.,0.,(q[2]+pe[2]));
+  const Double_t Ebeam[3] = {0.,0.,(q[2]+pe[2])};
   
   //Loop over TTree
   for(int i = 0; i < fin; i++){
@@ -167,23 +167,23 @@ int main(int argc, char ** argv){
     spRel_Mag = sqrt(square(spRel[0])+square(spRel[1])+square(spRel[2]));
     
     //Determine smeared electron values
-    snu = Ebeam - spe_Mag;
-    sQsq = -(sq(snu)-sq(sq_Mag));
-    sxB = sQsq/(2*m_Lead*snu);
+    snu = Ebeam[2] - spe_Mag;
+    sQSq = -(square(snu)-square(sq_Mag));
+    sxB = sQSq/(2*m_Lead*snu);
 
     //Determine smeared angles
-    theta_pmq = acos((spMiss[0]*q[0] + spMiss[1]*q[1] + spMiss[2]*q[2])/spMiss_Mag /sq_Mag);
-    theta_prq = acos((spRec[0]*q[0] + spRec[1]*q[1] + spRec[2]*q[2])/spRec_Mag /sq_Mag);
+    stheta_pmq = acos((spMiss[0]*q[0] + spMiss[1]*q[1] + spMiss[2]*q[2])/spMiss_Mag /sq_Mag);
+    stheta_prq = acos((spRec[0]*q[0] + spRec[1]*q[1] + spRec[2]*q[2])/spRec_Mag /sq_Mag);
     
  
-    smearTree->Fill();
+    outtree->Fill();
     
   }
     cerr<<"Finished filling histogram for Nucleus\n";
 
 
 
-    outTree->Write();
+    outtree->Write();
     smearData->Close();
 
   cerr<< argv[2]<<" has been completed. \n\n\n";
