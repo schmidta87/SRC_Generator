@@ -90,8 +90,8 @@ int main(int argc, char ** argv){
 
 
     //Display completed
-    if((i*100)%fin == 0){
-    cerr << (i*100)/fin <<"% complete \n";
+    if((i%100000) == 0){
+    cerr << (i*100.)/fin <<"% complete \n";
     }
     
     TreeH->GetEntry(i);
