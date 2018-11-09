@@ -140,7 +140,8 @@ int main(int argc, char ** argv){
 
 
 
-    file << "# [Column 1: Missing Momentum] (col 2-9 are from Guas fit) [Column 2: Mean Mass] [Column 3: Mean Mass Error] [Column 4: Mass Sigma] [Column 5: Mass Sigma Error] [Column 6: Mean Mass Squared] [Column 7: Mean Mass Squared Error] [Column 8: Mass Squared Sigma] (col 9-13 are directly from hist) [Column 9: Mass Squared Sigma Error] [Column 10: Mean Mass] [Column 11: Mass Sigma] [Column 12: Mean Mass Squared] [Column 13: Mass Squared Sigma] \n";
+    //file << "# [Column 1: Missing Momentum] (col 2-9 are from Guas fit) [Column 2: Mean Mass] [Column 3: Mean Mass Error] [Column 4: Mass Sigma] [Column 5: Mass Sigma Error] [Column 6: Mean Mass Squared] [Column 7: Mean Mass Squared Error] [Column 8: Mass Squared Sigma] [Column 9: Mass Squared Sigma Error] (col 10-13 are from hist) [Column 10: Mean Mass] [Column 11: Mass Sigma] [Column 12: Mean Mass Squared] [Column 13: Mass Squared Sigma] \n";
+    file << "# [Column 1: Missing Momentum] [Column 2: Mean Mass] [Column 3: Mass Sigma] [Column 4: Mean Mass Squared] [Column 5: Mass Squared Sigma] \n";
 
     
     for(int j = 0; j < nPBins; j++){ 
@@ -151,17 +152,17 @@ int main(int argc, char ** argv){
       cerr<<"The value for P acting is: "<< pAct <<"\n The number of entries in Mass is:"<<(hMass->GetEntries())<<  "\n The number of entries in Mass Squared is:" <<(hMassSq->GetEntries())<<"\n";
       if((hMass->GetEntries() == 0) && (hMassSq->GetEntries() == 0))continue;
       
-      hMass->Fit("gaus","q","",nMassMin,nMassMax);
-      Double_t meanM = hMass->GetFunction("gaus")->GetParameter(1);
-      Double_t mean_errorM = hMass->GetFunction("gaus")->GetParError(1);
-      Double_t sigmaM = hMass->GetFunction("gaus")->GetParameter(2);
-      Double_t sigma_errorM = hMass->GetFunction("gaus")->GetParError(2);
+      //hMass->Fit("gaus","q","",nMassMin,nMassMax);
+      //Double_t meanM = hMass->GetFunction("gaus")->GetParameter(1);
+      //Double_t mean_errorM = hMass->GetFunction("gaus")->GetParError(1);
+      //Double_t sigmaM = hMass->GetFunction("gaus")->GetParameter(2);
+      //Double_t sigma_errorM = hMass->GetFunction("gaus")->GetParError(2);
 
-      hMassSq->Fit("gaus","q","",nMassSqMin,nMassSqMax);
-      Double_t meanMsq = hMassSq->GetFunction("gaus")->GetParameter(1);
-      Double_t mean_errorMsq = hMassSq->GetFunction("gaus")->GetParError(1);
-      Double_t sigmaMsq = hMassSq->GetFunction("gaus")->GetParameter(2);
-      Double_t sigma_errorMsq = hMassSq->GetFunction("gaus")->GetParError(2);
+      //hMassSq->Fit("gaus","q","",nMassSqMin,nMassSqMax);
+      //Double_t meanMsq = hMassSq->GetFunction("gaus")->GetParameter(1);
+      //Double_t mean_errorMsq = hMassSq->GetFunction("gaus")->GetParError(1);
+      //Double_t sigmaMsq = hMassSq->GetFunction("gaus")->GetParameter(2);
+      //Double_t sigma_errorMsq = hMassSq->GetFunction("gaus")->GetParError(2);
       
       Double_t meanMHist = hMass->GetMean();
       Double_t sigmaMHist = hMass->GetStdDev();
@@ -169,7 +170,8 @@ int main(int argc, char ** argv){
       Double_t sigmaMsqHist = hMassSq->GetStdDev();
 
       
-      file<<pAct<<" "<<meanM<<" "<<mean_errorM<<" "<<sigmaM<<" "<<sigma_errorM<<" "<<meanMsq<<" "<<mean_errorMsq<<" "<<sigmaMsq<<" "<<sigma_errorMsq<<" "<<meanMHist<<" "<<sigmaMHist<<" "<<meanMsqHist<<" "<<sigmaMsqHist<<"\n";
+      file<<pAct<<" "<<meanMHist<<" "<<sigmaMHist<<" "<<meanMsqHist<<" "<<sigmaMsqHist<<"\n";
+      //file<<pAct<<" "<<meanM<<" "<<mean_errorM<<" "<<sigmaM<<" "<<sigma_errorM<<" "<<meanMsq<<" "<<mean_errorMsq<<" "<<sigmaMsq<<" "<<sigma_errorMsq<<" "<<meanMHist<<" "<<sigmaMHist<<" "<<meanMsqHist<<" "<<sigmaMsqHist<<"\n";
 
       
       hMass->Write();
