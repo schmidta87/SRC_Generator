@@ -43,7 +43,7 @@ int main(int argc, char ** argv){
   Double_t nMassBins = 150;
   Double_t nPBins = 50;
   Double_t nPMin = 0.2;
-  Double_t nPMax = 0.6;
+  Double_t nPMax = 0.85;
   Double_t nPDelta = (nPMax-nPMin)/nPBins;
 
   //Make trees and histograms for the nuclei
