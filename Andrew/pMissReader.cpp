@@ -38,16 +38,20 @@ int main(int argc, char ** argv){
   cerr<<"Nucleus file has been opened from: "<<argv[1]<<"\n";
   
   //Number of bins
+  Double_t nMassSqMin = sq(nMassMin);
+  Double_t nMassSqMax = sq(nMassMax);
+  Double_t nMassBins = 150;
   Double_t nPBins = 50;
   Double_t nPMin = 0.2;
   Double_t nPMax = 0.6;
   Double_t nPDelta = (nPMax-nPMin)/nPBins;
-  Double_t nMassBins = 150;
 
   //Make trees and histograms for the nuclei
   TTree * TreeH = (TTree*)DataH->Get("T");
-  TH2D * hH = new TH2D("Hist2D","A;pMiss_Mag;mMiss;Counts",nPBins,nPMin,nPMax,nMassBins,nMassMin,nMassMax);
+  TH2D * hH = new TH2D("MassHist","A;pMiss_Mag;mMiss;Counts",nPBins,nPMin,nPMax,nMassBins,nMassMin,nMassMax);
+  TH2D * hSq = new TH2D("MassSqHist","A;pMiss_Mag;mMissSq;Counts",nPBins,nPMin,nPMax,nMassBins,nMassSqMin,nMassSqMax);
   hH ->Sumw2();
+  hSq ->Sumw2();
 
   cerr<<"Histograms and Trees successfully created\n";
 
@@ -111,12 +115,17 @@ int main(int argc, char ** argv){
     Double_t pMiss_Mag = sqrt( sq(q[0]-pLead[0]) + sq(q[1]-pLead[1]) + sq(q[2]-pLead[2]) );
     Double_t mMissSq = sq(nu + (Mp+Mn) - Ep) - sq(pMiss_Mag);
 
+    //Apply cut to pMiss given in paper
+    if( (pMiss_Mag < nPMin) || (pMiss_Mag > nPMax) ) continue;
+
+
+    //Get mass squared before getting mass
+    hSq->Fill(pMiss_Mag,mMissSq,weight);
+
     //Get positive mass squared
     if(mMissSq < 0 ) continue;
     Double_t mMiss = sqrt(mMissSq);
     
-    //Apply cut to pMiss given in paper
-    if( (pMiss_Mag < nPMin) || (pMiss_Mag > nPMax) ) continue;
 
     //Fill 2D histogram
     hH->Fill(pMiss_Mag,mMiss,weight);
@@ -131,33 +140,46 @@ int main(int argc, char ** argv){
 
 
 
-    file << "# [Column 1: Missing Momentum] [Column 2: Mean Mass] [Column 3: Mean Mass Error] [Column 4: Mass Sigma] [Column 5: Mass Sigma Error] \n";
+    file << "# [Column 1: Missing Momentum] (col 2-9 are from Guas fit) [Column 2: Mean Mass] [Column 3: Mean Mass Error] [Column 4: Mass Sigma] [Column 5: Mass Sigma Error] [Column 6: Mean Mass Squared] [Column 7: Mean Mass Squared Error] [Column 8: Mass Squared Sigma] (col 9-13 are directly from hist) [Column 9: Mass Squared Sigma Error] [Column 10: Mean Mass] [Column 11: Mass Sigma] [Column 12: Mean Mass Squared] [Column 13: Mass Squared Sigma] \n";
 
     
     for(int j = 0; j < nPBins; j++){ 
 
       pAct += nPDelta;
-      TH1D * hMass = hH->ProjectionY("OnePMiss",j,(j+1));
-      cerr<<"The value for P acting and the mean is: "<< pAct <<", "<<(hMass->GetEntries())<<  "\n" <<"";
-       if(hMass->GetEntries() == 0) continue;
+      TH1D * hMass = hH->ProjectionY("OnePMissPerM",j,(j+1));
+      TH1D * hMassSq = hSq->ProjectionY("OnePMissPerMSq",j,(j+1));
+      cerr<<"The value for P acting is: "<< pAct <<"\n The number of entries in Mass is:"<<(hMass->GetEntries())<<  "\n The number of entries in Mass Squared is:" <<(hMassSq->GetEntries())<<"\n";
+      if((hMass->GetEntries() == 0) && (hMassSq->GetEntries() == 0))continue;
       
       hMass->Fit("gaus","q","",nMassMin,nMassMax);
-      Double_t mean = hMass->GetFunction("gaus")->GetParameter(1);
-      Double_t mean_error = hMass->GetFunction("gaus")->GetParError(1);
-      Double_t sigma = hMass->GetFunction("gaus")->GetParameter(2);
-      Double_t sigma_error = hMass->GetFunction("gaus")->GetParError(2);
-      
+      Double_t meanM = hMass->GetFunction("gaus")->GetParameter(1);
+      Double_t mean_errorM = hMass->GetFunction("gaus")->GetParError(1);
+      Double_t sigmaM = hMass->GetFunction("gaus")->GetParameter(2);
+      Double_t sigma_errorM = hMass->GetFunction("gaus")->GetParError(2);
 
-      file<<pAct<<" "<<mean<<" "<<mean_error<<" "<<sigma<<" "<<sigma_error<<"\n";
+      hMassSq->Fit("gaus","q","",nMassSqMin,nMassSqMax);
+      Double_t meanMsq = hMassSq->GetFunction("gaus")->GetParameter(1);
+      Double_t mean_errorMsq = hMassSq->GetFunction("gaus")->GetParError(1);
+      Double_t sigmaMsq = hMassSq->GetFunction("gaus")->GetParameter(2);
+      Double_t sigma_errorMsq = hMassSq->GetFunction("gaus")->GetParError(2);
+      
+      Double_t meanMHist = hMass->GetMean();
+      Double_t sigmaMHist = hMass->GetStdDev();
+      Double_t meanMsqHist = hMassSq->GetMean();
+      Double_t sigmaMsqHist = hMassSq->GetStdDev();
+
+      
+      file<<pAct<<" "<<meanM<<" "<<mean_errorM<<" "<<sigmaM<<" "<<sigma_errorM<<" "<<meanMsq<<" "<<mean_errorMsq<<" "<<sigmaMsq<<" "<<sigma_errorMsq<<" "<<meanMHist<<" "<<sigmaMHist<<" "<<meanMsqHist<<" "<<sigmaMsqHist<<"\n";
 
       
       hMass->Write();
-
+      hMassSq->Write();
     }
   
 
 
     hH->Write();
+    hSq->Write();
     outfile->Close();
   
   file.close();
