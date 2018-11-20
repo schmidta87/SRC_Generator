@@ -10,6 +10,9 @@ Nuclear_Info::Nuclear_Info(int thisA)
   A = thisA;
   fill_arrays();
 
+  Estar = 0;
+  sigmaE = 0;
+  
   if (A==2)
     {
       sigmaCM=0.;
@@ -66,12 +69,68 @@ Nuclear_Info::~Nuclear_Info()
 void Nuclear_Info::setCustomValues(double newSigma, double newEstar, double newCpp0, double newCpn0, double newCpn1){
 
   sigmaCM = newSigma;
-  mAm2 += newEstar;
+  Estar = newEstar;
   Cpp0 = newCpp0;
   Cpn0 = newCpn0;
   Cpn1 = newCpn1;
 
 }
+
+void Nuclear_Info::set_sigmaCM(double newSigma){
+
+  sigmaCM = newSigma;
+  
+}
+
+void Nuclear_Info::set_Estar(double newEstar){
+
+  Estar = newEstar;
+
+}
+
+void Nuclear_Info::set_Cpp0(double newCpp0){
+
+  Cpp0 = newCpp0;
+  
+}
+
+void Nuclear_Info::set_Cpn0(double newCpn0){
+
+  Cpn0 = newCpn0;
+  
+}
+
+void Nuclear_Info::set_Cpn1(double newCpn1){
+
+  Cpn1 = newCpn1;
+  
+}
+
+void Nuclear_Info::set_sigmaE(double newSigE){
+
+  sigmaE = newSigE;
+  
+}
+
+
+double Nuclear_Info::get_Cpp0(){
+
+  return Cpp0;
+  
+}
+
+double Nuclear_Info::get_Cpn0(){
+
+  return Cpn0;
+  
+}
+
+double Nuclear_Info::get_Cpn1(){
+
+  return Cpn1;
+  
+}
+
 
 double Nuclear_Info::get_mA()
 {
@@ -80,12 +139,22 @@ double Nuclear_Info::get_mA()
 
 double Nuclear_Info::get_mAm2()
 {
-  return mAm2;
+  return mAm2 + Estar;
 }
 
 double Nuclear_Info::get_sigmaCM()
 {
   return sigmaCM;
+}
+
+double Nuclear_Info::get_sigmaE()
+{
+  return sigmaE;
+}
+
+double Nuclear_Info::get_Estar()
+{
+  return Estar;
 }
 
 double Nuclear_Info::get_pp(double k_rel)

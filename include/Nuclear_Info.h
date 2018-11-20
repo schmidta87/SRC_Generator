@@ -13,8 +13,19 @@ class Nuclear_Info
   double get_mA();
   double get_mAm2();
   double get_sigmaCM();
+  double get_sigmaE();
+  double get_Estar();
+  double get_Cpp0();
+  double get_Cpn0();
+  double get_Cpn1();
 
   void setCustomValues(double newSigma, double newEstar, double newCpp0, double newCpn0, double newCpn1);
+  void set_sigmaCM(double newSigma);
+  void set_Estar(double newEstar);
+  void set_Cpp0(double newCpp0);
+  void set_Cpn0(double newCpn0);
+  void set_Cpn1(double newCpn1);
+  void set_sigmaE(double newSigE);
 
   
  private:
@@ -28,6 +39,9 @@ class Nuclear_Info
   double Cpp0;
   double Cpn0;
   double Cpn1;
+  double Estar;
+  double sigmaE;
+  
   double get_phiSq(double *phiPtr, double k_rel);
   void fill_arrays();
   
