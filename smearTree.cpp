@@ -195,6 +195,7 @@ int main(int argc, char ** argv){
     smome.SetZ(spe[2]);
     scostE = smome.CosTheta();
     sphiE = smome.Phi();
+    sphiE = (180/M_PI())*sphiE;
     if(sphiE<(-30)){
       sphiE+=360;
     }
@@ -213,6 +214,7 @@ int main(int argc, char ** argv){
     smomLead.SetZ(spLead[2]);
     scostLead = smomLead.CosTheta();
     sphiLead = smomLead.Phi();
+    sphiLead = (180/M_PI())*sphiLead;
     if(sphiLead<(-30)){
       sphiLead+=360;
     }
