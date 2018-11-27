@@ -16,8 +16,11 @@ add_subdirectory(Andrew)
 add_executable(gen_weight gen_weight.cpp Nuclear_Info.cpp)
 target_link_libraries(gen_weight ${ROOT_LIBRARIES} )
 
-add_executable(gen_weight_gui gen_weight_gui.cpp Nuclear_Info.cpp)
-target_link_libraries(gen_weight_gui ${ROOT_LIBRARIES} )
+add_executable(gen_weight_ui gen_weight_ui.cpp Nuclear_Info.cpp)
+target_link_libraries(gen_weight_ui ${ROOT_LIBRARIES} )
+
+add_executable(gen_weight_MF_ui gen_weight_MF_ui.cpp Nuclear_Info_MF.cpp)
+target_link_libraries(gen_weight_MF_ui ${ROOT_LIBRARIES} )
 
 add_executable(smearTree smearTree.cpp)
 target_link_libraries(smearTree ${ROOT_LIBRARIES} )

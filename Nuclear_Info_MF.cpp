@@ -38,18 +38,6 @@ Nuclear_Info_MF::~Nuclear_Info_MF()
   
 }
 
-void Nuclear_Info_MF::set_Estar(double newEstar){
-
-  Estar = newEstar;
-
-}
-
-void Nuclear_Info_MF::set_sigmaE(double newSigE){
-
-  sigmaE = newSigE;
-  
-}
-
 double Nuclear_Info_MF::get_mA()
 {
   return mA;
@@ -57,22 +45,17 @@ double Nuclear_Info_MF::get_mA()
 
 double Nuclear_Info_MF::get_mAmp()
 {
-  return mAmp + Estar;
+  return mAmp;
 }
 
 double Nuclear_Info_MF::get_mAmn()
 {
-  return mAmn + Estar;
+  return mAmn;
 }
 
-double Nuclear_Info_MF::get_sigmaE()
+double Nuclear_Info_MF::get_mAm1()
 {
-  return sigmaE;
-}
-
-double Nuclear_Info_MF::get_Estar()
-{
-  return Estar;
+  return (mAmp+mAmn)/2;
 }
 
 double Nuclear_Info_MF::get_Pp(double k, double E)

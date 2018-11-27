@@ -9,13 +9,10 @@ class Nuclear_Info_MF
   double get_mA();
   double get_mAmp();
   double get_mAmn();
-  double get_Estar();
-  double get_sigmaE();
+  double get_mAm1();
   double get_Pp(double k, double E);
   double get_Pn(double k, double E);
 
-  void set_Estar(double newEstar);
-  void set_sigmaE(double newSigE);
   
  private:
   int A;
