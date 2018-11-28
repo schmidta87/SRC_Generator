@@ -20,7 +20,7 @@ const double Xmin=1.;
 const double Xmax=2.;
 
 double sq(double x){ return x*x; };
-double dot4(double x0, TVector3 x, double y0, TVector3 y){return ((x0*y0)-(x*y))};
+double dot4(double x0, TVector3 x, double y0, TVector3 y){return ((x0*y0)-(x*y));};
 double sigmaCC1(double Ebeam, TVector3 k, TVector3 p, bool isProton);
 
 int main(int argc, char ** argv)
