@@ -9,6 +9,7 @@
 
 #include "constants.h"
 #include "Nuclear_Info.h"
+#include "Cross_Sections.h"
 
 using namespace std;
 
@@ -35,6 +36,8 @@ int main(int argc, char ** argv)
    
    
   // Read in the arguments
+  Cross_Sections myCS;
+
   Nuclear_Info myInfo(atoi(argv[1]));
   const double Ebeam=atof(argv[2]);
   const TVector3 v1(0.,0.,Ebeam);
@@ -201,7 +204,7 @@ int main(int argc, char ** argv)
 	      double Erec = sqrt(sq(mN) + vRec.Mag2());
 
 	      // Calculate the weight
-	      weight *= sigmaCC1(Ebeam, v3, vLead, (lead_type==2122)) // eN cross section
+	      weight *= myCS.sigmaCC1(Ebeam, v3, vLead, (lead_type==2122)) // eN cross section
 		* nu/(2.*xB*Ebeam*pe_Mag) // Jacobian for QSq,xB from electron angle and momentum
 		* (Qmax-Qmin) * ((sq(Xmax-Xmin))/(2*(xB-Xmin))) // Normalization over range
 		* 1./(4.*sq(M_PI)) // Angular terms
@@ -217,38 +220,4 @@ int main(int argc, char ** argv)
   outtree->Write();
   outfile->Close();
   return 0;
-}
-
-double Gdipole(double QSq){ return 1. / sq(1 + QSq/0.71); };
-
-double sigmaCC1(double Ebeam, TVector3 k, TVector3 p, bool isProton)
-{
-  TVector3 q = TVector3(0.,0.,Ebeam) - k;
-  TVector3 pM = p-q;
-
-  double QSq = q.Mag2() - sq(Ebeam - k.Mag());
-  double E = sqrt(p.Mag2() + sq(mN));
-  double Ebar = sqrt(pM.Mag2() + sq(mN));
-  double omegabar = E-Ebar;
-  double QSqbar = q.Mag2() - sq(omegabar);
-
-  // Calculate form factors
-  double GE = (isProton)? Gdipole(QSq) : 1.91 * QSq * Gdipole(QSq) / (4.*sq(mN) + 5.6 * QSq);
-  double GM = (isProton)? 2.79*Gdipole(QSq) : -1.91*Gdipole(QSq);
-  double F1 = 0.5 * (GE + QSq*GM/(4.*sq(mN)));
-  double kF2 = (GM - GE)/(1. + QSq/(4.*sq(mN)));
-
-  double wC = (sq(E+Ebar)*(sq(F1) + QSqbar/(4.*mN*mN) * sq(kF2)) - q.Mag2()*sq(F1 + kF2))/(4.*E*Ebar);
-  double wT = QSqbar*sq(F1 + kF2)/(2.*Ebar*E);
-  double wS = p.Mag2() * sq(sin(p.Angle(q))) * (sq(F1) + QSqbar/(4.*mN*mN) * sq(kF2))/(E*Ebar);
-  double wI = -p.Mag()*sin(p.Angle(q))*(Ebar + E)*(sq(F1) + QSqbar/(4.*mN*mN) * sq(kF2))/(E*Ebar);
-
-  double sigmaMott = cmSqGeVSq * 4. * sq(alpha) * k.Mag2() * sq(cos(k.Theta()/2.)) / sq(QSq);
-
-  double phi = q.Cross(k).Angle( q.Cross(p) );
-  return sigmaMott * ( sq(QSq)/q.Mag2() * wC +
-                       (QSq/(2.*q.Mag2()) + sq(tan(k.Theta()/2.))) * wT +
-                       QSq/q.Mag2() * sqrt(QSq/q.Mag2() + sq(tan(k.Theta()/2.))) * wI * cos(phi) +
-                       (QSq/q.Mag2() * sq(cos(phi)) + sq(tan(k.Theta()/2.))) * wS
-                       );
 }
