@@ -3,15 +3,9 @@
 #include <cstdlib>
 
 #include "TVector3.h"
-#include "TFile.h"
-#include "TTree.h"
-#include "TRandom3.h"
 
 #include "constants.h"
-#include "Nuclear_Info.h"
 #include "Cross_Sections.h"
-
-#include <cstdlib>
 
 Cross_Sections::Cross_Sections()
 {
