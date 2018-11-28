@@ -9,3 +9,6 @@ target_link_libraries(src_reader ${ROOT_LIBRARIES} )
 
 add_executable(pMissReader pMissReader.cpp)
 target_link_libraries(pMissReader ${ROOT_LIBRARIES} )
+
+add_executable(xqClas xqClas.cpp)
+target_link_libraries(xqClas ${ROOT_LIBRARIES} )
