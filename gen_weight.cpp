@@ -40,7 +40,6 @@ int main(int argc, char ** argv)
   const TVector3 v1(0.,0.,Ebeam);
   TFile * outfile = new TFile(argv[3],"RECREATE");
   int nEvents = atoi(argv[4]);
-  
   if(argc == 10){
     myInfo.setCustomValues(atof(argv[5]),atof(argv[6]),atof(argv[7]),atof(argv[8]),atof(argv[9]));
 
@@ -49,7 +48,7 @@ int main(int argc, char ** argv)
   // Set up the tree
   TTree * outtree = new TTree("T","Generator Tree");
   Double_t pe[3], q[3], pLead[3], pRec[3], pMiss[3], pCM[3], pRel[3];
-  Double_t QSq, xB, nu, pe_Mag, q_Mag, pLead_Mag, pRec_Mag, pMiss_Mag, pCM_Mag, pRel_Mag, theta_pmq, theta_prq, weight;
+  Double_t  QSq, xB, nu, pe_Mag, q_Mag, pLead_Mag, pRec_Mag, pMiss_Mag, pCM_Mag, pRel_Mag, theta_pmq, theta_prq, weight;
   Int_t lead_type, rec_type;
   outtree->Branch("lead_type",&lead_type,"lead_type/I");
   outtree->Branch("rec_type",&rec_type,"rec_type/I");
@@ -203,7 +202,7 @@ int main(int argc, char ** argv)
 	      // Calculate the weight
 	      weight *= sigmaCC1(Ebeam, v3, vLead, (lead_type==2122)) // eN cross section
 		* nu/(2.*xB*Ebeam*pe_Mag) // Jacobian for QSq,xB from electron angle and momentum
-		* (Qmax-Qmin) * ((sq(Xmax-Xmin))/(2*(xB-Xmin))) // Normalization over range
+		* ((sq(Xmax-Xmin))/(2*(xB-Xmin))) // Normalization over range
 		* 1./(4.*sq(M_PI)) // Angular terms
 		* ((lead_type==rec_type) ? myInfo.get_pp(pRel_Mag) : myInfo.get_pn(pRel_Mag)) // Relative pair probability (from contacts)
 		* vRec.Mag2() * Erec * Elead / fabs(Erec*(pRec_Mag - Z*cosThetaZRec) + Elead*pRec_Mag); // Jacobian for delta fnc.
