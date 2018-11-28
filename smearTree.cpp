@@ -8,6 +8,7 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TH2.h"
+#include "TH3.h"
 #include "TF1.h"
 #include "TRandom3.h"
 #include "TVector3.h"
@@ -21,7 +22,7 @@ int main(int argc, char ** argv){
   if( argc != 6){
     
     cerr<<"Wrong number of arguments. Instead try:\n\t"
-	<< "pMissReader /path/to/input/nucleus/file /path/to/output/root/file [sigma pe] [sigma pLead] [sigma pRec] \n";
+	<< "pMissReader /path/to/input/nucleus/file /path/to/input/Electron/Map/file /path/to/input/Proton/Map/file /path/to/output/root/file [sigma pe] [sigma pLead] [sigma pRec] \n";
 
     return -1;
     
@@ -29,18 +30,24 @@ int main(int argc, char ** argv){
 
   //Get A trees. Open output file.
   TFile * inData = new TFile(argv[1]);
+  TFile * EMData = new TFile(argv[2]);
+  TFile * PMData = new TFile(argv[3]);
   cerr<<"The program has begun\n";
-  TFile * smearData = new TFile(argv[2],"RECREATE");
-  Double_t sigmaPe = atof(argv[3]);
-  Double_t sigmaPLead = atof(argv[4]);
-  Double_t sigmaPRec = atof(argv[5]);
+  TFile * smearData = new TFile(argv[4],"RECREATE");
+  Double_t sigmaPe = atof(argv[5]);
+  Double_t sigmaPLead = atof(argv[6]);
+  Double_t sigmaPRec = atof(argv[7]);
   
 
   cerr<<"Nucleus file has been opened from: "<<argv[1]<<"\n";
   
 
-  //Make get tree and Random number generator
+  //Make get tree and Map histos and Random number generator
   TTree * TreeH = (TTree*)inData->Get("T");
+  TH3D * EGen = (TH3D*)EMData->Get("Generated Particles");
+  TH3D * EAcc = (TH3D*)EMData->Get("Accepted Particles");
+  TH3D * PGen = (TH3D*)EMData->Get("Generated Particles");
+  TH3D * PAcc = (TH3D*)EMData->Get("Accepted Particles");
   TTree * outtree = new TTree("T","Smear Data Tree");
   TRandom3 myRand(0);  
 
@@ -52,7 +59,13 @@ int main(int argc, char ** argv){
   Double_t m_Lead;
   Double_t m_Rec;
 
-  //Set up inTree
+  //Set up variables for maps
+  TVector3 smome;
+  TVector3 smomLead;
+  Double_t scostE,sphiE,scostLead,sphiLead,genWE,accWE,genWP,accWP;
+  Int_t spe_MagBin,scostEBin,sphiEBin,spLead_MagBin,scostLeadBin,sphiLeadBin;
+  
+  //Set up inTree  
   //Define variables needed for inTree
   Double_t pe[3], q[3], pLead[3], pRec[3], pMiss[3], pCM[3], pRel[3];
   Double_t QSq, xB, nu, pe_Mag, q_Mag, pLead_Mag, pRec_Mag, pMiss_Mag, pCM_Mag, pRel_Mag, theta_pmq, theta_prq, weight;
@@ -135,7 +148,6 @@ int main(int argc, char ** argv){
     //Keep these values the same
     slead_type = lead_type;
     srec_type = rec_type;
-    sweight = weight;
 
     
     if(slead_type == 2212) m_Lead = Mp;
@@ -175,8 +187,47 @@ int main(int argc, char ** argv){
     //Determine smeared angles
     stheta_pmq = acos((spMiss[0]*q[0] + spMiss[1]*q[1] + spMiss[2]*q[2])/spMiss_Mag /sq_Mag);
     stheta_prq = acos((spRec[0]*q[0] + spRec[1]*q[1] + spRec[2]*q[2])/spRec_Mag /sq_Mag);
+
+    //Apply electron maps
+    //Get variables for maps
+    smome.SetX(spe[0]);
+    smome.SetY(spe[1]);
+    smome.SetZ(spe[2]);
+    scostE = smome.CosTheta();
+    sphiE = smome.Phi();
+    sphiE = (180/M_PI())*sphiE;
+    if(sphiE<(-30)){
+      sphiE+=360;
+    }
+
+    //Get bins and weights from maps
+    spe_MagBin = EGen->GetXaxis()->FindBin(spe_Mag);
+    scostEBin = EGen->GetYaxis()->FindBin(scostE);
+    sphiEBin = EGen->GetZaxis()->FindBin(sphiE);
+    genWE = EGen->GetBinContent(spe_MagBin,scostEBin,sphiEBin);
+    accWE =  EAcc->GetBinContent(spe_MagBin,scostEBin,sphiEBin);
+
+    //Apply proton maps
+    //Get variables for maps
+    smomLead.SetX(spLead[0]);
+    smomLead.SetY(spLead[1]);
+    smomLead.SetZ(spLead[2]);
+    scostLead = smomLead.CosTheta();
+    sphiLead = smomLead.Phi();
+    sphiLead = (180/M_PI())*sphiLead;
+    if(sphiLead<(-30)){
+      sphiLead+=360;
+    }
+
+    //Get bins and weight from maps
+    spLead_MagBin = PGen->GetXaxis()->FindBin(spLead_Mag);
+    scostLeadBin = PGen->GetYaxis()->FindBin(scostLead);
+    sphiLeadBin = PGen->GetZaxis()->FindBin(sphiLead);
+    genWP = PGen->GetBinContent(spe_MagBin,scostEBin,sphiEBin);
+    accWP =  PAcc->GetBinContent(spe_MagBin,scostEBin,sphiEBin);
+				 
     
- 
+    sweight = weight*(accWE/genWE)*(accWP/genWP);
     outtree->Fill();
     
   }
