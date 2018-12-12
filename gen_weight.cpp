@@ -33,8 +33,6 @@ int main(int argc, char ** argv)
       return -1;
     }
       
-     
-   
    
   // Read in the arguments
   Cross_Sections myCS;
@@ -96,8 +94,8 @@ int main(int argc, char ** argv)
       // Decide what kind of proton or neutron pair we are dealing with
       //2212 (proton)
       //2112 (neutron)
-      lead_type = (myRand.Rndm() > 0.5) ? 2212:2112;
-      rec_type = (myRand.Rndm() > 0.5) ? 2212:2112;
+      lead_type = (myRand.Rndm() > 0.5) ? pCode:nCode;
+      rec_type = (myRand.Rndm() > 0.5) ? pCode:nCode;
       weight *= 4.;
 
       // Pick random x, QSq to set up the electron side
@@ -208,7 +206,7 @@ int main(int argc, char ** argv)
 	      double Erec = sqrt(sq(mN) + vRec.Mag2());
 
 	      // Calculate the weight
-	      weight *= myCS.sigmaCC2(Ebeam, v3, vLead, (lead_type==2122)) // eN cross section
+	      weight *= myCS.sigmaCC2(Ebeam, v3, vLead, (lead_type==pCode)) // eN cross section
 		* nu/(2.*xB*Ebeam*pe_Mag) // Jacobian for QSq,xB from electron angle and momentum
 		* ((sq(Xmax-Xmin))/(2*(xB-Xmin))) // Normalization over range
 		* 1./(4.*sq(M_PI)) // Angular terms

@@ -23,4 +23,8 @@ const double m_12C = 12. * mU;
 const double m_14N = 14.0030740048 * mU;
 const double m_16O = 15.99491461956 * mU;
 
+// nucleon codes
+const int pCode = 2212;
+const int nCode = 2112;
+
 #endif
