@@ -168,7 +168,7 @@ int main(int argc, char ** argv)
             {
               if (!momRec1Valid)
                 pRec_Mag = momRec2;
-              else if (!momRec2Valid < 0)
+              else if (!momRec2Valid)
                 pRec_Mag = momRec1;
               else
 		{
