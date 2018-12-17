@@ -33,7 +33,7 @@ double Cross_Sections::sigmaCCn(double Ebeam, TVector3 k, TVector3 p, bool isPro
   // Calculate form factors
   double GE = (isProton)? Gdipole(QSq) : 1.91 * QSq * Gdipole(QSq) / (4.*sq(mN) + 5.6 * QSq);
   double GM = (isProton)? 2.79*Gdipole(QSq) : -1.91*Gdipole(QSq);
-  double F1 = 0.5 * (GE + QSq*GM/(4.*sq(mN)));
+  double F1 = (GE + GM * QSq/(4.*sq(mN)))/(1. + QSq/(4.*sq(mN)));
   double kF2 = (GM - GE)/(1. + QSq/(4.*sq(mN)));
 
   double wC;
