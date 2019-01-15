@@ -4,19 +4,50 @@
 
 #include "TVector3.h"
 
+#include "helpers.h"
 #include "constants.h"
 #include "Cross_Sections.h"
 
 Cross_Sections::Cross_Sections()
 {
+  // Set defaults
+  myModel=kelly;
+  myMethod=cc1;
 }
 
-double Cross_Sections::sq(double x){ return x*x; };
+Cross_Sections::Cross_Sections(csMethod thisMeth, ffModel thisMod)
+{
+  std::cerr << "Cross_Sections: you have selected configuration: " << thisMeth << " " << thisMod <<"\n";
+  myModel=thisMod;
+  myMethod=thisMeth;
+}
 
-double Cross_Sections::dot4(double x0, TVector3 x, double y0, TVector3 y)
+Cross_Sections::~Cross_Sections(){}
+
+double Cross_Sections::sigma_eN(double Ebeam,TVector3 k, TVector3 p, bool isProton)
+{
+  switch (myMethod)
+    {
+    case onshell:
+      return sigma_onShell_by_Etheta(Ebeam,k,isProton);
+    case cc1:
+      return sigmaCC1(Ebeam,k,p,isProton);
+    case cc2:
+      return sigmaCC2(Ebeam,k,p,isProton);
+    default:
+      {
+	std::cerr << "Invalid cross section method! Double check and fix!\n";
+        exit(-1);
+      }
+    }
+  return 0;
+}
+
+// Because DeForest uses the opposite Lorentz convention
+double dot4(double x0, TVector3 x, double y0, TVector3 y)
 {
   return ((x0*y0)-(x*y));
-    }
+}
 
 double Cross_Sections::sigmaCCn(double Ebeam, TVector3 k, TVector3 p, bool isProton, int n)
 {
@@ -31,8 +62,9 @@ double Cross_Sections::sigmaCCn(double Ebeam, TVector3 k, TVector3 p, bool isPro
   double QSqbar = q.Mag2() - sq(omegabar);
 
   // Calculate form factors
-  double GE = (isProton)? Gdipole(QSq) : 1.91 * QSq * Gdipole(QSq) / (4.*sq(mN) + 5.6 * QSq);
-  double GM = (isProton)? 2.79*Gdipole(QSq) : -1.91*Gdipole(QSq);
+  double GE = (isProton)? GEp(QSq) : GEn(QSq);
+  double GM = (isProton)? GMp(QSq) : GMn(QSq);
+
   double F1 = (GE + GM * QSq/(4.*sq(mN)))/(1. + QSq/(4.*sq(mN)));
   double kF2 = (GM - GE)/(1. + QSq/(4.*sq(mN)));
 
@@ -99,10 +131,85 @@ double Cross_Sections::sigmaCC1(double Ebeam, TVector3 k, TVector3 p, bool isPro
   return sigmaCCn(Ebeam, k, p, isProton, 1);
 }
 
-
 double Cross_Sections::sigmaCC2(double Ebeam, TVector3 k, TVector3 p, bool isProton)
 {
   return sigmaCCn(Ebeam, k, p, isProton, 2);
 }
 
-double Cross_Sections::Gdipole(double QSq){ return 1. / sq(1 + QSq/0.71); };
+double Cross_Sections::sigma_onShell_by_Etheta(double Ebeam, TVector3 k, bool isProton)
+{
+  double theta=k.Theta();
+  double E3 = Ebeam * mN/ (mN + Ebeam*(1.-k.CosTheta()));
+  double QSq = 2. * Ebeam * E3 * (1.-k.CosTheta());
+  double tau = QSq/(4.*mN*mN);
+  double GE = isProton ? GEp(QSq) : GEn(QSq);
+  double GM = isProton ? GMp(QSq) : GMn(QSq);
+  double epsilon = epsilon = 1./(1.+2.*(1.+tau)*sq(tan(theta/2.)));
+
+  double sigmaMott = cmSqGeVSq * sq(2.*alpha*E3 * cos(theta/2.)/QSq) * (E3/Ebeam);
+
+  double sigmaRosenbluth = sigmaMott * (sq(GE) + tau/epsilon * sq(GM))/(1. + tau);
+  return sigmaRosenbluth * Ebeam / (E3 * (2.*tau + 1.));
+}
+
+double Cross_Sections::GEp(double QSq)
+{
+  switch (myModel)
+    {
+    case dipole:
+      return Gdipole(QSq);
+    case kelly:
+      return Gkelly(QSq,-0.24,10.98,12.82,21.97);
+    default:
+      std::cerr << "Error in GEp: invalid form factor model!\n";
+      exit(-1);
+    }
+  return 0.;
+}
+
+double Cross_Sections::GEn(double QSq) // This will use the Galster parameterization
+{
+  double tau = QSq/(4.*mN*mN);
+  return 1.70 * tau / (1. + 3.3 * tau) * Gdipole(QSq); // params from Kelly paper
+  //return mu_n * tau / (1. + 5.6 * tau) * Gdipole(QSq); // the original Galster numbers
+}
+
+double Cross_Sections::GMp(double QSq)
+{
+  switch (myModel)
+    {
+    case dipole:
+      return mu_p * Gdipole(QSq);
+    case kelly:
+      return mu_p * Gkelly(QSq,0.12,10.97,18.86,6.55);
+    default:
+      std::cerr << "Error in GMp: invalid form factor model!\n";
+      exit(-1);
+    }
+  return 0.;
+}
+
+double Cross_Sections::GMn(double QSq)
+{
+  switch (myModel)
+    {
+    case dipole:
+      return mu_n * Gdipole(QSq);
+    case kelly:
+      return mu_n * Gkelly(QSq,2.33,14.72,24.20,84.1);
+    default:
+      std::cerr << "Error in GMn: invalid form factor model!\n";
+      exit(-1);
+    }
+  return 0.;
+}
+
+double Cross_Sections::Gdipole(double QSq){ return 1. / sq(1 + QSq/0.71); }
+
+double Cross_Sections::Gkelly(double QSq,double a1, double b1, double b2, double b3)
+{
+  double tau = QSq/(4.*mN*mN);
+  double denom = 1. + b1*tau + b2*tau*tau + b3*tau*tau*tau;
+  double numer = 1. + a1*tau;
+  return numer/denom;
+}
