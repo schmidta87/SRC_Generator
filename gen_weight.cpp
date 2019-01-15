@@ -29,6 +29,7 @@ void print_help()
        << "-h: Help\n"
        << "-q: Quiet\n"
        << "-T: Print full output tree\n"
+       << "-z: Print zero-weight events\n"
        << "-s <Sigma_CM [GeV]>\n"
        << "-E <E* [GeV]>==<0>\n"
        << "-k <kRel cutoff [GeV]==0.25>\n"
@@ -57,9 +58,10 @@ int main(int argc, char ** argv)
   ffModel ffMod=kelly;
   bool quiet=false;
   bool print_full_tree=false;
+  bool print_zeros = false;
 
   int c;
-  while ((c=getopt (argc-5, &argv[5], "hqTs:E:k:c:f")) != -1) // First five arguments are not optional flags.                                        
+  while ((c=getopt (argc-5, &argv[5], "hqTzs:E:k:c:f")) != -1) // First five arguments are not optional flags.                                        
     switch(c)
       {
       case 'h':
@@ -70,6 +72,9 @@ int main(int argc, char ** argv)
         break;
       case 'T':
 	print_full_tree=true;
+	break;
+      case 'z':
+	print_zeros=true;
 	break;
       case 's':
 	myInfo.set_sigmaCM(atof(optarg));
@@ -287,8 +292,11 @@ int main(int argc, char ** argv)
 		* vRec.Mag2() * Erec * Elead / fabs(Erec*(pRec_Mag - Z*cosThetaZRec) + Elead*pRec_Mag); // Jacobian for delta fnc.
 	    }
 	}
+
       // Fill the tree
-      outtree->Fill();      
+      if ((weight > 0.) || print_zeros)
+	outtree->Fill();
+
     } 	  
 
   // Clean up
