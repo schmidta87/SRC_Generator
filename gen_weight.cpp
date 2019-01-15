@@ -1,6 +1,8 @@
 #include <iostream>
 #include <cmath>
 #include <cstdlib>
+#include <unistd.h>
+#include <ctype.h>
 
 #include "TVector3.h"
 #include "TFile.h"
@@ -20,30 +22,95 @@ const double Qmax=5.;
 const double Xmin=1.;
 const double Xmax=2.;
 
+void print_help()
+{
+  cerr << "Usage: ./gen_weight [A] [Beam energy (GeV)] [path/to/output.root] [# of events] [optional flags]\n"
+       << "Optional flags:\n"
+       << "-h: Help\n"
+       << "-q: Quiet\n"
+       << "-s <Sigma_CM [GeV]>\n"
+       << "-E <E* [GeV]>==<0>\n"
+       << "-k <kRel cutoff [GeV]==0.25>\n"
+       << "-c <Cross section method>==<cc1>\n"
+       << "-f <Form Factor model>==<kelly>\n\n\n";
+}
+
 int main(int argc, char ** argv)
 {
-  if ((argc !=5)&&(argc != 10))
+  if (argc<5)
     {
-	      cerr << "Wrong number of arguments. Insteady try\n\t"
-	   << "gen_weight [A] [Beam energy (GeV)] /path/to/output/file [# of events]\n\n"
-		   <<"Custom Arguments:\n sigmaCM E_Star Cpp0 Cpn0 Cpn1\n\n";
+      print_help();
       return -1;
     }
-      
-   
-  // Read in the arguments
-  Cross_Sections myCS;
 
+  // Read in the arguments
   Nuclear_Info myInfo(atoi(argv[1]));
   const double Ebeam=atof(argv[2]);
   const TVector3 v1(0.,0.,Ebeam);
   TFile * outfile = new TFile(argv[3],"RECREATE");
   int nEvents = atoi(argv[4]);
-  if(argc == 10){
-    myInfo.setCustomValues(atof(argv[5]),atof(argv[6]),atof(argv[7]),atof(argv[8]),atof(argv[9]));
 
+  // Custom settings
+  double pRel_cut = 0.25;
+  csMethod csMeth=cc1;
+  ffModel ffMod=kelly;
+  bool quiet=false;
+
+  int c;
+  while ((c=getopt (argc-5, &argv[5], "hqs:E:k:c:f")) != -1) // First five arguments are not optional flags.                                        
+    switch(c)
+      {
+      case 'h':
+        print_help();
+        return -1;
+      case 'q':
+        quiet = true;
+        break;
+      case 's':
+	myInfo.set_sigmaCM(atof(optarg));
+        break;
+      case 'E':
+	myInfo.set_Estar(atof(optarg));
+        break;
+      case 'k':
+        pRel_cut = atof(optarg);
+        break;
+      case 'c':
+        if (strcmp(optarg,"onshell")==0)
+          csMeth=onshell;
+        else if (strcmp(optarg,"cc1")==0)
+          csMeth=cc1;
+        else if (strcmp(optarg,"cc2")==0)
+	  csMeth=cc2;
+        else if (atoi(optarg)==1)
+          csMeth=cc1;
+        else if (atoi(optarg)==2)
+          csMeth=cc2;
+        else
+          {
+            cerr << "Invalid cross section designation. Allowed values are onshell, cc1 and cc2. Aborting...\n";
+            return -1;
+          }
+        break;
+      case 'f':
+        if (strcmp(optarg,"kelly")==0)
+          ffMod=kelly;
+        else if (strcmp(optarg,"dipole")==0)
+          ffMod=dipole;
+        else{
+          cerr << "Invalid form factor model provided. Allowed options are kelly and dipole. Aborting...\n";
+          return -1;
+	}
+	break;
+      case '?':
+	return -1;
+      default:
+	abort();
   }
-  
+
+  // Adapt cross section to custom arguments
+  Cross_Sections myCS(csMeth,ffMod);
+
   // Set up the tree
   TTree * outtree = new TTree("T","Generator Tree");
   Double_t pe[3], q[3], pLead[3], pRec[3], pMiss[3], pCM[3], pRel[3];
@@ -78,26 +145,23 @@ int main(int argc, char ** argv)
   const double mA = myInfo.get_mA();
   const double sigCM =myInfo.get_sigmaCM();
 
-  
   // Loop over events
   for (int event=0 ; event < nEvents ; event++)
     {
-      if (event %10000 ==0)
+      if ((event %10000 ==0) && (!quiet))
 	cerr << "Working on event " << event << "\n";
 
       // Start with weight 1. Only multiply terms to weight. If trouble, set weight=0
       weight =1.;
 
       // Decide what kind of proton or neutron pair we are dealing with
-      //2212 (proton)
-      //2112 (neutron)
       lead_type = (myRand.Rndm() > 0.5) ? pCode:nCode;
       rec_type = (myRand.Rndm() > 0.5) ? pCode:nCode;
       weight *= 4.;
 
       // Pick random x, QSq to set up the electron side
       QSq = Qmin + (Qmax-Qmin)*myRand.Rndm();
-      xB = Xmin + (Xmax - Xmin)*sqrt(myRand.Rndm());
+      xB = Xmin + (Xmax - Xmin)*sqrt(myRand.Rndm()); // This draws xB in a triangular distribution, favoring x-> 2
       nu = QSq/(2.*mN*xB);
       pe_Mag = Ebeam - nu;
       double cosTheta3 = 1. - QSq/(2.*Ebeam*pe_Mag);
@@ -201,6 +265,10 @@ int main(int argc, char ** argv)
 
 	      double Elead = sqrt(sq(mN) + vLead.Mag2());
 	      double Erec = sqrt(sq(mN) + vRec.Mag2());
+
+	      // Do a safeguard cut
+	      if (pRel_Mag < pRel_cut)
+		weight=0.;
 
 	      // Calculate the weight
 	      weight *= myCS.sigma_eN(Ebeam, v3, vLead, (lead_type==pCode)) // eN cross section
