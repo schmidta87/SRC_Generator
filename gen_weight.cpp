@@ -28,6 +28,7 @@ void print_help()
        << "Optional flags:\n"
        << "-h: Help\n"
        << "-q: Quiet\n"
+       << "-T: Print full output tree\n"
        << "-s <Sigma_CM [GeV]>\n"
        << "-E <E* [GeV]>==<0>\n"
        << "-k <kRel cutoff [GeV]==0.25>\n"
@@ -55,9 +56,10 @@ int main(int argc, char ** argv)
   csMethod csMeth=cc1;
   ffModel ffMod=kelly;
   bool quiet=false;
+  bool print_full_tree=false;
 
   int c;
-  while ((c=getopt (argc-5, &argv[5], "hqs:E:k:c:f")) != -1) // First five arguments are not optional flags.                                        
+  while ((c=getopt (argc-5, &argv[5], "hqTs:E:k:c:f")) != -1) // First five arguments are not optional flags.                                        
     switch(c)
       {
       case 'h':
@@ -66,6 +68,9 @@ int main(int argc, char ** argv)
       case 'q':
         quiet = true;
         break;
+      case 'T':
+	print_full_tree=true;
+	break;
       case 's':
 	myInfo.set_sigmaCM(atof(optarg));
         break;
@@ -119,25 +124,28 @@ int main(int argc, char ** argv)
   outtree->Branch("lead_type",&lead_type,"lead_type/I");
   outtree->Branch("rec_type",&rec_type,"rec_type/I");
   outtree->Branch("pe",pe,"pe[3]/D");
-  outtree->Branch("q",q,"q[3]/D");
   outtree->Branch("pLead",pLead,"pLead[3]/D");
   outtree->Branch("pRec",pRec,"pRec[3]/D");
-  outtree->Branch("pMiss",pMiss,"pMiss[3]/D");
-  outtree->Branch("pCM",pCM,"pCM[3]/D");
-  outtree->Branch("pRel",pRel,"pRel[3]/D");
-  outtree->Branch("weight",&weight,"weight/D");
-  outtree->Branch("QSq",&QSq,"QSq/D");
-  outtree->Branch("xB",&xB,"xB/D");
-  outtree->Branch("nu",&nu,"nu/D");
-  outtree->Branch("pe_Mag",&pe_Mag,"pe_Mag/D");
-  outtree->Branch("q_Mag",&q_Mag,"q_Mag/D");
-  outtree->Branch("pLead_Mag",&pLead_Mag,"pLead_Mag/D");
-  outtree->Branch("pRec_Mag",&pRec_Mag,"pRec_Mag/D");
-  outtree->Branch("pMiss_Mag",&pMiss_Mag,"pMiss_Mag/D");
-  outtree->Branch("pCM_Mag",&pCM_Mag,"pCM_Mag/D");
-  outtree->Branch("pRel_Mag",&pRel_Mag,"pRel_Mag/D");
-  outtree->Branch("theta_pmq",&theta_pmq,"theta_pmq/D");
-  outtree->Branch("theta_prq",&theta_prq,"theta_prq/D");
+  if (print_full_tree)
+    {
+      outtree->Branch("q",q,"q[3]/D");
+      outtree->Branch("pMiss",pMiss,"pMiss[3]/D");
+      outtree->Branch("pCM",pCM,"pCM[3]/D");
+      outtree->Branch("pRel",pRel,"pRel[3]/D");
+      outtree->Branch("weight",&weight,"weight/D");
+      outtree->Branch("QSq",&QSq,"QSq/D");
+      outtree->Branch("xB",&xB,"xB/D");
+      outtree->Branch("nu",&nu,"nu/D");
+      outtree->Branch("pe_Mag",&pe_Mag,"pe_Mag/D");
+      outtree->Branch("q_Mag",&q_Mag,"q_Mag/D");
+      outtree->Branch("pLead_Mag",&pLead_Mag,"pLead_Mag/D");
+      outtree->Branch("pRec_Mag",&pRec_Mag,"pRec_Mag/D");
+      outtree->Branch("pMiss_Mag",&pMiss_Mag,"pMiss_Mag/D");
+      outtree->Branch("pCM_Mag",&pCM_Mag,"pCM_Mag/D");
+      outtree->Branch("pRel_Mag",&pRel_Mag,"pRel_Mag/D");
+      outtree->Branch("theta_pmq",&theta_pmq,"theta_pmq/D");
+      outtree->Branch("theta_prq",&theta_prq,"theta_prq/D");
+    }
 
   // Masses and sigma of CM momentum
   TRandom3 myRand(0);
@@ -148,7 +156,7 @@ int main(int argc, char ** argv)
   // Loop over events
   for (int event=0 ; event < nEvents ; event++)
     {
-      if ((event %10000 ==0) && (!quiet))
+      if ((event %100000==0) && (!quiet))
 	cerr << "Working on event " << event << "\n";
 
       // Start with weight 1. Only multiply terms to weight. If trouble, set weight=0
