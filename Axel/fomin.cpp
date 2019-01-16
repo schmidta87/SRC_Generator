@@ -37,6 +37,12 @@ int main(int argc, char ** argv)
   TFile * outF = new TFile(argv[2],"RECREATE");
   TH2D * h2_kin = new TH2D("kin","Inclusive kinematics;xB;QSq;Counts",20,1.,2.,25,0.,5.);
   h2_kin->Sumw2();
+  TH2D * h2_kin_18 = new TH2D("kin_18","Inclusive theta=18;xB;QSq;Counts",20,1.,2.,25,0.,5.);
+  h2_kin_18->Sumw2();
+  TH2D * h2_kin_22 = new TH2D("kin_22","Inclusive theta=22;xB;QSq;Counts",20,1.,2.,25,0.,5.);
+  h2_kin_22->Sumw2();
+  TH2D * h2_kin_26 = new TH2D("kin_26","Inclusive theta=26;xB;QSq;Counts",20,1.,2.,25,0.,5.);
+  h2_kin_26->Sumw2();
   TH1D * h_xB_18 = new TH1D("xB_18","Inclusive theta=18;xB;Counts",10,1.,2.);
   h_xB_18->Sumw2();
   TH1D * h_xB_22 = new TH1D("xB_22","Inclusive theta=22;xB;Counts",10,1.,2.);
@@ -67,19 +73,31 @@ int main(int argc, char ** argv)
       h2_kin->Fill(xB,QSq,weight);
 
       if ( fabs(thetaDeg - 18.) < deg_margin)
-	h_xB_18->Fill(xB, weight);
+	{
+	  h_xB_18->Fill(xB, weight);
+	  h2_kin_18->Fill(xB,QSq,weight);
+	}
 
       if ( fabs(thetaDeg - 22.) < deg_margin)
-	h_xB_22->Fill(xB, weight);
+	{
+	  h_xB_22->Fill(xB, weight);
+	  h2_kin_22->Fill(xB,QSq,weight);
+	}
 
       if ( fabs(thetaDeg - 26.) < deg_margin)
-	h_xB_26->Fill(xB, weight);
+	{
+	  h_xB_26->Fill(xB, weight);
+	  h2_kin_26->Fill(xB,QSq,weight);
+	}
     }
 
   inF->Close();
   
   outF->cd();
   h2_kin->Write();
+  h2_kin_18->Write();
+  h2_kin_22->Write();
+  h2_kin_26->Write();
   h_xB_18->Write();
   h_xB_22->Write();
   h_xB_26->Write();

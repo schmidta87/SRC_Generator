@@ -61,7 +61,7 @@ int main(int argc, char ** argv)
   bool print_zeros = false;
 
   int c;
-  while ((c=getopt (argc-5, &argv[5], "hqTzs:E:k:c:f")) != -1) // First five arguments are not optional flags.                                        
+  while ((c=getopt (argc-4, &argv[4], "hqTzs:E:k:c:f")) != -1) // First five arguments are not optional flags.                                        
     switch(c)
       {
       case 'h':
@@ -154,7 +154,7 @@ int main(int argc, char ** argv)
 
   // Masses and sigma of CM momentum
   TRandom3 myRand(0);
-  const double mAm2 = myInfo.get_mAm2();
+  const double mAm2 = myInfo.get_mAm2(); // this includes the effect of Estar
   const double mA = myInfo.get_mA();
   const double sigCM =myInfo.get_sigmaCM();
 
