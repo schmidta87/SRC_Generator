@@ -1,6 +1,8 @@
 #include <iostream>
 #include <cmath>
 #include <cstdlib>
+#include <unistd.h>
+#include <ctype.h>
 
 #include "TVector3.h"
 #include "TFile.h"
@@ -8,45 +10,132 @@
 #include "TRandom3.h"
 
 #include "constants.h"
+#include "helpers.h"
 #include "Nuclear_Info.h"
 #include "Cross_Sections.h"
 
 using namespace std;
 
-// Probability windows
-const double Qmin=1.;
-const double Qmax=5.;
-const double Xmin=1.;
-const double Xmax=2.;
-
-double sq(double x){ return x*x; };
-double dot4(double x0, TVector3 x, double y0, TVector3 y){return ((x0*y0)-(x*y));};
-double sigmaCC1(double Ebeam, TVector3 k, TVector3 p, bool isProton);
+void print_help()
+{
+  cerr << "Usage: ./gen_weight [A] [Beam energy (GeV)] [path/to/output.root] [# of events] [optional flags]\n"
+       << "Optional flags:\n"
+       << "-h: Help\n"
+       << "-S: Silent\n"
+       << "-T: Print full output tree\n"
+       << "-z: Print zero-weight events\n"
+       << "-s <Sigma_CM [GeV]>\n"
+       << "-E <E* [GeV]>==<0>\n"
+       << "-k <kRel cutoff [GeV]==0.25>\n"
+       << "-x <minimum xB>==1\n"
+       << "-X <maximum xB>==2\n"
+       << "-q <minimum Q2>==1\n"
+       << "-Q <minimum Q2>==5\n"
+       << "-c <Cross section method>==<cc1>\n"
+       << "-f <Form Factor model>==<kelly>\n\n\n";
+}
 
 int main(int argc, char ** argv)
 {
-  if ((argc !=5)&&(argc != 10))
+  if (argc<5)
     {
-	      cerr << "Wrong number of arguments. Insteady try\n\t"
-	   << "gen_weight [A] [Beam energy (GeV)] /path/to/output/file [# of events]\n\n"
-		   <<"Custom Arguments:\n sigmaCM E_Star Cpp0 Cpn0 Cpn1\n\n";
+      print_help();
       return -1;
     }
-      
-   
-  // Read in the arguments
-  Cross_Sections myCS;
 
+  // Read in the arguments
   Nuclear_Info myInfo(atoi(argv[1]));
   const double Ebeam=atof(argv[2]);
   const TVector3 v1(0.,0.,Ebeam);
   TFile * outfile = new TFile(argv[3],"RECREATE");
   int nEvents = atoi(argv[4]);
-  if(argc == 10){
-    myInfo.setCustomValues(atof(argv[5]),atof(argv[6]),atof(argv[7]),atof(argv[8]),atof(argv[9]));
 
+  // Custom settings
+  double pRel_cut = 0.25;
+  csMethod csMeth=cc1;
+  ffModel ffMod=kelly;
+  bool quiet=false;
+  bool print_full_tree=false;
+  bool print_zeros = false;
+  // Probability windows
+  double Qmin=1.;
+  double Qmax=5.;
+  double Xmin=1.;
+  double Xmax=2.;
+
+  int c;
+  while ((c=getopt (argc-4, &argv[4], "hSTzs:E:k:c:f:q:Q:x:X:")) != -1) // First five arguments are not optional flags.
+    switch(c)
+      {
+      case 'h':
+        print_help();
+        return -1;
+      case 'S':
+        quiet = true;
+        break;
+      case 'T':
+	print_full_tree=true;
+	break;
+      case 'z':
+	print_zeros=true;
+	break;
+      case 's':
+	myInfo.set_sigmaCM(atof(optarg));
+        break;
+      case 'E':
+	myInfo.set_Estar(atof(optarg));
+        break;
+      case 'k':
+        pRel_cut = atof(optarg);
+        break;
+      case 'c':
+        if (strcmp(optarg,"onshell")==0)
+          csMeth=onshell;
+        else if (strcmp(optarg,"cc1")==0)
+          csMeth=cc1;
+        else if (strcmp(optarg,"cc2")==0)
+	  csMeth=cc2;
+        else if (atoi(optarg)==1)
+          csMeth=cc1;
+        else if (atoi(optarg)==2)
+          csMeth=cc2;
+        else
+          {
+            cerr << "Invalid cross section designation. Allowed values are onshell, cc1 and cc2. Aborting...\n";
+            return -1;
+          }
+        break;
+      case 'f':
+        if (strcmp(optarg,"kelly")==0)
+          ffMod=kelly;
+        else if (strcmp(optarg,"dipole")==0)
+          ffMod=dipole;
+        else{
+          cerr << "Invalid form factor model provided. Allowed options are kelly and dipole. Aborting...\n";
+          return -1;
+	}
+	break;
+      case 'x':
+	Xmin=atof(optarg);
+	break;
+      case 'X':
+	Xmax=atof(optarg);
+	break;
+      case 'q':
+	Qmin=atof(optarg);
+	break;
+      case 'Q':
+	Qmax=atof(optarg);
+	break;
+      case '?':
+	return -1;
+      default:
+	abort();
   }
-  
+
+  // Adapt cross section to custom arguments
+  Cross_Sections myCS(csMeth,ffMod);
+
   // Set up the tree
   TTree * outtree = new TTree("T","Generator Tree");
   Double_t pe[3], q[3], pLead[3], pRec[3], pMiss[3], pCM[3], pRel[3];
@@ -55,52 +144,52 @@ int main(int argc, char ** argv)
   outtree->Branch("lead_type",&lead_type,"lead_type/I");
   outtree->Branch("rec_type",&rec_type,"rec_type/I");
   outtree->Branch("pe",pe,"pe[3]/D");
-  outtree->Branch("q",q,"q[3]/D");
   outtree->Branch("pLead",pLead,"pLead[3]/D");
   outtree->Branch("pRec",pRec,"pRec[3]/D");
-  outtree->Branch("pMiss",pMiss,"pMiss[3]/D");
-  outtree->Branch("pCM",pCM,"pCM[3]/D");
-  outtree->Branch("pRel",pRel,"pRel[3]/D");
   outtree->Branch("weight",&weight,"weight/D");
-  outtree->Branch("QSq",&QSq,"QSq/D");
-  outtree->Branch("xB",&xB,"xB/D");
-  outtree->Branch("nu",&nu,"nu/D");
-  outtree->Branch("pe_Mag",&pe_Mag,"pe_Mag/D");
-  outtree->Branch("q_Mag",&q_Mag,"q_Mag/D");
-  outtree->Branch("pLead_Mag",&pLead_Mag,"pLead_Mag/D");
-  outtree->Branch("pRec_Mag",&pRec_Mag,"pRec_Mag/D");
-  outtree->Branch("pMiss_Mag",&pMiss_Mag,"pMiss_Mag/D");
-  outtree->Branch("pCM_Mag",&pCM_Mag,"pCM_Mag/D");
-  outtree->Branch("pRel_Mag",&pRel_Mag,"pRel_Mag/D");
-  outtree->Branch("theta_pmq",&theta_pmq,"theta_pmq/D");
-  outtree->Branch("theta_prq",&theta_prq,"theta_prq/D");
+  if (print_full_tree)
+    {
+      outtree->Branch("q",q,"q[3]/D");
+      outtree->Branch("pMiss",pMiss,"pMiss[3]/D");
+      outtree->Branch("pCM",pCM,"pCM[3]/D");
+      outtree->Branch("pRel",pRel,"pRel[3]/D");
+      outtree->Branch("QSq",&QSq,"QSq/D");
+      outtree->Branch("xB",&xB,"xB/D");
+      outtree->Branch("nu",&nu,"nu/D");
+      outtree->Branch("pe_Mag",&pe_Mag,"pe_Mag/D");
+      outtree->Branch("q_Mag",&q_Mag,"q_Mag/D");
+      outtree->Branch("pLead_Mag",&pLead_Mag,"pLead_Mag/D");
+      outtree->Branch("pRec_Mag",&pRec_Mag,"pRec_Mag/D");
+      outtree->Branch("pMiss_Mag",&pMiss_Mag,"pMiss_Mag/D");
+      outtree->Branch("pCM_Mag",&pCM_Mag,"pCM_Mag/D");
+      outtree->Branch("pRel_Mag",&pRel_Mag,"pRel_Mag/D");
+      outtree->Branch("theta_pmq",&theta_pmq,"theta_pmq/D");
+      outtree->Branch("theta_prq",&theta_prq,"theta_prq/D");
+    }
 
   // Masses and sigma of CM momentum
   TRandom3 myRand(0);
-  const double mAm2 = myInfo.get_mAm2();
+  const double mAm2 = myInfo.get_mAm2(); // this includes the effect of Estar
   const double mA = myInfo.get_mA();
   const double sigCM =myInfo.get_sigmaCM();
 
-  
   // Loop over events
   for (int event=0 ; event < nEvents ; event++)
     {
-      if (event %10000 ==0)
+      if ((event %100000==0) && (!quiet))
 	cerr << "Working on event " << event << "\n";
 
       // Start with weight 1. Only multiply terms to weight. If trouble, set weight=0
       weight =1.;
 
       // Decide what kind of proton or neutron pair we are dealing with
-      //2212 (proton)
-      //2112 (neutron)
       lead_type = (myRand.Rndm() > 0.5) ? pCode:nCode;
       rec_type = (myRand.Rndm() > 0.5) ? pCode:nCode;
       weight *= 4.;
 
       // Pick random x, QSq to set up the electron side
       QSq = Qmin + (Qmax-Qmin)*myRand.Rndm();
-      xB = Xmin + (Xmax - Xmin)*sqrt(myRand.Rndm());
+      xB = Xmin + (Xmax - Xmin)*sqrt(myRand.Rndm()); // This draws xB in a triangular distribution, favoring x-> 2
       nu = QSq/(2.*mN*xB);
       pe_Mag = Ebeam - nu;
       double cosTheta3 = 1. - QSq/(2.*Ebeam*pe_Mag);
@@ -156,17 +245,21 @@ int main(int argc, char ** argv)
 	{
 	  double momRec1 = 0.5*(YSq*Z*cosThetaZRec + sqrt(D))/(sq(X) - vZ.Mag2()*sq(cosThetaZRec));
 	  double momRec2 = 0.5*(YSq*Z*cosThetaZRec - sqrt(D))/(sq(X) - vZ.Mag2()*sq(cosThetaZRec));
-	  if ((momRec1 < 0) && (momRec2 <0))
-	    {
-	      weight=0.;
-	    }
-	  else
-	    {
-	      if (momRec1 < 0)
-		pRec_Mag = momRec2;
-	      else if (momRec2 < 0)
-		pRec_Mag = momRec1;
-	      else
+
+          bool momRec1Valid = (momRec1>=0.) && (X - sqrt(sq(momRec1) + sq(mN)) >=0.) && (sq(X) - sq(Z) + 2.*Z*momRec1*cosThetaZRec > 0.);
+          bool momRec2Valid = (momRec2>=0.) && (X - sqrt(sq(momRec2) + sq(mN)) >=0.) && (sq(X) - sq(Z) + 2.*Z*momRec2*cosThetaZRec >= 0.);
+
+          if ( (!momRec1Valid) && (!momRec2Valid))
+            {
+              weight=0.;
+            }
+          else
+            {
+              if (!momRec1Valid)
+                pRec_Mag = momRec2;
+              else if (!momRec2Valid)
+                pRec_Mag = momRec1;
+              else
 		{
 		  pRec_Mag = (gRandom->Rndm()>0.5)? momRec1 : momRec2;
 		  weight*=2.; // because the solution we picked is half as likely
@@ -201,8 +294,12 @@ int main(int argc, char ** argv)
 	      double Elead = sqrt(sq(mN) + vLead.Mag2());
 	      double Erec = sqrt(sq(mN) + vRec.Mag2());
 
+	      // Do a safeguard cut
+	      if (pRel_Mag < pRel_cut)
+		weight=0.;
+
 	      // Calculate the weight
-	      weight *= myCS.sigmaCC2(Ebeam, v3, vLead, (lead_type==pCode)) // eN cross section
+	      weight *= myCS.sigma_eN(Ebeam, v3, vLead, (lead_type==pCode)) // eN cross section
 		* nu/(2.*xB*Ebeam*pe_Mag) // Jacobian for QSq,xB from electron angle and momentum
 		* ((sq(Xmax-Xmin))/(2*(xB-Xmin))) // Normalization over range
 		* 1./(4.*sq(M_PI)) // Angular terms
@@ -210,8 +307,11 @@ int main(int argc, char ** argv)
 		* vRec.Mag2() * Erec * Elead / fabs(Erec*(pRec_Mag - Z*cosThetaZRec) + Elead*pRec_Mag); // Jacobian for delta fnc.
 	    }
 	}
+
       // Fill the tree
-      outtree->Fill();      
+      if ((weight > 0.) || print_zeros)
+	outtree->Fill();
+
     } 	  
 
   // Clean up

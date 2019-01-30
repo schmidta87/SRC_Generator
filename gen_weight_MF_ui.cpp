@@ -8,6 +8,7 @@
 #include "TTree.h"
 #include "TRandom3.h"
 
+#include "helpers.h"
 #include "constants.h"
 #include "Nuclear_Info_MF.h"
 #include "Cross_Sections.h"
@@ -20,9 +21,7 @@ const double Qmax=5.;
 const double Xmin=1.;
 const double Xmax=2.;
 
-double sq(double x){ return x*x; };
 double gaussian(double x, double sig){return 1/sqrt(2*M_PI*sq(sig)) * exp(sq(x/sig)/2);};
-double sigmaCC1(double Ebeam, TVector3 k, TVector3 p, bool isProton);
 
 int main(int argc, char ** argv)
 {
@@ -167,7 +166,7 @@ int main(int argc, char ** argv)
 	      theta_pmq = acos((pMiss[0]*q[0] + pMiss[1]*q[1] + pMiss[2]*q[2])/pMiss_Mag /q_Mag);
 
 	      // Calculate the weight
-	      weight *= myCS.sigmaCC1(Ebeam, v3, vLead, (nucleon_type==2122)) // eN cross section
+	      weight *= myCS.sigma_eN(Ebeam, v3, vLead, (nucleon_type==2122)) // eN cross section
 		* nu/(2.*xB*Ebeam*pe_Mag) // Jacobian for QSq,xB from electron angle and momentum
 		* (Qmax-Qmin) * ((sq(Xmax-Xmin))/(2*(xB-Xmin))) // Normalization over electron range
 		* 1./(4*sq(M_PI)) // Angular terms

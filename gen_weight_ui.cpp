@@ -8,6 +8,7 @@
 #include "TTree.h"
 #include "TRandom3.h"
 
+#include "helpers.h"
 #include "constants.h"
 #include "Nuclear_Info.h"
 #include "Cross_Sections.h"
@@ -19,9 +20,6 @@ const double Qmin=1.;
 const double Qmax=5.;
 const double Xmin=1.;
 const double Xmax=2.;
-
-double sq(double x){ return x*x; };
-double sigmaCC1(double Ebeam, TVector3 k, TVector3 p, bool isProton);
 
 int main(int argc, char ** argv)
 {
@@ -285,7 +283,7 @@ int main(int argc, char ** argv)
 	      double Erec = sqrt(sq(mN) + vRec.Mag2());
 
 	      // Calculate the weight
-	      weight *= myCS.sigmaCC1(Ebeam, v3, vLead, (lead_type==pCode)) // eN cross section
+	      weight *= myCS.sigma_eN(Ebeam, v3, vLead, (lead_type==pCode)) // eN cross section
 		* nu/(2.*xB*Ebeam*pe_Mag) // Jacobian for QSq,xB from electron angle and momentum
 		* (Qmax-Qmin) * ((sq(Xmax-Xmin))/(2*(xB-Xmin))) // Normalization over range
 		* 1./(4.*sq(M_PI)) // Angular terms
