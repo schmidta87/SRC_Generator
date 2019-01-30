@@ -18,7 +18,7 @@ Nuclear_Info::Nuclear_Info(int thisA)
       sigmaCM=0.;
       Cpp0=0.;
       Cpn0=0.;
-      Cpn1=4.;
+      Cpn1=4.75;
       mA=m_2H;
       mAm2=0.;
     }

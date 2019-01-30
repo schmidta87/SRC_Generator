@@ -16,23 +16,21 @@
 
 using namespace std;
 
-// Probability windows
-const double Qmin=1.;
-const double Qmax=5.;
-const double Xmin=1.;
-const double Xmax=2.;
-
 void print_help()
 {
   cerr << "Usage: ./gen_weight [A] [Beam energy (GeV)] [path/to/output.root] [# of events] [optional flags]\n"
        << "Optional flags:\n"
        << "-h: Help\n"
-       << "-q: Quiet\n"
+       << "-S: Silent\n"
        << "-T: Print full output tree\n"
        << "-z: Print zero-weight events\n"
        << "-s <Sigma_CM [GeV]>\n"
        << "-E <E* [GeV]>==<0>\n"
        << "-k <kRel cutoff [GeV]==0.25>\n"
+       << "-x <minimum xB>==1\n"
+       << "-X <maximum xB>==2\n"
+       << "-q <minimum Q2>==1\n"
+       << "-Q <minimum Q2>==5\n"
        << "-c <Cross section method>==<cc1>\n"
        << "-f <Form Factor model>==<kelly>\n\n\n";
 }
@@ -59,15 +57,20 @@ int main(int argc, char ** argv)
   bool quiet=false;
   bool print_full_tree=false;
   bool print_zeros = false;
+  // Probability windows
+  double Qmin=1.;
+  double Qmax=5.;
+  double Xmin=1.;
+  double Xmax=2.;
 
   int c;
-  while ((c=getopt (argc-4, &argv[4], "hqTzs:E:k:c:f")) != -1) // First five arguments are not optional flags.                                        
+  while ((c=getopt (argc-4, &argv[4], "hSTzs:E:k:c:f:q:Q:x:X:")) != -1) // First five arguments are not optional flags.
     switch(c)
       {
       case 'h':
         print_help();
         return -1;
-      case 'q':
+      case 'S':
         quiet = true;
         break;
       case 'T':
@@ -111,6 +114,18 @@ int main(int argc, char ** argv)
           cerr << "Invalid form factor model provided. Allowed options are kelly and dipole. Aborting...\n";
           return -1;
 	}
+	break;
+      case 'x':
+	Xmin=atof(optarg);
+	break;
+      case 'X':
+	Xmax=atof(optarg);
+	break;
+      case 'q':
+	Qmin=atof(optarg);
+	break;
+      case 'Q':
+	Qmax=atof(optarg);
 	break;
       case '?':
 	return -1;
