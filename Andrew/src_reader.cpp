@@ -30,7 +30,7 @@ int main(int argc, char ** argv){
   file.open(argv[3]);
   double A = atof(argv[4]);
 
-  cerr<<"Nucleus and Deuterium files have been opened from: "<<argv[2]<<" "<<argv[1]<<"\n";
+  cerr<<"Nucleus and Deuterium files have been opened from: "<<argv[1]<<" "<<argv[2]<<"\n";
   
   //Make trees and histograms for the nuclei
   TTree * TreeH = (TTree*)DataH->Get("T");
@@ -58,11 +58,16 @@ int main(int argc, char ** argv){
 
   //Loop over TTree
   for(int i = 0; i < TreeD->GetEntries(); i++){
-    TreeD->GetEntry(i);
-    hD->Fill(xB,weight);
 
     if (i %10000 ==0){
       cerr << "Working on event " << i << "\n";}
+  
+
+    TreeD->GetEntry(i);
+    if(QSq < 2){
+      continue;
+    }
+    hD->Fill(xB,weight);
   }
     cerr<<"Finished filling histogram for Deuterium\n";
 
@@ -76,6 +81,10 @@ int main(int argc, char ** argv){
   //Loop over TTree
   for(int i = 0; i < TreeH->GetEntries(); i++){
     TreeH->GetEntry(i);
+    if(QSq < 2){
+      continue;
+    }
+
     hH->Fill(xB,weight);
 
     if (i %10000 ==0){
