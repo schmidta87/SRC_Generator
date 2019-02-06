@@ -32,7 +32,7 @@ void print_help()
        << "-q <minimum Q2>==1\n"
        << "-Q <minimum Q2>==5\n"
        << "-c <Cross section method>==<cc1>\n"
-       << "-A Set electron angle [given xB] <degrees>\n"
+       << "-F Set fixed electron angle [given xB] <degrees>\n"
        << "-f <Form Factor model>==<kelly>\n\n\n";
 }
 
@@ -58,6 +58,8 @@ int main(int argc, char ** argv)
   bool quiet=false;
   bool print_full_tree=false;
   bool print_zeros = false;
+  bool fxdAngle = false;
+  double setAngle;
   // Probability windows
   double Qmin=1.;
   double Qmax=5.;
@@ -65,7 +67,7 @@ int main(int argc, char ** argv)
   double Xmax=2.;
 
   int c;
-  while ((c=getopt (argc-4, &argv[4], "hSTzs:E:k:c:f:q:Q:x:X:")) != -1) // First five arguments are not optional flags.
+  while ((c=getopt (argc-4, &argv[4], "hSTzs:E:k:c:f:q:Q:x:X:A:")) != -1) // First five arguments are not optional flags.
     switch(c)
       {
       case 'h':
@@ -128,10 +130,20 @@ int main(int argc, char ** argv)
       case 'Q':
 	Qmax=atof(optarg);
 	break;
-	/*      case 'A':
-	double setAngle=atof(optarg);
-	double Q1 = (2*Ebeam)/((1/(Xmin*mN))+(1/(Ebeam*(1-cos(180*setAngle/M_PI)))));
-	double Q2 = (2*Ebeam)/((1/(Xmax*mN))+(1/(Ebeam*(1-cos(180*setAngle/M_PI)))));
+      case 'A':
+	fxdAngle = true;
+	setAngle = atof(optarg);
+	break;
+      case '?':
+	return -1;
+      default:
+	abort();
+  }
+
+  //find Qmin and Qmax for given angle
+  if(fxdAngle){
+	double Q1 = (2*Ebeam)/((1/(Xmin*mN))+(1/(Ebeam*(1-cos(M_PI*setAngle/180)))));
+	double Q2 = (2*Ebeam)/((1/(Xmax*mN))+(1/(Ebeam*(1-cos(M_PI*setAngle/180)))));
 	if(Q1>Q2){
 	  Qmax=Q1;
 	  Qmin=Q2;
@@ -139,12 +151,7 @@ int main(int argc, char ** argv)
 	else{
 	  Qmax=Q2;
 	  Qmin=Q1;
-	}  
-	break;*/
-      case '?':
-	return -1;
-      default:
-	abort();
+	}      
   }
 
   // Adapt cross section to custom arguments
