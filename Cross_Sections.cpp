@@ -17,7 +17,6 @@ double Cross_Sections::dot4(double x0, TVector3 x, double y0, TVector3 y)
   return ((x0*y0)-(x*y));
     }
 
-
 double Cross_Sections::sigmaCC1(double Ebeam, TVector3 k, TVector3 p, bool isProton)
 {
   TVector3 q = TVector3(0.,0.,Ebeam) - k;
