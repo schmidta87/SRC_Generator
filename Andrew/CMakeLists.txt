@@ -13,6 +13,3 @@ target_link_libraries(pMissReader ${ROOT_LIBRARIES} )
 add_executable(xqClas xqClas.cpp)
 target_link_libraries(xqClas ${ROOT_LIBRARIES} )
 
-# Make histograms
-add_executable(H2T H2T.cpp )
-target_link_libraries(H2T ${ROOT_LIBRARIES})
