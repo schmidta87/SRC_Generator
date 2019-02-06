@@ -50,6 +50,7 @@ double dot4(double x0, TVector3 x, double y0, TVector3 y)
 }
 
 double Cross_Sections::sigmaCCn(double Ebeam, TVector3 k, TVector3 p, bool isProton, int n)
+
 {
   TVector3 q = TVector3(0.,0.,Ebeam) - k;
   TVector3 pM = p-q;
