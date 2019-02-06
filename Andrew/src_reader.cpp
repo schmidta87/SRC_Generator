@@ -59,12 +59,11 @@ int main(int argc, char ** argv){
   //Loop over TTree
   for(int i = 0; i < TreeD->GetEntries(); i++){
     TreeD->GetEntry(i);
-    if(QSq < 2) continue;
     hD->Fill(xB,weight);
 
-    
+    if (i %10000 ==0){
+      cerr << "Working on event " << i << "\n";}
   }
-
     cerr<<"Finished filling histogram for Deuterium\n";
 
   //Set addresses for H
@@ -77,8 +76,11 @@ int main(int argc, char ** argv){
   //Loop over TTree
   for(int i = 0; i < TreeH->GetEntries(); i++){
     TreeH->GetEntry(i);
-    if(QSq < 2) continue;
     hH->Fill(xB,weight);
+
+    if (i %10000 ==0){
+      cerr << "Working on event " << i << "\n";}
+
 
   }
     cerr<<"Finished filling histogram for Nucleus\n";
