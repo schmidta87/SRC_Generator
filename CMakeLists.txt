@@ -26,3 +26,8 @@ target_link_libraries(gen_weight_MF_ui ${ROOT_LIBRARIES} helpers)
 add_executable(smearTree smearTree.cpp)
 target_link_libraries(smearTree ${ROOT_LIBRARIES} )
 
+add_executable(P2 P2.cpp)
+target_link_libraries(P2 ${ROOT_LIBRARIES})
+
+add_executable(P2exp P2exp.cpp)
+target_link_libraries(P2exp ${ROOT_LIBRARIES})

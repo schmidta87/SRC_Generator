@@ -32,6 +32,7 @@ void print_help()
        << "-q <minimum Q2>==1\n"
        << "-Q <minimum Q2>==5\n"
        << "-c <Cross section method>==<cc1>\n"
+       << "-A Set electron angle [given xB] <degrees>\n"
        << "-f <Form Factor model>==<kelly>\n\n\n";
 }
 
@@ -127,6 +128,19 @@ int main(int argc, char ** argv)
       case 'Q':
 	Qmax=atof(optarg);
 	break;
+	/*      case 'A':
+	double setAngle=atof(optarg);
+	double Q1 = (2*Ebeam)/((1/(Xmin*mN))+(1/(Ebeam*(1-cos(180*setAngle/M_PI)))));
+	double Q2 = (2*Ebeam)/((1/(Xmax*mN))+(1/(Ebeam*(1-cos(180*setAngle/M_PI)))));
+	if(Q1>Q2){
+	  Qmax=Q1;
+	  Qmin=Q2;
+	}
+	else{
+	  Qmax=Q2;
+	  Qmin=Q1;
+	}  
+	break;*/
       case '?':
 	return -1;
       default:
