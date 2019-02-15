@@ -17,11 +17,5 @@ add_subdirectory(Axel)
 add_executable(gen_weight gen_weight.cpp Nuclear_Info.cpp Cross_Sections.cpp)
 target_link_libraries(gen_weight ${ROOT_LIBRARIES} helpers)
 
-add_executable(gen_weight_ui gen_weight_ui.cpp Nuclear_Info.cpp Cross_Sections.cpp)
-target_link_libraries(gen_weight_ui ${ROOT_LIBRARIES} helpers)
-
-add_executable(gen_weight_MF_ui gen_weight_MF_ui.cpp Nuclear_Info_MF.cpp Cross_Sections.cpp)
-target_link_libraries(gen_weight_MF_ui ${ROOT_LIBRARIES} helpers)
-
 add_executable(smearTree smearTree.cpp)
 target_link_libraries(smearTree ${ROOT_LIBRARIES} )

@@ -18,7 +18,7 @@ using namespace std;
 
 void print_help()
 {
-  cerr << "Usage: ./gen_weight [A] [Beam energy (GeV)] [path/to/output.root] [# of events] [optional flags]\n"
+  cerr << "Usage: ./gen_weight [Z] [N] [Beam energy (GeV)] [path/to/output.root] [# of events] [optional flags]\n"
        << "Optional flags:\n"
        << "-h: Help\n"
        << "-S: Silent\n"
@@ -26,6 +26,7 @@ void print_help()
        << "-z: Print zero-weight events\n"
        << "-s <Sigma_CM [GeV]>\n"
        << "-E <E* [GeV]>==<0>\n"
+       << "-u <Nuclear potential>==<1> (1=AV18, 2=N2LO, 3=N3LO)\n"
        << "-k <kRel cutoff [GeV]==0.25>\n"
        << "-x <minimum xB>==1\n"
        << "-X <maximum xB>==2\n"
@@ -38,21 +39,21 @@ void print_help()
 
 int main(int argc, char ** argv)
 {
-  if (argc<5)
+  if (argc<6)
     {
       print_help();
       return -1;
     }
-
-  // Read in the arguments
-  Nuclear_Info myInfo(atoi(argv[1]));
-  const double Ebeam=atof(argv[2]);
+  
+    // Read in the arguments
+  Nuclear_Info myInfo(atoi(argv[1]),atoi(argv[2]));
+  const double Ebeam=atof(argv[3]);
   const TVector3 v1(0.,0.,Ebeam);
-  TFile * outfile = new TFile(argv[3],"RECREATE");
-  int nEvents = atoi(argv[4]);
+  TFile * outfile = new TFile(argv[4],"RECREATE");
+  int nEvents = atoi(argv[5]);
 
   // Custom settings
-  double pRel_cut = 0.25;
+  double pRel_cut = 0.3;
   csMethod csMeth=cc1;
   ffModel ffMod=kelly;
   bool quiet=false;
@@ -67,7 +68,7 @@ int main(int argc, char ** argv)
   double Xmax=2.;
 
   int c;
-  while ((c=getopt (argc-4, &argv[4], "hSTzs:E:k:c:f:q:Q:x:X:A:")) != -1) // First five arguments are not optional flags.
+  while ((c=getopt (argc-4, &argv[4], "hSTzs:E:u:k:c:f:q:Q:x:X:A:")) != -1) // First five arguments are not optional flags.
     switch(c)
       {
       case 'h':
@@ -87,6 +88,9 @@ int main(int argc, char ** argv)
         break;
       case 'E':
 	myInfo.set_Estar(atof(optarg));
+        break;
+      case 'u':
+	myInfo.set_Potential(atoi(optarg));
         break;
       case 'k':
         pRel_cut = atof(optarg);
@@ -153,12 +157,12 @@ int main(int argc, char ** argv)
 	  Qmin=Q1;
 	}      
   }
-
+  
   // Adapt cross section to custom arguments
   Cross_Sections myCS(csMeth,ffMod);
 
   // Set up the tree
-  TTree * outtree = new TTree("T","Generator Tree");
+  TTree * outtree = new TTree("genT","Generator Tree");
   Double_t pe[3], q[3], pLead[3], pRec[3], pMiss[3], pCM[3], pRel[3];
   Double_t  QSq, xB, nu, pe_Mag, q_Mag, pLead_Mag, pRec_Mag, pMiss_Mag, pCM_Mag, pRel_Mag, theta_pmq, theta_prq, weight;
   Int_t lead_type, rec_type;
@@ -324,7 +328,7 @@ int main(int argc, char ** argv)
 		* nu/(2.*xB*Ebeam*pe_Mag) // Jacobian for QSq,xB from electron angle and momentum
 		* ((sq(Xmax-Xmin))/(2*(xB-Xmin))) // Normalization over range
 		* 1./(4.*sq(M_PI)) // Angular terms
-		* ((lead_type==rec_type) ? myInfo.get_pp(pRel_Mag) : myInfo.get_pn(pRel_Mag)) // Relative pair probability (from contacts)
+		* myInfo.get_S(pRel_Mag,lead_type,rec_type)// Relative pair probability (from contacts)
 		* vRec.Mag2() * Erec * Elead / fabs(Erec*(pRec_Mag - Z*cosThetaZRec) + Elead*pRec_Mag); // Jacobian for delta fnc.
 	    }
 	}
