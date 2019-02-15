@@ -158,7 +158,7 @@ int main(int argc, char ** argv)
   Cross_Sections myCS(csMeth,ffMod);
 
   // Set up the tree
-  TTree * outtree = new TTree("T","Generator Tree");
+  TTree * outtree = new TTree("genT","Generator Tree");
   Double_t pe[3], q[3], pLead[3], pRec[3], pMiss[3], pCM[3], pRel[3];
   Double_t  QSq, xB, nu, pe_Mag, q_Mag, pLead_Mag, pRec_Mag, pMiss_Mag, pCM_Mag, pRel_Mag, theta_pmq, theta_prq, weight;
   Int_t lead_type, rec_type;
