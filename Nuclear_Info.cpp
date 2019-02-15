@@ -212,12 +212,12 @@ double Nuclear_Info::get_Estar()
 }
 
 double Nuclear_Info::get_S(double k_rel, int l_type, int r_type){
-  if(l_type!=r_type){
-    return get_pn(k_rel);
+  if(l_type==r_type){
+    return ((l_type==pCode) ? (get_pp(k_rel)) : (get_nn(k_rel)));
+    //return get_pp(k_rel);
   }
   else{
-    return get_pp(k_rel);
-    //return ((l_type=pCode) ? (get_pp(k_rel)) : (get_nn(k_rel)));
+    return get_pn(k_rel);
   }
 }
 
