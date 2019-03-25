@@ -13,3 +13,6 @@ target_link_libraries(pMissReader ${ROOT_LIBRARIES} )
 add_executable(xqClas xqClas.cpp)
 target_link_libraries(xqClas ${ROOT_LIBRARIES} )
 
+add_executable(tritiumHists tritiumHists.cpp)
+target_link_libraries(tritiumHists ${ROOT_LIBRARIES} helpers)
+

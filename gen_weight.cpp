@@ -33,7 +33,7 @@ void print_help()
        << "-q <minimum Q2>==1\n"
        << "-Q <minimum Q2>==5\n"
        << "-c <Cross section method>==<cc1>\n"
-       << "-F Set fixed electron angle [given xB] <degrees>\n"
+       << "-F Set electron angle region [given xB] <degrees>\n"
        << "-f <Form Factor model>==<kelly>\n\n\n";
 }
 
@@ -144,10 +144,10 @@ int main(int argc, char ** argv)
 	abort();
   }
 
-  //find Qmin and Qmax for given angle
+  //find Qmin and Qmax for the region around a given angle
   if(fxdAngle){
-	double Q1 = (2*Ebeam)/((1/(Xmin*mN))+(1/(Ebeam*(1-cos(M_PI*setAngle/180)))));
-	double Q2 = (2*Ebeam)/((1/(Xmax*mN))+(1/(Ebeam*(1-cos(M_PI*setAngle/180)))));
+    double Q1 = (2*Ebeam)/((1/((Xmin-0.001)*mN))+(1/(Ebeam*(1-cos(M_PI*setAngle/180)))));
+    double Q2 = (2*Ebeam)/((1/((Xmax+0.001)*mN))+(1/(Ebeam*(1-cos(M_PI*setAngle/180)))));
 	if(Q1>Q2){
 	  Qmax=Q1;
 	  Qmin=Q2;
