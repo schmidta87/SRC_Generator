@@ -27,6 +27,8 @@ double centMomPLow = 1.481;
 double centMomPHigh = 1.246;
 double dMom = 0.04;
 
+bool checkSpot(int lh, TVector3 vq, TVector3 ve, TVector3 vLead, TVector3 vRRec);
+
 int main(int argc, char ** argv){
 
   if( argc != 5){
@@ -64,13 +66,13 @@ int main(int argc, char ** argv){
     }
     }*/
   
-  TH1D * tri_Emiss_low = new TH1D("tri_Emiss_low","Triton;Emiss_low [GeV];Counts",40,0,10);
+  TH1D * tri_Emiss_low = new TH1D("tri_Emiss_low","Triton;Emiss_low [GeV];Counts",40,0,1);
   histList.push_back(tri_Emiss_low);
-  TH1D * tri_Emiss_high = new TH1D("tri_Emiss_high","Triton;Emiss_high [GeV];Counts",40,0,10);
+  TH1D * tri_Emiss_high = new TH1D("tri_Emiss_high","Triton;Emiss_high [GeV];Counts",40,0,1);
   histList.push_back(tri_Emiss_high);
-  TH1D * tri_pmiss_low = new TH1D("tri_pmiss_low","Triton;pmiss_low [GeV];Counts",40,0,10);
+  TH1D * tri_pmiss_low = new TH1D("tri_pmiss_low","Triton;pmiss_low [GeV];Counts",40,0,1);
   histList.push_back(tri_pmiss_low);
-  TH1D * tri_pmiss_high = new TH1D("tri_pmiss_high","Triton;pmiss_high [GeV];Counts",40,0,10);
+  TH1D * tri_pmiss_high = new TH1D("tri_pmiss_high","Triton;pmiss_high [GeV];Counts",40,0,1);
   histList.push_back(tri_pmiss_high);  
   TH1D * tri_QSq_low = new TH1D("tri_QSq_low","Triton;QSq_low [GeV^2];Counts",40,1.3,2.4);  
   histList.push_back(tri_QSq_low);
@@ -152,28 +154,8 @@ int main(int argc, char ** argv){
     double QSq = vq.Mag2() - omega*omega;
     double xB = QSq/(2*mN*omega);
 
-    //Get Angles for Cuts
-    double theta_Recq = (180/M_PI) * vRRec.Angle(vq);
-    double thetaE = (180/M_PI) * ve.Theta();
-    double thetaP = (180/M_PI) * vLead.Theta();
-
-    //if(theta_Recq > 37.5) continue;
-    //if(xB < 1.3) continue;
-    //if( (thetaE < (centThetaE-dTheta)) || (thetaE > (centThetaE+dTheta)) ) continue;
-    //if( (ve.Mag() < (centMomE*(1-dMom))) || (ve.Mag() > (centMomE*(1+dMom))) ) continue;
-    
-    if( (thetaP > (centThetaPLow - dTheta)) && (thetaP < (centThetaPLow + dTheta)) ){
-      if( (vLead.Mag() > (centMomPLow*(1-dMom))) && (vLead.Mag() < (centMomPLow*(1+dMom))) ){
-	isLow = true;
-      }
-    } 
-
-    if( (thetaP > (centThetaPHigh - dTheta)) && (thetaP < (centThetaPHigh + dTheta)) ){
-      if( (vLead.Mag() > (centMomPHigh*(1-dMom))) && (vLead.Mag() < (centMomPHigh*(1+dMom))) ){
-	isHigh = true;
-      }
-    } 
-
+    isLow=checkSpot(0,vq,ve,vLead,vRRec);
+    isHigh=checkSpot(1,vq,ve,vLead,vRRec);
     
     if(isLow){
       tri_Emiss_low->Fill(Emiss,weight);
@@ -286,3 +268,34 @@ int main(int argc, char ** argv){
 
   return 0;
 }
+
+
+bool checkSpot(int lh, TVector3 vq, TVector3 ve, TVector3 vLead, TVector3 vRRec){
+
+  //Get Angles for Cuts
+  double theta_Recq = (180/M_PI) * vRRec.Angle(vq);
+  double thetaE = (180/M_PI) * ve.Theta();
+  double thetaP = (180/M_PI) * vLead.Theta();
+  
+  //if(theta_Recq > 37.5) return false;
+  //if(xB < 1.3) return false;
+  //if( (thetaE < (centThetaE-dTheta)) || (thetaE > (centThetaE+dTheta)) ) return false;
+  //if( (ve.Mag() < (centMomE*(1-dMom))) || (ve.Mag() > (centMomE*(1+dMom))) ) return false;
+
+  if(lh = 0){
+    if( (thetaP > (centThetaPLow - dTheta)) && (thetaP < (centThetaPLow + dTheta)) ){
+      if( (vLead.Mag() > (centMomPLow*(1-dMom))) && (vLead.Mag() < (centMomPLow*(1+dMom))) ){
+	return true;
+      }
+    } 
+  }
+  else if(lh = 1){
+    if( (thetaP > (centThetaPHigh - dTheta)) && (thetaP < (centThetaPHigh + dTheta)) ){
+      if( (vLead.Mag() > (centMomPHigh*(1-dMom))) && (vLead.Mag() < (centMomPHigh*(1+dMom))) ){
+	return true;
+      }
+    } 
+  }
+  return false;
+}
+
