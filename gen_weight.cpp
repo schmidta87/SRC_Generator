@@ -33,7 +33,7 @@ void print_help()
        << "-q <minimum Q2>==1\n"
        << "-Q <minimum Q2>==5\n"
        << "-c <Cross section method>==<cc1>\n"
-       << "-F Set electron angle region [given xB] <degrees>\n"
+       << "-A Set electron angle region [given xB] <degrees>\n"
        << "-f <Form Factor model>==<kelly>\n\n\n";
 }
 
