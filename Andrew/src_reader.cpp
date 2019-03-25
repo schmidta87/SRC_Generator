@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
-
+#include <math.h> 
 
 #include "TFile.h"
 #include "TTree.h"
@@ -38,7 +38,7 @@ int main(int argc, char ** argv){
   TTree * TreeH = (TTree*)DataH->Get("genT");
   TH1D * h1p_QSq = new TH1D("ep_QSq","ep;QSq [GeV^2];Counts",36,1.,5.);
   TH1D * h1p_xB =  new TH1D("ep_xB" ,"ep;xB;Counts",40,1.2,2.);
-  TH1D * h1p_phiRec = new TH1D("ep_phiRec","ep;phiRec;Counts",36,0,2.*M_PI);
+  TH1D * h1p_phiRec = new TH1D("ep_phiRec","ep;phiRec;Counts",36,0,2*M_PI);
   TH1D * h1p_cosThetaRec =  new TH1D("epw_cosThetaRec" ,"ep;cosTheta;Counts",40,-1.0,1.0);
   
   h1p_QSq ->Sumw2();
