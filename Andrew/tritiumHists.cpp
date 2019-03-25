@@ -280,7 +280,7 @@ bool checkSpot(int lh, TVector3 vq, TVector3 ve, TVector3 vLead, TVector3 vRRec)
   //if(theta_Recq > 37.5) return false;
   //if(xB < 1.3) return false;
   //if( (thetaE < (centThetaE-dTheta)) || (thetaE > (centThetaE+dTheta)) ) return false;
-  //if( (ve.Mag() < (centMomE*(1-dMom))) || (ve.Mag() > (centMomE*(1+dMom))) ) return false;
+  if( (ve.Mag() < (centMomE*(1-dMom))) || (ve.Mag() > (centMomE*(1+dMom))) ) return false;
 
   if(lh < 0){
     if( (thetaP > (centThetaPLow - dTheta)) && (thetaP < (centThetaPLow + dTheta)) ){
