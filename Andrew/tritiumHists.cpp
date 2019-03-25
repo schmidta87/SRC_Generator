@@ -154,7 +154,7 @@ int main(int argc, char ** argv){
     double QSq = vq.Mag2() - omega*omega;
     double xB = QSq/(2*mN*omega);
 
-    isLow=checkSpot(0,vq,ve,vLead,vRRec);
+    isLow=checkSpot(-1,vq,ve,vLead,vRRec);
     isHigh=checkSpot(1,vq,ve,vLead,vRRec);
     
     if(isLow){
@@ -282,14 +282,14 @@ bool checkSpot(int lh, TVector3 vq, TVector3 ve, TVector3 vLead, TVector3 vRRec)
   //if( (thetaE < (centThetaE-dTheta)) || (thetaE > (centThetaE+dTheta)) ) return false;
   //if( (ve.Mag() < (centMomE*(1-dMom))) || (ve.Mag() > (centMomE*(1+dMom))) ) return false;
 
-  if(lh = 0){
+  if(lh < 0){
     if( (thetaP > (centThetaPLow - dTheta)) && (thetaP < (centThetaPLow + dTheta)) ){
       if( (vLead.Mag() > (centMomPLow*(1-dMom))) && (vLead.Mag() < (centMomPLow*(1+dMom))) ){
 	return true;
       }
     } 
   }
-  else if(lh = 1){
+  else if(lh > 0){
     // if( (thetaP > (centThetaPHigh - dTheta)) && (thetaP < (centThetaPHigh + dTheta)) ){
       //if( (vLead.Mag() > (centMomPHigh*(1-dMom))) && (vLead.Mag() < (centMomPHigh*(1+dMom))) ){
 	return true;
