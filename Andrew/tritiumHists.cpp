@@ -207,28 +207,8 @@ int main(int argc, char ** argv){
     double QSq = vq.Mag2() - omega*omega;
     double xB = QSq/(2*mN*omega);
 
-    //Get Angles for Cuts
-    double theta_Recq = (180/M_PI) * vRRec.Angle(vq);
-    double thetaE = (180/M_PI) * ve.Theta();
-    double thetaP = (180/M_PI) * vLead.Theta();
-
-    if(theta_Recq > 37.5) continue;
-    if(xB < 1.3) continue;
-    if( (thetaE < (centThetaE-dTheta)) || (thetaE > (centThetaE+dTheta)) ) continue;
-    if( (ve.Mag() < (centMomE*(1-dMom))) || (ve.Mag() > (centMomE*(1+dMom))) ) continue;
-    
-    if( (thetaP > (centThetaPLow - dTheta)) && (thetaP < (centThetaPLow + dTheta)) ){
-      if( (vLead.Mag() > (centMomPLow*(1-dMom))) && (vLead.Mag() < (centMomPLow*(1+dMom))) ){
-	isLow = true;
-      }
-    } 
-
-    if( (thetaP > (centThetaPHigh - dTheta)) && (thetaP < (centThetaPHigh + dTheta)) ){
-      if( (vLead.Mag() > (centMomPHigh*(1-dMom))) && (vLead.Mag() < (centMomPHigh*(1+dMom))) ){
-	isHigh = true;
-      }
-    } 
-
+    isLow=checkSpot(-1,vq,ve,vLead,vRRec);
+    isHigh=checkSpot(1,vq,ve,vLead,vRRec);
     
     if(isLow){
       he3_Emiss_low->Fill(Emiss,weight);
@@ -279,8 +259,8 @@ bool checkSpot(int lh, TVector3 vq, TVector3 ve, TVector3 vLead, TVector3 vRRec)
   
   //if(theta_Recq > 37.5) return false;
   //if(xB < 1.3) return false;
-  //if( (thetaE < (centThetaE-dTheta)) || (thetaE > (centThetaE+dTheta)) ) return false;
-  if( (ve.Mag() < (centMomE*(1-dMom))) || (ve.Mag() > (centMomE*(1+dMom))) ) return false;
+  if( (thetaE < (centThetaE-dTheta)) || (thetaE > (centThetaE+dTheta)) ) return false;
+  //if( (ve.Mag() < (centMomE*(1-dMom))) || (ve.Mag() > (centMomE*(1+dMom))) ) return false;
 
   if(lh < 0){
     if( (thetaP > (centThetaPLow - dTheta)) && (thetaP < (centThetaPLow + dTheta)) ){
