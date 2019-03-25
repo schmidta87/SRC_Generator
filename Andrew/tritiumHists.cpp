@@ -107,6 +107,8 @@ int main(int argc, char ** argv){
   //Make trees and histograms for the nuclei
   TTree * triTree = (TTree*)ftri->Get("genT");
   TTree * he3Tree = (TTree*)fhe3->Get("genT");
+
+  cerr<<"triTree successfully identified\n";
   
   //Define variables needed for histograms of Helium
   Double_t pe[3],pLead[3],pRec[3],weight;
@@ -117,6 +119,7 @@ int main(int argc, char ** argv){
 
   //Set addresses for triTree
   triTree->SetBranchAddress("lead_type",&lead_type);
+  cerr<<"triTree variable lead type successfully read\n";
   triTree->SetBranchAddress("rec_type",&rec_type);
   triTree->SetBranchAddress("pe",&pe);
   triTree->SetBranchAddress("pLead",&pLead);
