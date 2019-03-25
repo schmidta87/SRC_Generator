@@ -8,6 +8,11 @@
 #include "TH1.h"
 #include "TF1.h"
 
+#include "constants.h"
+#include "helpers.h"
+#include "Nuclear_Info.h"
+#include "Cross_Sections.h"
+
 
 using namespace std;
 
