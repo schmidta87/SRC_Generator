@@ -78,7 +78,10 @@ int main(int argc, char ** argv){
   histList.push_back(tri_QSq_low);
   TH1D * tri_QSq_high = new TH1D("tri_QSq_high","Triton;QSq_high [GeV^2];Counts",40,1.3,2.4);  
   histList.push_back(tri_QSq_high);
+  TH1D * tri_thetae = new TH1D("theta_e","Triton;thetae ;Counts",100,0,360);  
+  histList.push_back(tri_thetae);
 
+  
   TH1D * he3_Emiss_low = new TH1D("he3_Emiss_low","Helium-3;Emiss_low [GeV];Counts",40,0,0.1);
   histList.push_back(he3_Emiss_low);
   TH1D * he3_Emiss_high = new TH1D("he3_Emiss_high","Helium-3;Emiss_high [GeV];Counts",40,0,0.1);
@@ -153,7 +156,10 @@ int main(int argc, char ** argv){
     double Emiss = vMiss.Mag();
     double QSq = vq.Mag2() - omega*omega;
     double xB = QSq/(2*mN*omega);
-
+    
+    double thetaE = (180/M_PI) * ve.Theta();
+    tri_thetae->Fill(thetaE,weight);
+    
     isLow=checkSpot(-1,vq,ve,vLead,vRRec);
     isHigh=checkSpot(1,vq,ve,vLead,vRRec);
     
