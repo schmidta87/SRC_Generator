@@ -291,9 +291,9 @@ bool checkSpot(int lh, TVector3 vq, TVector3 ve, TVector3 vLead, TVector3 vRRec)
   }
   else if(lh = 1){
     if( (thetaP > (centThetaPHigh - dTheta)) && (thetaP < (centThetaPHigh + dTheta)) ){
-      if( (vLead.Mag() > (centMomPHigh*(1-dMom))) && (vLead.Mag() < (centMomPHigh*(1+dMom))) ){
+      //if( (vLead.Mag() > (centMomPHigh*(1-dMom))) && (vLead.Mag() < (centMomPHigh*(1+dMom))) ){
 	return true;
-      }
+	//}
     } 
   }
   return false;
