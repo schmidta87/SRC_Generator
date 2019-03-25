@@ -64,13 +64,13 @@ int main(int argc, char ** argv){
     }
     }*/
   
-  TH1D * tri_Emiss_low = new TH1D("tri_Emiss_low","Triton;Emiss_low [GeV];Counts",40,0,0.1);
+  TH1D * tri_Emiss_low = new TH1D("tri_Emiss_low","Triton;Emiss_low [GeV];Counts",40,0,10);
   histList.push_back(tri_Emiss_low);
-  TH1D * tri_Emiss_high = new TH1D("tri_Emiss_high","Triton;Emiss_high [GeV];Counts",40,0,0.1);
+  TH1D * tri_Emiss_high = new TH1D("tri_Emiss_high","Triton;Emiss_high [GeV];Counts",40,0,10);
   histList.push_back(tri_Emiss_high);
-  TH1D * tri_pmiss_low = new TH1D("tri_pmiss_low","Triton;pmiss_low [GeV];Counts",40,0,0.1);
+  TH1D * tri_pmiss_low = new TH1D("tri_pmiss_low","Triton;pmiss_low [GeV];Counts",40,0,10);
   histList.push_back(tri_pmiss_low);
-  TH1D * tri_pmiss_high = new TH1D("tri_pmiss_high","Triton;pmiss_high [GeV];Counts",40,0,0.1);
+  TH1D * tri_pmiss_high = new TH1D("tri_pmiss_high","Triton;pmiss_high [GeV];Counts",40,0,10);
   histList.push_back(tri_pmiss_high);  
   TH1D * tri_QSq_low = new TH1D("tri_QSq_low","Triton;QSq_low [GeV^2];Counts",40,1.3,2.4);  
   histList.push_back(tri_QSq_low);
