@@ -78,7 +78,7 @@ int main(int argc, char ** argv){
   histList.push_back(tri_QSq_low);
   TH1D * tri_QSq_high = new TH1D("tri_QSq_high","Triton;QSq_high [GeV^2];Counts",40,1.3,2.4);  
   histList.push_back(tri_QSq_high);
-  TH1D * tri_thetae = new TH1D("theta_e","Triton;thetae ;Counts",100,0,360);  
+  TH1D * tri_thetae = new TH1D("theta_e","Triton;thetae ;Counts",100,20,22);  
   histList.push_back(tri_thetae);
 
   
@@ -263,7 +263,7 @@ bool checkSpot(int lh, TVector3 vq, TVector3 ve, TVector3 vLead, TVector3 vRRec)
   double thetaE = (180/M_PI) * ve.Theta();
   double thetaP = (180/M_PI) * vLead.Theta();
   
-  //if(theta_Recq > 37.5) return false;
+  if(theta_Recq > 37.5) return false;
   //if(xB < 1.3) return false;
   if( (thetaE < (centThetaE-dTheta)) || (thetaE > (centThetaE+dTheta)) ) return false;
   //if( (ve.Mag() < (centMomE*(1-dMom))) || (ve.Mag() > (centMomE*(1+dMom))) ) return false;
