@@ -157,10 +157,10 @@ int main(int argc, char ** argv){
     double thetaE = (180/M_PI) * ve.Theta();
     double thetaP = (180/M_PI) * vLead.Theta();
 
-    if(theta_Recq > 37.5) continue;
-    if(xB < 1.3) continue;
-    if( (thetaE < (centThetaE-dTheta)) || (thetaE > (centThetaE+dTheta)) ) continue;
-    if( (ve.Mag() < (centMomE*(1-dMom))) || (ve.Mag() > (centMomE*(1+dMom))) ) continue;
+    //if(theta_Recq > 37.5) continue;
+    //if(xB < 1.3) continue;
+    //if( (thetaE < (centThetaE-dTheta)) || (thetaE > (centThetaE+dTheta)) ) continue;
+    //if( (ve.Mag() < (centMomE*(1-dMom))) || (ve.Mag() > (centMomE*(1+dMom))) ) continue;
     
     if( (thetaP > (centThetaPLow - dTheta)) && (thetaP < (centThetaPLow + dTheta)) ){
       if( (vLead.Mag() > (centMomPLow*(1-dMom))) && (vLead.Mag() < (centMomPLow*(1+dMom))) ){
