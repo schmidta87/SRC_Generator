@@ -21,7 +21,7 @@ void print_help()
   cerr << "Usage: ./gen_weight [Z] [N] [Beam energy (GeV)] [path/to/output.root] [# of events] [optional flags]\n"
        << "Optional flags:\n"
        << "-h: Help\n"
-       << "-S: Silent\n"
+       << "-v: Verbose\n"
        << "-T: Print full output tree\n"
        << "-z: Print zero-weight events\n"
        << "-s <Sigma_CM [GeV]>\n"
@@ -56,7 +56,7 @@ int main(int argc, char ** argv)
   double pRel_cut = 0.3;
   csMethod csMeth=cc1;
   ffModel ffMod=kelly;
-  bool quiet=false;
+  bool verbose=false;
   bool print_full_tree=false;
   bool print_zeros = false;
   bool fxdAngle = false;
@@ -68,14 +68,14 @@ int main(int argc, char ** argv)
   double Xmax=2.;
 
   int c;
-  while ((c=getopt (argc-4, &argv[4], "hSTzs:E:u:k:c:f:q:Q:x:X:A:")) != -1) // First five arguments are not optional flags.
+  while ((c=getopt (argc-4, &argv[4], "hvTzs:E:u:k:c:f:q:Q:x:X:A:")) != -1) // First five arguments are not optional flags.
     switch(c)
       {
       case 'h':
         print_help();
         return -1;
-      case 'S':
-        quiet = true;
+      case 'v':
+        verbose = true;
         break;
       case 'T':
 	print_full_tree=true;
@@ -201,7 +201,7 @@ int main(int argc, char ** argv)
   // Loop over events
   for (int event=0 ; event < nEvents ; event++)
     {
-      if ((event %100000==0) && (!quiet))
+      if ((event %100000==0) && (verbose))
 	cerr << "Working on event " << event << "\n";
 
       // Start with weight 1. Only multiply terms to weight. If trouble, set weight=0
