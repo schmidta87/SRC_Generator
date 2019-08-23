@@ -45,13 +45,18 @@ int main(int argc, char ** argv)
     }
   
     // Read in the arguments
-  Nuclear_Info myInfo(atoi(argv[1]),atoi(argv[2]));
+  int Z = atoi(argv[1]);
+  int A = atoi(argv[2]); 
   const double Ebeam=atof(argv[3]);
   const TVector3 v1(0.,0.,Ebeam);
   TFile * outfile = new TFile(argv[4],"RECREATE");
   int nEvents = atoi(argv[5]);
 
   // Custom settings
+  char* u = "AV18";
+  bool do_sCM = false;
+  double sCM;
+  double Estar = 0.;
   double pRel_cut = 0.3;
   csMethod csMeth=cc1;
   ffModel ffMod=kelly;
@@ -81,13 +86,14 @@ int main(int argc, char ** argv)
 	print_zeros=true;
 	break;
       case 's':
-	myInfo.set_sigmaCM(atof(optarg));
+	do_sCM = true;
+	sCM = atof(optarg);
         break;
       case 'E':
-	myInfo.set_Estar(atof(optarg));
+	Estar = atof(optarg);
         break;
       case 'u':
-	myInfo.set_Interaction(optarg);
+	u = optarg;
         break;
       case 'k':
         pRel_cut = atof(optarg);
@@ -136,6 +142,12 @@ int main(int argc, char ** argv)
       default:
 	abort();
   }
+
+  // Initialize Nucleus
+  Nuclear_Info myInfo(Z,A,u);
+  if (do_sCM)
+    myInfo.set_sigmaCM(sCM);
+  myInfo.set_Estar(Estar);
   
   // Adapt cross section to custom arguments
   Cross_Sections myCS(csMeth,ffMod);
