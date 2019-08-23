@@ -102,15 +102,15 @@ void Nuclear_Info::setCustomValues(double newSigma, double newEstar, double newC
 
 void Nuclear_Info::set_Interaction(char* thisPType){
 
-  if(strcmp(thisPType,"AV18")==0)
+  if(strcmp(thisPType,"AV18")==0 or strcmp(thisPType,"1")==0)
     set_Interaction(AV18);
-  else if (strcmp(thisPType,"N2LO")==0 or strcmp(thisPType,"N2LO10")==0 or strcmp(thisPType,"N2LO_10")==0)
+  else if (strcmp(thisPType,"N2LO")==0 or strcmp(thisPType,"N2LO10")==0 or strcmp(thisPType,"N2LO_10")==0 or strcmp(thisPType,"2")==0)
     set_Interaction(N2LO_10);
-  else if (strcmp(thisPType,"N2LO12")==0 or strcmp(thisPType,"N2LO_12")==0)
+  else if (strcmp(thisPType,"N2LO12")==0 or strcmp(thisPType,"N2LO_12")==0 or strcmp(thisPType,"4")==0)
     set_Interaction(N2LO_12);
-  else if (strcmp(thisPType,"N3LO")==0 or strcmp(thisPType,"N3LO600")==0 or strcmp(thisPType,"N3LO_600")==0)
+  else if (strcmp(thisPType,"N3LO")==0 or strcmp(thisPType,"N3LO600")==0 or strcmp(thisPType,"N3LO_600")==0 or strcmp(thisPType,"3")==0)
     set_Interaction(N3LO_600);
-  else if (strcmp(thisPType,"AV4Pc")==0 or strcmp(thisPType,"AV4")==0)
+  else if (strcmp(thisPType,"AV4Pc")==0 or strcmp(thisPType,"AV4")==0 or strcmp(thisPType,"5")==0)
     set_Interaction(AV4Pc);
   else{
     std::cerr <<"You are using an interaction not in the library. \n Aborting...\n";
