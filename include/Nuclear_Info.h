@@ -1,6 +1,8 @@
 #ifndef __NUCLEAR_INFO_H__
 #define __NUCLEAR_INFO_H__
 
+enum NNModel {AV18, AV4Pc, N2LO_10, N2LO_12, N3LO_600};
+
 class Nuclear_Info
 {
  public:
@@ -12,7 +14,7 @@ class Nuclear_Info
   double get_pn(double k_rel);
   double get_pn0(double k_rel);
   double get_pn1(double k_rel);
-  double get_PotentialType();
+  NNModel get_InteractionType();
   double get_mA();
   double get_mAm2();
   double get_sigmaCM();
@@ -24,7 +26,8 @@ class Nuclear_Info
   double get_Cpn1();
 
   void setCustomValues(double newSigma, double newEstar, double newCpp0, double Cnn0, double newCpn0, double newCpn1);
-  void set_Potential(int thisPType);
+  void set_Interaction(NNModel thisNNType);
+  void set_Interaction(char* thisNNType);
   void set_sigmaCM(double newSigma);
   void set_Estar(double newEstar);
   void set_Cpp0(double newCpp0);
@@ -32,13 +35,12 @@ class Nuclear_Info
   void set_Cpn0(double newCpn0);
   void set_Cpn1(double newCpn1);
   void set_sigmaE(double newSigE);
-
   
  private:
   int Z;
   int N;
   int A;
-  int u;
+  NNModel u;
   double mA;
   double mAm2;
   double sigmaCM;

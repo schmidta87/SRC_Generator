@@ -26,7 +26,7 @@ void print_help()
        << "-z: Print zero-weight events\n"
        << "-s <Sigma_CM [GeV]>\n"
        << "-E <E* [GeV]>==<0>\n"
-       << "-u <Nuclear potential>==<1> (1=AV18, 2=N2LO, 3=N3LO)\n"
+       << "-u <NN interaction>==<AV18>\n"
        << "-k <kRel cutoff [GeV]==0.25>\n"
        << "-x <minimum xB>==1\n"
        << "-X <maximum xB>==2\n"
@@ -87,7 +87,7 @@ int main(int argc, char ** argv)
 	myInfo.set_Estar(atof(optarg));
         break;
       case 'u':
-	myInfo.set_Potential(atoi(optarg));
+	myInfo.set_Interaction(optarg);
         break;
       case 'k':
         pRel_cut = atof(optarg);

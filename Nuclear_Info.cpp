@@ -2,6 +2,7 @@
 
 #include "constants.h"
 
+#include <string.h>
 #include <iostream>
 #include <cstdlib>
 
@@ -12,8 +13,8 @@ Nuclear_Info::Nuclear_Info(int thisZ, int thisN)
   A = Z + N;
   Estar = 0;
   sigmaE = 0;
-  u = 1;
-  set_Potential(u);
+  u = AV18;
+  set_Interaction(u);
   
   if ((Z==1) && (N==1))
     {
@@ -88,25 +89,38 @@ void Nuclear_Info::setCustomValues(double newSigma, double newEstar, double newC
 
 }
 
+void Nuclear_Info::set_Interaction(char* thisPType){
 
-void Nuclear_Info::set_Potential(int thisPType){
+  if(strcmp(thisPType,"AV18")==0)
+    set_Interaction(AV18);
+  else if (strcmp(thisPType,"N2LO")==0 or strcmp(thisPType,"N2LO10")==0 or strcmp(thisPType,"N2LO_10")==0)
+    set_Interaction(N2LO_10);
+  else if (strcmp(thisPType,"N3LO")==0 or strcmp(thisPType,"N3LO600")==0 or strcmp(thisPType,"N3LO_600")==0)
+    set_Interaction(N3LO_600);
+  else{
+    std::cerr <<"You are using an interaction not in the library. \n Aborting...\n";
+  exit(-2);
+  }
+}
+
+void Nuclear_Info::set_Interaction(NNModel thisPType){
   u = thisPType;
 
-  if(u == 1){
+  if(u == AV18){
   fill_arrays_AV18();
-  std::cerr <<"You are using the AV18 potential\n";
+  std::cerr <<"You are using the AV18 interaction\n";
   }
-  else if (u == 2){
+  else if (u == N2LO_10){
     fill_arrays_n2lo_local();
-    std::cerr <<"You are using the N2L0 potential\n";
+    std::cerr <<"You are using the N2L0 interaction\n";
   }
-  else if (u == 3){
+  else if (u == N3LO_600){
     fill_arrays_n3lo_nonlocal();
-    std::cerr <<"You are using the N3L0 potential\n";
+    std::cerr <<"You are using the N3L0 interaction\n";
 
   }
   else{
-    std::cerr <<"You are using a potential not in the library. \n Aborting...\n";
+    std::cerr <<"You are using an interaction not in the library. \n Aborting...\n";
   exit(-2);
   }
   
@@ -155,7 +169,7 @@ void Nuclear_Info::set_sigmaE(double newSigE){
 }
 
 
-double Nuclear_Info::get_PotentialType(){
+NNModel Nuclear_Info::get_InteractionType(){
 
   return u;
   
