@@ -39,7 +39,9 @@ void Nuclear_Info::set_Nucleus(int thisZ, int thisN){
       Cpn0=0. * ( A * 0.5);
       Cpn1=4.75 * ( A * 0.5);
       mA=m_2H;
-      mAm2=0.;
+      mAmpp=0.;
+      mAmpn=0.;
+      mAmnn=0.;
     }
   else if ((Z==2) && (N==1))
     {
@@ -49,7 +51,9 @@ void Nuclear_Info::set_Nucleus(int thisZ, int thisN){
       Cpn0=0.4872; //delta=0.0174
       Cpn1=9.3729; //delta=0.0309
       mA=m_3He;
-      mAm2=mN;
+      mAmpp=mN;
+      mAmpn=mN;
+      mAmnn=mN;
     }  
  else if ((Z==1) && (N==2))
     {
@@ -59,7 +63,9 @@ void Nuclear_Info::set_Nucleus(int thisZ, int thisN){
       Cpn0=0.4666; //delta=0.0182
       Cpn1=9.6614; //delta=0.0387
       mA=m_3H;
-      mAm2=mN;
+      mAmpp=mN;
+      mAmpn=mN;
+      mAmnn=mN;
     }
   else if ((Z==2) && (N==2))
     {
@@ -69,7 +75,9 @@ void Nuclear_Info::set_Nucleus(int thisZ, int thisN){
       Cpn0=0.69 * ( A * 0.5);
       Cpn1=12.3 * ( A * 0.5);
       mA=m_4He;
-      mAm2=m_2H;
+      mAmpp=2*mN;
+      mAmpn=m_2H;
+      mAmnn=2*mN;
     }
   else if ((Z==6) && (N==6))
     {
@@ -79,7 +87,9 @@ void Nuclear_Info::set_Nucleus(int thisZ, int thisN){
       Cpn0=1.4 * ( A * 0.5);
       Cpn1=16.8 * ( A * 0.5);
       mA=m_12C;
-      mAm2=m_10B;
+      mAmpp=m_10Be;
+      mAmpn=m_10B;
+      mAmnn=m_10C;
     }
   else
     {
@@ -221,15 +231,24 @@ double Nuclear_Info::get_Cpn1(){
   
 }
 
-
 double Nuclear_Info::get_mA()
 {
   return mA;
 }
 
-double Nuclear_Info::get_mAm2()
+double Nuclear_Info::get_mAmpp()
 {
-  return mAm2 + Estar;
+  return mAmpp + Estar;
+}
+
+double Nuclear_Info::get_mAmpn()
+{
+  return mAmpn + Estar;
+}
+
+double Nuclear_Info::get_mAmnn()
+{
+  return mAmnn + Estar;
 }
 
 double Nuclear_Info::get_sigmaCM()

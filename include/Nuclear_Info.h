@@ -17,7 +17,9 @@ class Nuclear_Info
   double get_pn1(double k_rel);
   NNModel get_InteractionType();
   double get_mA();
-  double get_mAm2();
+  double get_mAmpp();
+  double get_mAmpn();
+  double get_mAmnn();
   double get_sigmaCM();
   double get_sigmaE();
   double get_Estar();
@@ -44,7 +46,9 @@ class Nuclear_Info
   int A;
   NNModel u;
   double mA;
-  double mAm2;
+  double mAmpp;
+  double mAmpn;
+  double mAmnn;
   double sigmaCM;
   double phiSq_pp0[100];
   double phiSq_nn0[100];

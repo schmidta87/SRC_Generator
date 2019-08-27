@@ -46,7 +46,7 @@ int main(int argc, char ** argv)
   
     // Read in the arguments
   int Z = atoi(argv[1]);
-  int A = atoi(argv[2]); 
+  int Anum = atoi(argv[2]); 
   const double Ebeam=atof(argv[3]);
   const TVector3 v1(0.,0.,Ebeam);
   TFile * outfile = new TFile(argv[4],"RECREATE");
@@ -144,7 +144,7 @@ int main(int argc, char ** argv)
   }
 
   // Initialize Nucleus
-  Nuclear_Info myInfo(Z,A,u);
+  Nuclear_Info myInfo(Z,Anum,u);
   if (do_sCM)
     myInfo.set_sigmaCM(sCM);
   myInfo.set_Estar(Estar);
@@ -185,8 +185,11 @@ int main(int argc, char ** argv)
 
   // Masses and sigma of CM momentum
   TRandom3 myRand(0);
-  const double mAm2 = myInfo.get_mAm2(); // this includes the effect of Estar
   const double mA = myInfo.get_mA();
+  const double mbar = mA/Anum;
+  const double mAmpp = myInfo.get_mAmpp(); // this includes the effect of Estar
+  const double mAmpn = myInfo.get_mAmpn();
+  const double mAmnn = myInfo.get_mAmnn();
   const double sigCM =myInfo.get_sigmaCM();
 
   // Loop over events
@@ -202,6 +205,15 @@ int main(int argc, char ** argv)
       lead_type = (myRand.Rndm() > 0.5) ? pCode:nCode;
       rec_type = (myRand.Rndm() > 0.5) ? pCode:nCode;
       weight *= 4.;
+
+      // Determine mass of A-2 system
+      double mAm2;
+      if (lead_type == pCode and rec_type == pCode)
+	mAm2 = mAmpp;
+      else if (lead_type == nCode and rec_type == nCode)
+	mAm2 = mAmnn;
+      else
+	mAm2 = mAmpn;
 
       // Pick random x, QSq to set up the electron side
       QSq = Qmin + (Qmax-Qmin)*myRand.Rndm();

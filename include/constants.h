@@ -2,6 +2,7 @@
 #define __CONSTANTS_H__
 
 // constants
+const double me = 0.000511;
 const double mN = 0.93892;
 const double mU=0.931;
 const double GeVfm=0.1973;
@@ -10,7 +11,9 @@ const double cmSqGeVSq = GeVfm*GeVfm*1.E-26;
 
 // nuclear masses
 const double m_1H = mN;
-const double m_2H = 2.01410178*mU - me;
+const double m_2H = 2.01410178 * mU - me;
+const double m_3H = 3.01604928199 * mU - me;
+const double m_3He = 3.0160293 * mU - 2*me;
 const double m_4He = 4.00260325415 * mU - 2*me;
 const double m_6Li = 6.015122795 * mU - 3*me;
 const double m_8Be = 8.00530510 * mU - 4*me;
