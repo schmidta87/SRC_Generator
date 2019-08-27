@@ -55,13 +55,21 @@ class Nuclear_Info
   double phiSq_pn0[100];
   double phiSq_pn1[100];
   double Cpp0;
+  double d_Cpp0;
   double Cnn0;
+  double d_Cnn0;
   double Cpn0;
+  double d_Cpn0;
   double Cpn1;
+  double d_Cpn1;
   double Estar;
   double sigmaE;
   
   double get_phiSq(double *phiPtr, double k_rel);
+
+  bool set_Contacts_SS_r();
+  bool set_Contacts_SS_k();
+  
   void fill_arrays_AV18();
   void fill_arrays_n2lo_local();
   void fill_arrays_n3lo_nonlocal();
