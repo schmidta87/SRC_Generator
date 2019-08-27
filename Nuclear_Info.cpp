@@ -34,10 +34,6 @@ void Nuclear_Info::set_Nucleus(int thisZ, int thisN){
   if ((Z==1) && (N==1))
     {
       sigmaCM=0.;
-      Cpp0=0. * ( A * 0.5);
-      Cnn0=0 * ( A * 0.5);
-      Cpn0=0. * ( A * 0.5);
-      Cpn1=4.75 * ( A * 0.5);
       mA=m_2H;
       mAmpp=0.;
       mAmpn=0.;
@@ -46,10 +42,6 @@ void Nuclear_Info::set_Nucleus(int thisZ, int thisN){
   else if ((Z==2) && (N==1))
     {
       sigmaCM=0.1;
-      Cpp0=0.8543; //delta=0.0135
-      Cnn0=0;
-      Cpn0=0.4872; //delta=0.0174
-      Cpn1=9.3729; //delta=0.0309
       mA=m_3He;
       mAmpp=mN;
       mAmpn=mN;
@@ -58,10 +50,6 @@ void Nuclear_Info::set_Nucleus(int thisZ, int thisN){
  else if ((Z==1) && (N==2))
     {
       sigmaCM=0.1;
-      Cpp0=0;
-      Cnn0=0.8843; //delta=0.0136
-      Cpn0=0.4666; //delta=0.0182
-      Cpn1=9.6614; //delta=0.0387
       mA=m_3H;
       mAmpp=mN;
       mAmpn=mN;
@@ -70,10 +58,6 @@ void Nuclear_Info::set_Nucleus(int thisZ, int thisN){
   else if ((Z==2) && (N==2))
     {
       sigmaCM=0.1;
-      Cpp0=0.65 * ( A * 0.5);
-      Cnn0=0.65 * ( A * 0.5);
-      Cpn0=0.69 * ( A * 0.5);
-      Cpn1=12.3 * ( A * 0.5);
       mA=m_4He;
       mAmpp=2*mN;
       mAmpn=m_2H;
@@ -82,10 +66,6 @@ void Nuclear_Info::set_Nucleus(int thisZ, int thisN){
   else if ((Z==6) && (N==6))
     {
       sigmaCM=0.15;
-      Cpp0=1.3 * ( A * 0.5);
-      Cnn0=1.3 * ( A * 0.5);
-      Cpn0=1.4 * ( A * 0.5);
-      Cpn1=16.8 * ( A * 0.5);
       mA=m_12C;
       mAmpp=m_10Be;
       mAmpn=m_10B;
@@ -97,6 +77,22 @@ void Nuclear_Info::set_Nucleus(int thisZ, int thisN){
 	   << " which is not in the library. Aborting...\n";
       exit(-2);
     }
+
+  if (set_Contacts_SS_k())
+    {
+      std::cout << "You are using k-space contact values from the Scale and Scheme paper.\n";
+    }
+  else if (set_Contacts_SS_r())
+    {
+      std::cout << "You are using r-space contact values from the Scale and Scheme paper.\n";
+    }
+  else
+    {
+      std::cerr << "You selected a nucleus with Z=" << Z << " and with N=" << N << ".\n"
+		<< "This combination of interaction and nucleus does not have contacts in the library. Aborting...\n";
+      exit(-2);
+    }
+  
 }
 
 void Nuclear_Info::setCustomValues(double newSigma, double newEstar, double newCpp0 ,double newCnn0 ,double newCpn0, double newCpn1){
@@ -133,23 +129,23 @@ void Nuclear_Info::set_Interaction(NNModel thisPType){
 
   if (u == AV18){
   fill_arrays_AV18();
-  std::cerr <<"You are using the AV18 interaction\n";
+  std::cout <<"You are using the AV18 interaction.\n";
   }
   else if (u == N2LO_10){
     fill_arrays_n2lo_local();
-    std::cerr <<"You are using the N2L0 interaction calculated with 1.0 fm cutoff\n";
+    std::cout <<"You are using the N2L0 interaction calculated with 1.0 fm cutoff.\n";
   }
   else if (u == N3LO_600){
     fill_arrays_n3lo_nonlocal();
-    std::cerr <<"You are using the N3L0 interaction\n";
+    std::cout <<"You are using the N3L0 interaction\n";
   }
   else if (u == N2LO_12){
     fill_arrays_n2lo_12_local();
-    std::cerr <<"You are using the N2L0 interaction calculated with 1.2 fm cutoff\n";
+    std::cout <<"You are using the N2L0 interaction calculated with 1.2 fm cutoff.\n";
   }
   else if(u == AV4Pc){
   fill_arrays_AV4Pc();
-  std::cerr <<"You are using the AV4' interaction\n";
+  std::cout <<"You are using the AV4' interaction.\n";
   }
   else{
     std::cerr <<"You are using an interaction not in the library. \n Aborting...\n";
