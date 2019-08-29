@@ -212,12 +212,14 @@ int main(int argc, char ** argv)
 	cerr << "Working on event " << event << "\n";
 
       // Start with weight 1. Only multiply terms to weight. If trouble, set weight=0
-      weight =1.;
+      weight = 1.;
+      lcweight = 1.;
 
       // Decide what kind of proton or neutron pair we are dealing with
       lead_type = (myRand.Rndm() > 0.5) ? pCode:nCode;
       rec_type = (myRand.Rndm() > 0.5) ? pCode:nCode;
       weight *= 4.;
+      lcweight *= 4.;
 
       // Determine mass of A-2 system
       double mAm2;
