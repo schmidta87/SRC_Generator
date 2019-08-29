@@ -46,7 +46,8 @@ int main(int argc, char ** argv)
   
     // Read in the arguments
   int Z = atoi(argv[1]);
-  int Anum = atoi(argv[2]); 
+  int N = atoi(argv[2]);
+  int Anum = Z + N;
   const double Ebeam=atof(argv[3]);
   TFile * outfile = new TFile(argv[4],"RECREATE");
   int nEvents = atoi(argv[5]);
@@ -153,7 +154,7 @@ int main(int argc, char ** argv)
   }
 
   // Initialize Nucleus
-  Nuclear_Info myInfo(Z,Anum,u);
+  Nuclear_Info myInfo(Z,N,u);
   if (do_sCM)
     myInfo.set_sigmaCM(sCM);
   myInfo.set_Estar(Estar);
@@ -318,6 +319,7 @@ int main(int argc, char ** argv)
       if (D<0)
 	{
 	  weight=0.;
+	  lcweight=0.;
 	}
       else
 	{
@@ -408,11 +410,11 @@ int main(int argc, char ** argv)
 	      theta_prq = acos((pRec[0]*q[0] + pRec[1]*q[1] + pRec[2]*q[2])/pRec_Mag /q_Mag);
 
 	      // Calculate the weight
-	      weight *= myCS.sigma_eN(Ebeam, v3, vLead, (lead_type==pCode)) // eN cross section
-		* nu/(2.*xB*Ebeam*pe_Mag) // Jacobian for QSq,xB from electron angle and momentum
-		* ((sq(Xmax-Xmin))/(2*(xB-Xmin))) // Normalization over range
+	      weight *= myCS.sigma_eN(Ebeam_eff, v3_eff, vLead, (lead_type==pCode)) // eN cross section
+		* nu_eff/(2.*xB_eff*Ebeam_eff*pe_Mag_eff) * (Qmax-Qmin) * (Xmax-Xmin) // Jacobian for QSq,xB
+		* (doRad ? (1. - deltaHard(QSq_eff)) * pow(Ebeam/sqrt(Ebeam*pe_Mag),lambda_ei) * pow(pe_Mag_eff/sqrt(Ebeam*pe_Mag),lambda_ef) : 1.) // Radiative weights
 		* 1./(4.*sq(M_PI)) // Angular terms
-		* myInfo.get_S(pRel_Mag,lead_type,rec_type)// Relative pair probability (from contacts)
+		* ((lead_type==rec_type) ? myInfo.get_pp(pRel_eff_Mag) : myInfo.get_pn(pRel_eff_Mag)) // Contacts
 		* vRec.Mag2() * Erec * Elead / fabs(Erec*(pRec_Mag - Z*cosThetaZRec) + Elead*pRec_Mag); // Jacobian for delta fnc.
 
 	      if (kSq < 0)
@@ -424,7 +426,7 @@ int main(int argc, char ** argv)
 		    * nu_eff/(2.*xB_eff*Ebeam_eff*pe_Mag_eff) * (Qmax-Qmin) * (Xmax-Xmin) // Jacobian for QSq,xB
 		    * (doRad ? (1. - deltaHard(QSq_eff)) * pow(Ebeam/sqrt(Ebeam*pe_Mag),lambda_ei) * pow(pe_Mag_eff/sqrt(Ebeam*pe_Mag),lambda_ef) : 1.) // Radiative weights
 		    * 1./(4.*sq(M_PI)) // Angular terms
-		    * sqrt(mN*mN + kSq)/Erec * 1./(2.-alpharel) * ((lead_type==rec_type) ? myInfo.get_pp(k) : myInfo.get_pn(k)) // Contacts
+		    * sqrt(mN*mN + kSq)/Erec * 1./(2.-alpharel) * myInfo.get_S(k,lead_type,rec_type) // Contacts
 		    * vRec.Mag2() * Erec * Elead / fabs(Erec*(pRec_Mag - Z*cosThetaZRec) + Elead*pRec_Mag) // Jacobian for delta fnc.
 		    * mbar*((Anum>2)?(alphaAm2/EAm2 * exp((sq(vCM_eff.Dot(vqhat_eff))-sq(mbar*(2.-alphaCM)))/(2.*sq(sigCM)))):1.); // Change in center-of-mass motion in lightcone picture
 		}
@@ -432,7 +434,7 @@ int main(int argc, char ** argv)
 	}
 	}
 	}
-
+      
       // Fill the tree
       if ((weight > 0.) || (lcweight > 0.) || print_zeros)
 	outtree->Fill();
