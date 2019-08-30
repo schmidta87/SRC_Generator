@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <cmath>
 #include <cstdlib>
 #include <unistd.h>
@@ -24,14 +25,11 @@ void print_help()
        << "-v: Verbose\n"
        << "-T: Print full output tree\n"
        << "-z: Print zero-weight events\n"
+       << "-P: Use text file to generate phase space\n"
        << "-s <Sigma_CM [GeV]>\n"
        << "-E <E* [GeV]>==<0>\n"
        << "-u <NN interaction>==<AV18>\n"
        << "-k <kRel cutoff [GeV]==0.25>\n"
-       << "-x <minimum xB>==1\n"
-       << "-X <maximum xB>==2\n"
-       << "-q <minimum Q2>==1\n"
-       << "-Q <minimum Q2>==5\n"
        << "-c <Cross section method>==<cc1>\n"
        << "-f <Form Factor model>==<kelly>\n\n\n";
 }
@@ -66,15 +64,23 @@ int main(int argc, char ** argv)
   bool print_full_tree=false;
   bool print_zeros = false;
   // Probability windows
+  bool custom_ps = false;
+  char* phase_space;
   double Qmin=1.;
   double Qmax=5.;
   double Xmin=1.;
   double Xmax=2.;
+  double phi3min=0.;
+  double phi3max=2*M_PI;
+  double phiRecmin=0.;
+  double phiRecmax=2*M_PI;
+  double thetaRecmin=0.;
+  double thetaRecmax=M_PI;
 
   double deltaHard(double QSq);
   
   int c;
-  while ((c=getopt (argc-4, &argv[4], "hvTzs:E:u:k:c:f:q:Q:x:X:rR")) != -1) // First five arguments are not optional flags.
+  while ((c=getopt (argc-4, &argv[4], "hvTzs:E:u:k:c:f:rRP:")) != -1) // First five arguments are not optional flags.
     switch(c)
       {
       case 'h':
@@ -129,29 +135,79 @@ int main(int argc, char ** argv)
           return -1;
 	}
 	break;
-      case 'x':
-	Xmin=atof(optarg);
-	break;
-      case 'X':
-	Xmax=atof(optarg);
-	break;
-      case 'q':
-	Qmin=atof(optarg);
-	break;
-      case 'Q':
-	Qmax=atof(optarg);
-	break;
       case 'r':
 	rand_flag = true;
 	break;
       case 'R':
 	doRad = false;
 	break;
+      case 'P':
+	custom_ps = true;
+	phase_space = optarg;
+	break;
       case '?':
 	return -1;
       default:
 	abort();
   }
+
+  if (custom_ps)
+    {
+      ifstream ps_file(phase_space);
+      string param;
+      double low, high;
+      while (ps_file >> param >> low >> high)
+	{
+	  if (param == "x" or param == "xB")
+	    {
+	      Xmin = low;
+	      Xmax = high;
+	    }
+	  else if (param == "Q" or param == "QSq")
+	    {
+	      Qmin = low;
+	      Qmax = high;
+	    }
+	  else if (param == "phi3" or param == "phik")
+	    {
+	      phi3min = low;
+	      phi3max = high;
+	    }
+	  else if (param == "phi3_deg" or param == "phik_deg")
+	    {
+	      phi3min = low*M_PI/180.;
+	      phi3max = high*M_PI/180.;
+	    }
+	  else if (param == "phirec" or param == "phiRec")
+	    {
+	      phiRecmin = low;
+	      phiRecmax = high;
+	    }
+	  else if (param == "phirec_deg" or param == "phiRec_deg")
+	    {
+	      phiRecmin = low*M_PI/180.;
+	      phiRecmax = high*M_PI/180.;
+	    }
+	  else if (param == "thetarec" or param == "thetaRec")
+	    {
+	      thetaRecmin = low;
+	      thetaRecmax = high;
+	    }
+	  else if (param == "thetarec_deg" or param == "thetaRec_deg")
+	    {
+	      thetaRecmin = low*M_PI/180.;
+	      thetaRecmax = high*M_PI/180.;
+	    }
+	  else
+	    {
+	      cerr << "Invalid phase space parameter provided. Aborting...\n";
+	      return -1;
+	    }
+	}
+    }
+
+  double cosThetaRecmin = cos(thetaRecmax);
+  double cosThetaRecmax = cos(thetaRecmin);
 
   // Initialize Nucleus
   Nuclear_Info myInfo(Z,N,u);
@@ -210,7 +266,7 @@ int main(int argc, char ** argv)
   for (int event=0 ; event < nEvents ; event++)
     {
       if ((event %100000==0) && (verbose))
-	cerr << "Working on event " << event << "\n";
+	cout << "Working on event " << event << "\n";
 
       // Start with weight 1. Only multiply terms to weight. If trouble, set weight=0
       weight = 1.;
@@ -259,7 +315,7 @@ int main(int argc, char ** argv)
       else
       {
 	
-      double phi3 = 2.*M_PI*myRand.Rndm();
+      double phi3 = phi3min + (phi3max-phi3min)*myRand.Rndm();
       double theta3 = acos(cosTheta3);
       TVector3 v3_eff;
       v3_eff.SetMagThetaPhi(pe_Mag_eff, theta3, phi3);
@@ -298,8 +354,8 @@ int main(int argc, char ** argv)
       double YSq = sq(X) - sq(Z);
 
       // Pick random recoil angles
-      double phiRec = myRand.Rndm()*2.*M_PI;
-      double cosThetaRec = 2.*(myRand.Rndm()-0.5); // Maybe in the future figure out min and max angles, and restrict
+      double phiRec = phiRecmin + (phiRecmax-phiRecmin)*myRand.Rndm();
+      double cosThetaRec = cosThetaRecmin + (cosThetaRecmax-cosThetaRecmin)*myRand.Rndm();// Maybe in the future figure out min and max angles, and restrict
       double thetaRec = acos(cosThetaRec);
 
       // Determine other angles

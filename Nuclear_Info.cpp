@@ -128,8 +128,8 @@ void Nuclear_Info::set_Interaction(NNModel thisPType){
   u = thisPType;
 
   if (u == AV18){
-  fill_arrays_AV18();
-  std::cout <<"You are using the AV18 interaction.\n";
+    fill_arrays_AV18();
+    std::cout <<"You are using the AV18 interaction.\n";
   }
   else if (u == N2LO_10){
     fill_arrays_n2lo_local();
@@ -144,8 +144,8 @@ void Nuclear_Info::set_Interaction(NNModel thisPType){
     std::cout <<"You are using the N2L0 interaction calculated with 1.2 fm cutoff.\n";
   }
   else if(u == AV4Pc){
-  fill_arrays_AV4Pc();
-  std::cout <<"You are using the AV4' interaction.\n";
+    fill_arrays_AV4Pc();
+    std::cout <<"You are using the AV4' interaction.\n";
   }
   else{
     std::cerr <<"You are using an interaction not in the library. \n Aborting...\n";
