@@ -469,7 +469,7 @@ int main(int argc, char ** argv)
 	      weight *= myCS.sigma_eN(Ebeam_eff, v3_eff, vLead, (lead_type==pCode)) // eN cross section
 		* nu_eff/(2.*xB_eff*Ebeam_eff*pe_Mag_eff) * (Qmax-Qmin) * (Xmax-Xmin) // Jacobian for QSq,xB
 		* (doRad ? (1. - deltaHard(QSq_eff)) * pow(Ebeam/sqrt(Ebeam*pe_Mag),lambda_ei) * pow(pe_Mag_eff/sqrt(Ebeam*pe_Mag),lambda_ef) : 1.) // Radiative weights
-		* 1./(4.*sq(M_PI)) // Angular terms
+		* 1./(4.*sq(M_PI)) * (phi3max-phi3min)/(2*M_PI) * (phiRecmax-phiRecmin)/(2*M_PI) * (cosThetaRecmax - cosThetaRecmin)/(2) // Angular terms
 		* ((lead_type==rec_type) ? myInfo.get_pp(pRel_eff_Mag) : myInfo.get_pn(pRel_eff_Mag)) // Contacts
 		* vRec.Mag2() * Erec * Elead / fabs(Erec*(pRec_Mag - Z*cosThetaZRec) + Elead*pRec_Mag); // Jacobian for delta fnc.
 
@@ -481,7 +481,7 @@ int main(int argc, char ** argv)
 		  lcweight *= myCS.sigma_eN(Ebeam_eff, v3_eff, vLead, (lead_type==pCode))/alpha1 // eN cross section
 		    * nu_eff/(2.*xB_eff*Ebeam_eff*pe_Mag_eff) * (Qmax-Qmin) * (Xmax-Xmin) // Jacobian for QSq,xB
 		    * (doRad ? (1. - deltaHard(QSq_eff)) * pow(Ebeam/sqrt(Ebeam*pe_Mag),lambda_ei) * pow(pe_Mag_eff/sqrt(Ebeam*pe_Mag),lambda_ef) : 1.) // Radiative weights
-		    * 1./(4.*sq(M_PI)) // Angular terms
+		    * 1./(4.*sq(M_PI)) * (phi3max-phi3min)/(2*M_PI) * (phiRecmax-phiRecmin)/(2*M_PI) * (cosThetaRecmax - cosThetaRecmin)/(2) // Angular terms
 		    * sqrt(mN*mN + kSq)/Erec * 1./(2.-alpharel) * myInfo.get_S(k,lead_type,rec_type) // Contacts
 		    * vRec.Mag2() * Erec * Elead / fabs(Erec*(pRec_Mag - Z*cosThetaZRec) + Elead*pRec_Mag) // Jacobian for delta fnc.
 		    * mbar*((Anum>2)?(alphaAm2/EAm2 * exp((sq(vCM_eff.Dot(vqhat_eff))-sq(mbar*(2.-alphaCM)))/(2.*sq(sigCM)))):1.); // Change in center-of-mass motion in lightcone picture
