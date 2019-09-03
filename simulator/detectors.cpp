@@ -2,13 +2,14 @@
 #include "TRandom3.h"
 #include "helpers.h"
 #include "constants.h"
+#include <cmath>
 
 TRandom3 myRand(0);
 
 bool HRS_hallA(TVector3 &v, double p_central, double phi_central)
 {
 
-  double theta_central = 0.5*TMath::Pi();
+  double theta_central = 0.5*M_PI;
 
   double mom_FWHM = 1e-4;
   double h_FWHM = 0.5e-3;
@@ -46,7 +47,7 @@ bool HRS_hallA(TVector3 &v, double p_central, double phi_central)
 bool BigBite(TVector3 &v, double phi_central)
 {
 
-  double theta_central = 0.5*TMath::Pi();
+  double theta_central = 0.5*M_PI;
 
   double mom_res = 1.5e-2;
   double h_res = 7e-3;
@@ -78,7 +79,7 @@ bool BigBite(TVector3 &v, double phi_central)
 bool HAND(TVector3 &v, double phi_central)
 {
 
-  double theta_central = 0.5*TMath::Pi();
+  double theta_central = 0.5*M_PI;
   double d = 20.01; //ns
 
   double p = v.Mag();
