@@ -58,6 +58,7 @@ int main(int argc, char ** argv)
   double sCM;
   double Estar = 0.;
   double pRel_cut = 0.3;
+  double pRel_min = 0.25;
   double pRel_max = 1.3;
   csMethod csMeth=cc1;
   ffModel ffMod=kelly;
@@ -286,7 +287,7 @@ int main(int argc, char ** argv)
       double phiRel = 2.*M_PI*myRand.Rndm();
       double cosThetaRel = -1. + 2.*myRand.Rndm();
       double thetaRel = acos(cosThetaRel);
-      double pRel_Mag_eff = pRel_cut + (pRel_max - pRel_cut)*myRand.Rndm();
+      double pRel_Mag_eff = pRel_min + (pRel_max - pRel_min)*myRand.Rndm();
       TVector3 vRel_eff;
       vRel_eff.SetMagThetaPhi(pRel_Mag_eff,thetaRel,phiRel);
 
@@ -398,7 +399,7 @@ int main(int argc, char ** argv)
 	  weight *= myCS.sigma_eN(Ebeam_eff, v3_eff, vLead, (lead_type==pCode)) // eN cross section
 	    * (doRad ? (1. - deltaHard(QSq_eff)) * pow(Ebeam/sqrt(Ebeam*pe_Mag),lambda_ei) * pow(pe_Mag_eff/sqrt(Ebeam*pe_Mag),lambda_ef) : 1.) // Radiative weights
 	    * 1./(2.*sq(M_PI)) * (phi3max-phi3min)/(2*M_PI) * (cosTheta3max - cosTheta3min)/(2) // Angular terms; add corrections for limited relative angular phase space later.
-	    * myInfo.get_S(pRel_Mag_eff,lead_type,rec_type) * (pRel_max - pRel_cut) // Contacts
+	    * myInfo.get_S(pRel_Mag_eff,lead_type,rec_type) * (pRel_min - pRel_cut) // Contacts
 	    * sq(pRel_Mag_eff) / fabs(1 - vLead.Dot(v3hat_eff)/Elead); // Jacobian for delta fnc.
 	    
 	  if (kSq < 0)
@@ -409,7 +410,7 @@ int main(int argc, char ** argv)
 	      lcweight *= myCS.sigma_eN(Ebeam_eff, v3_eff, vLead, (lead_type==pCode))/alpha1 // eN cross section
 		* (doRad ? (1. - deltaHard(QSq_eff)) * pow(Ebeam/sqrt(Ebeam*pe_Mag),lambda_ei) * pow(pe_Mag_eff/sqrt(Ebeam*pe_Mag),lambda_ef) : 1.) // Radiative weights
 		* 1./(2.*sq(M_PI)) * (phi3max-phi3min)/(2*M_PI) * (cosTheta3max - cosTheta3min)/(2) // Angular terms; add corrections for limited relative angular phase space later.
-		* sqrt(mN*mN + kSq)/Erec * 1./(2.-alpharel) * myInfo.get_S(k,lead_type,rec_type) * (pRel_max - pRel_cut) // Contacts
+		* sqrt(mN*mN + kSq)/Erec * 1./(2.-alpharel) * myInfo.get_S(k,lead_type,rec_type) * (pRel_min - pRel_cut) // Contacts
 		* sq(pRel_Mag_eff) / fabs(1 - vLead.Dot(v3hat_eff)/Elead) // Jacobian for delta fnc.
 		* mbar * ((Anum>2)?(alphaAm2/EAm2 * exp((sq(vCM_eff.Dot(vqhat_eff))-sq(mbar*(2.-alphaCM)))/(2.*sq(sigCM)))):1.); // Change in center-of-mass motion in lightcone picture
 	    }
