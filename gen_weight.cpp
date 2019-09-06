@@ -58,8 +58,8 @@ int main(int argc, char ** argv)
   double sCM;
   double Estar = 0.;
   double pRel_cut = 0.3;
-  double pRel_min = 0.3;
-  double pRel_max = 1.3;
+  double pRel_min = 0.25;
+  double pRel_max = 1.05;
   csMethod csMeth=cc1;
   ffModel ffMod=kelly;
   bool rand_flag = false;
