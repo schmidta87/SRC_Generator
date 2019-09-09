@@ -24,13 +24,13 @@ bool HRS_hallA(TVector3 &v, double p_central, double phi_central)
 
   // Acceptance Region
 
-  if (abs(p/p_central - 1) > 4.5e-2)
+  if (fabs(p/p_central - 1) > 4.5e-2)
     return false;
 
-  if (abs(phi - phi_central) > 30e-3)
+  if (fabs(phi - phi_central) > 30e-3)
     return false;
   
-  if (abs(theta - theta_central) > 60e-3)
+  if (fabs(theta - theta_central) > 60e-3)
     return false;
 
   // Resolution Smearing
