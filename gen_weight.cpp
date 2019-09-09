@@ -58,8 +58,6 @@ int main(int argc, char ** argv)
   double sCM;
   double Estar = 0.;
   double pRel_cut = 0.3;
-  double pRel_min = 0.25;
-  double pRel_max = 1.05;
   csMethod csMeth=cc1;
   ffModel ffMod=kelly;
   bool rand_flag = false;
@@ -71,9 +69,15 @@ int main(int argc, char ** argv)
   char* phase_space;
   double phi3min=0.;
   double phi3max=2*M_PI;
-  double theta3min=0.*M_PI/180.;
-  double theta3max=90.*M_PI/180.;
-
+  double theta3min=0.;
+  double theta3max=M_PI/2.;
+  double pRelmin = 0.25;
+  double pRelmax = 1.05;
+  double phiRelmin=0.;
+  double phiRelmax=2*M_PI;
+  double thetaRelmin=0.;
+  double thetaRelmax=M_PI;  
+  
   double deltaHard(double QSq);
   
   int c;
@@ -178,6 +182,31 @@ int main(int argc, char ** argv)
 	      theta3min = low*M_PI/180.;
 	      theta3max = high*M_PI/180.;
 	    }
+	  else if (param == "pRel" or param == "prel")
+	    {
+	      pRelmin = low;
+	      pRelmax = high;
+	    }
+	  else if (param == "phiRel" or param == "phik")
+	    {
+	      phi3min = low;
+	      phi3max = high;
+	    }
+	  else if (param == "phiRel_deg" or param == "phirel_deg")
+	    {
+	      phiRelmin = low*M_PI/180.;
+	      phiRelmax = high*M_PI/180.;
+	    }
+	  else if (param == "thetaRel" or param == "thetarel")
+	    {
+	      thetaRelmin = low;
+	      thetaRelmax = high;
+	    }
+	  else if (param == "thetaRel_deg" or param == "thetarel_deg")
+	    {
+	      thetaRelmin = low*M_PI/180.;
+	      thetaRelmax = high*M_PI/180.;
+	    }
 	  else
 	    {
 	      cerr << "Invalid phase space parameter provided. Aborting...\n";
@@ -188,6 +217,8 @@ int main(int argc, char ** argv)
 
   double cosTheta3min = cos(theta3max);
   double cosTheta3max = cos(theta3min);
+  double cosThetaRelmin = cos(thetaRelmax);
+  double cosThetaRelmax = cos(thetaRelmin);
 
   // Initialize Nucleus
   Nuclear_Info myInfo(Z,N,u);
@@ -284,10 +315,10 @@ int main(int argc, char ** argv)
       double EAm2 = sqrt(vAm2.Mag2() + sq(mAm2));
 
       // Pick random relative motion
-      double phiRel = 2.*M_PI*myRand.Rndm();
-      double cosThetaRel = -1. + 2.*myRand.Rndm();
+      double phiRel = phiRelmin + (phiRelmax-phiRelmin)*myRand.Rndm();
+      double cosThetaRel = cosThetaRelmin + (cosThetaRelmax - cosThetaRelmin)*myRand.Rndm();
       double thetaRel = acos(cosThetaRel);
-      double pRel_Mag_eff = pRel_min + (pRel_max - pRel_min)*myRand.Rndm();
+      double pRel_Mag_eff = pRelmin + (pRelmax - pRelmin)*myRand.Rndm();
       TVector3 vRel_eff;
       vRel_eff.SetMagThetaPhi(pRel_Mag_eff,thetaRel,phiRel);
 
@@ -399,8 +430,8 @@ int main(int argc, char ** argv)
 	  // Calculate the weight
 	  weight *= myCS.sigma_eN(Ebeam_eff, v3_eff, vLead, (lead_type==pCode)) // eN cross section
 	    * (doRad ? (1. - deltaHard(QSq_eff)) * pow(Ebeam/sqrt(Ebeam*pe_Mag),lambda_ei) * pow(pe_Mag_eff/sqrt(Ebeam*pe_Mag),lambda_ef) : 1.) // Radiative weights
-	    * 1./(2.*sq(M_PI)) * (phi3max-phi3min)/(2*M_PI) * (cosTheta3max - cosTheta3min)/(2) // Angular terms; add corrections for limited relative angular phase space later.
-	    * myInfo.get_S(pRel_Mag_eff,lead_type,rec_type) * (pRel_max - pRel_min) // Contacts
+	    * 1./(2.*sq(M_PI)) * (phi3max - phi3min)/(2*M_PI) * (cosTheta3max - cosTheta3min)/(2) * (phiRelmax - phiRelmin)/(2*M_PI) * (cosThetaRelmax - cosThetaRelmin)/(2) // Angular terms
+	    * myInfo.get_S(pRel_Mag_eff,lead_type,rec_type) * (pRelmax - pRelmin) // Contacts
 	    * sq(pRel_Mag_eff) / fabs(1 - vLead.Dot(v3hat_eff)/Elead); // Jacobian for delta fnc.
 	    
 	  if (kSq < 0)
@@ -410,8 +441,8 @@ int main(int argc, char ** argv)
 	      // Calculate the lightcone weight
 	      lcweight *= myCS.sigma_eN(Ebeam_eff, v3_eff, vLead, (lead_type==pCode))/alpha1 // eN cross section
 		* (doRad ? (1. - deltaHard(QSq_eff)) * pow(Ebeam/sqrt(Ebeam*pe_Mag),lambda_ei) * pow(pe_Mag_eff/sqrt(Ebeam*pe_Mag),lambda_ef) : 1.) // Radiative weights
-		* 1./(2.*sq(M_PI)) * (phi3max-phi3min)/(2*M_PI) * (cosTheta3max - cosTheta3min)/(2) // Angular terms; add corrections for limited relative angular phase space later.
-		* sqrt(mN*mN + kSq)/Erec * 1./(2.-alpharel) * myInfo.get_S(k,lead_type,rec_type) * (pRel_max - pRel_min) // Contacts
+		* 1./(2.*sq(M_PI)) * (phi3max - phi3min)/(2*M_PI) * (cosTheta3max - cosTheta3min)/(2) * (phiRelmax - phiRelmin)/(2*M_PI) * (cosThetaRelmax - cosThetaRelmin)/(2) // Angular terms
+		* sqrt(mN*mN + kSq)/Erec * 1./(2.-alpharel) * myInfo.get_S(k,lead_type,rec_type) * (pRelmax - pRelmin) // Contacts
 		* sq(pRel_Mag_eff) / fabs(1 - vLead.Dot(v3hat_eff)/Elead) // Jacobian for delta fnc.
 		* mbar * ((Anum>2)?(alphaAm2/EAm2 * exp((sq(vCM_eff.Dot(vqhat_eff))-sq(mbar*(2.-alphaCM)))/(2.*sq(sigCM)))):1.); // Change in center-of-mass motion in lightcone picture
 	    }
