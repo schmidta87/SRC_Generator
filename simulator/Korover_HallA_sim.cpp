@@ -107,7 +107,7 @@ int main(int argc, char ** argv)
   Float_t Pmiss_q_angle[2], Pmiss_size[2], Pmiss[2][3];
   Float_t z = 0.;
   Double_t weightp, weightpp, weightpn, lcweightp, lcweightpp, lcweightpn;
-  Double_t Q2_gen, Xb_gen, phik_gen, phirec_gen, thetarec_gen;
+  Double_t thetak_gen, phik_gen, thetaRel_gen, phiRel_gen, pRel_gen;
   
   outTree->Branch("Q2",&Q2,"Q2/F");
   outTree->Branch("Xb",&Xb,"Xb/F");
@@ -132,11 +132,11 @@ int main(int argc, char ** argv)
   outTree->Branch("lcweightp",&lcweightp,"lcweightp/D");
   outTree->Branch("lcweightpp",&lcweightpp,"lcweightpp/D");
   outTree->Branch("lcweightpn",&lcweightpn,"lcweightpn/D");
-  outTree->Branch("Q2_gen",&Q2_gen,"Q2_gen/D");
-  outTree->Branch("Xb_gen",&Xb_gen,"Xb_gen/D");
+  outTree->Branch("thetak_gen",&thetak_gen,"thetak_gen/D");
   outTree->Branch("phik_gen",&phik_gen,"phik_gen/D");
-  outTree->Branch("phirec_gen",&phirec_gen,"phirec_gen/D");
-  outTree->Branch("thetarec_gen",&thetarec_gen,"thetarec_gen/D");
+  outTree->Branch("thetaRel_gen",&thetaRel_gen,"thetaRel_gen/D");
+  outTree->Branch("phiRel_gen",&phiRel_gen,"phiRel_gen/D");
+  outTree->Branch("pRel_gen",&pRel_gen,"pRel_gen/D");
 
   const int nEvents = inTree->GetEntries();
   for (int event=0 ; event < nEvents ; event++)
@@ -155,33 +155,30 @@ int main(int argc, char ** argv)
       TVector3 vlead(gen_pLead[2],gen_pLead[0],gen_pLead[1]);
       TVector3 vrec(gen_pRec[2],gen_pRec[0],gen_pRec[1]);
 
-      TVector3 ve_gen(gen_pe[0],gen_pe[1],gen_pe[2]);
-      TVector3 vrec_gen(gen_pRec[0],gen_pRec[1],gen_pRec[2]);
-
       // Electron Detection and Fiducial Cuts
       if (!HRS_hallA(ve, pe_central, phie_central))
 	continue;
       
-      if (abs(ve.Mag()/pe_central - 1) > 4.5e-2)
+      if (fabs(ve.Mag()/pe_central - 1) > 4.5e-2)
 	continue;
       
-      if (abs(ve.Phi() - phie_central) > 30e-3)
+      if (fabs(ve.Phi() - phie_central) > 30e-3)
 	continue;
       
-      if (abs(ve.Theta() - theta_central) > 60e-3)
+      if (fabs(ve.Theta() - theta_central) > 60e-3)
 	continue;
 
       // Lead Proton Detection and Fiducial Cuts
       if (!HRS_hallA(vlead, plead_central, philead_central))
 	continue;
       
-      if (abs(vlead.Mag()/plead_central - 1) > 4.5e-2)
+      if (fabs(vlead.Mag()/plead_central - 1) > 4.5e-2)
 	continue;
       
-      if (abs(vlead.Phi() - philead_central) > 30e-3)
+      if (fabs(vlead.Phi() - philead_central) > 30e-3)
 	continue;
 	
-      if (abs(vlead.Theta() - theta_central) > 60e-3)
+      if (fabs(vlead.Theta() - theta_central) > 60e-3)
 	continue;
       
 
@@ -215,10 +212,10 @@ int main(int argc, char ** argv)
 	    }
 	}
       
-      if (abs(vrec.Phi() - phirec_central) > 4*M_PI/180.)
+      if (fabs(vrec.Phi() - phirec_central) > 4*M_PI/180.)
 	continue;
 	
-      if (abs(vrec.Theta() - theta_central) > 14*M_PI/180.)
+      if (fabs(vrec.Theta() - theta_central) > 14*M_PI/180.)
 	continue;
       
   
@@ -226,7 +223,7 @@ int main(int argc, char ** argv)
 	continue;
       
       // Derived vectors
-      TVector3 vbeam = TVector3(Ebeam,0.,0.);
+      TVector3 vbeam(Ebeam,0.,0.);
       TVector3 vq = vbeam - ve;
       TVector3 vmiss=vlead-vq;
       TVector3 vcm=vmiss+vrec;
@@ -283,17 +280,24 @@ int main(int argc, char ** argv)
       Pmiss_size[1] = (vrec - vq).Mag();
 
       // Gen Phase Space
-      TVector3 vbeam_gen = TVector3(0.,0.,Ebeam);
+      TVector3 ve_gen(gen_pe[0],gen_pe[1],gen_pe[2]);
+      TVector3 vlead_gen(gen_pLead[0],gen_pLead[1],gen_pLead[2]);
+      TVector3 vrec_gen(gen_pRec[0],gen_pRec[1],gen_pRec[2]);
+      TVector3 vbeam_gen(0.,0.,Ebeam);
       TVector3 vq_gen = vbeam_gen - ve_gen;
-      double Nu_gen = Ebeam - ve_gen.Mag();
-      Q2_gen = vq_gen.Mag2() - sq(Nu_gen);
-      Xb_gen = Q2_gen/(2.*mN*Nu_gen);
+      TVector3 vmiss_gen = vlead_gen - vq_gen;
+      TVector3 vrel_gen = 0.5*(vmiss_gen - vrec_gen);
+
+      pRel_gen = vrel_gen.Mag();
+      thetaRel_gen = vrel_gen.Theta()*180./M_PI;
+      phiRel_gen = vrel_gen.Phi()*180./M_PI;
+      if (phiRel_gen < 0)
+	phiRel_gen += 360.;
+      
+      thetak_gen = ve_gen.Theta()*180./M_PI;
       phik_gen = ve_gen.Phi()*180./M_PI;
       if (phik_gen < 0)
 	phik_gen += 360.;
-      
-      phirec_gen = vrec_gen.Phi()*180./M_PI;
-      thetarec_gen = vrec_gen.Theta()*180./M_PI;
       
       outTree->Fill();
     }
