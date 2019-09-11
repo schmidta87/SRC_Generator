@@ -31,7 +31,7 @@ int main(int argc, char ** argv)
   TFile * infile = new TFile(argv[1]);
   int setting = atoi(argv[2]);
 
-  double theta_central = 0.5*TMath::Pi();
+  double theta_central = 0.5*M_PI;
   double pe_central = 3.602;
   double phie_central = -20.3*M_PI/180.;
   double plead_central, philead_central, phirec_central;
