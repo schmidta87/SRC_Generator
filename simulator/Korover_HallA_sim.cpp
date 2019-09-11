@@ -103,33 +103,14 @@ int main(int argc, char ** argv)
   
   // Output Tree (1p)
   TTree * outTree = new TTree("T","Simulated Data Tree");
-  Float_t Q2, Xb, Pe[3], Pe_size, theta_e, phi_e, Pp[2][3], Pp_size[2], pq_angle[2], Ep[2], theta_p[2], phi_p[2], Nu, q[3];
-  Float_t Pmiss_q_angle[2], Pmiss_size[2], Pmiss[2][3];
-  Float_t z = 0.;
-  Double_t weightp, weightpp, weightpn, lcweightp, lcweightpp, lcweightpn;
+  Float_t Pe[3], Pp[2][3];
+  Double_t weightpp, weightpn, lcweightpp, lcweightpn;
   Double_t thetak_gen, phik_gen, thetaRel_gen, phiRel_gen, pRel_gen;
   
-  outTree->Branch("Q2",&Q2,"Q2/F");
-  outTree->Branch("Xb",&Xb,"Xb/F");
-  outTree->Branch("Nu",&Nu,"Nu/F");
-  outTree->Branch("q",q,"q[3]/F");
   outTree->Branch("Pe",Pe,"Pe[3]/F");
-  outTree->Branch("Pe_size",&Pe_size,"Pe_size/F");
-  outTree->Branch("theta_e",&theta_e,"theta_e/F");
-  outTree->Branch("phi_e",&phi_e,"phi_e/F");
   outTree->Branch("Pp",Pp,"Pp[1][3]/F");
-  outTree->Branch("Pp_size",Pp_size,"Pp_size[1]/F");
-  outTree->Branch("pq_angle",pq_angle,"pq_angle[1]/F");
-  outTree->Branch("Ep",Ep,"Ep[1]/F");
-  outTree->Branch("theta_p",theta_p,"theta_p[1]/F");
-  outTree->Branch("phi_p",phi_p,"phi_p[1]/F");
-  outTree->Branch("Pmiss_q_angle",Pmiss_q_angle,"Pmiss_q_angle[1]/F");
-  outTree->Branch("Pmiss_size",Pmiss_size,"Pmiss_size[1]/F");
-  outTree->Branch("Pmiss",Pmiss,"Pmiss[1][3]/F");
-  outTree->Branch("weightp",&weightp,"weightp/D");
   outTree->Branch("weightpp",&weightpp,"weightpp/D");
   outTree->Branch("weightpn",&weightpn,"weightpn/D");
-  outTree->Branch("lcweightp",&lcweightp,"lcweightp/D");
   outTree->Branch("lcweightpp",&lcweightpp,"lcweightpp/D");
   outTree->Branch("lcweightpn",&lcweightpn,"lcweightpn/D");
   outTree->Branch("thetak_gen",&thetak_gen,"thetak_gen/D");
@@ -162,10 +143,10 @@ int main(int argc, char ** argv)
       if (fabs(ve.Mag()/pe_central - 1) > 4.5e-2)
 	continue;
       
-      if (fabs(ve.Phi() - phie_central) > 30e-3)
+      if (fabs(ve.Phi() - phie_central) > 27e-3)
 	continue;
       
-      if (fabs(ve.Theta() - theta_central) > 60e-3)
+      if (fabs(ve.Theta() - theta_central) > 58e-3)
 	continue;
 
       // Lead Proton Detection and Fiducial Cuts
@@ -175,10 +156,10 @@ int main(int argc, char ** argv)
       if (fabs(vlead.Mag()/plead_central - 1) > 4.5e-2)
 	continue;
       
-      if (fabs(vlead.Phi() - philead_central) > 30e-3)
+      if (fabs(vlead.Phi() - philead_central) > 27e-3)
 	continue;
 	
-      if (fabs(vlead.Theta() - theta_central) > 60e-3)
+      if (fabs(vlead.Theta() - theta_central) > 58e-3)
 	continue;
       
 
@@ -229,57 +210,32 @@ int main(int argc, char ** argv)
       TVector3 vcm=vmiss+vrec;
       TVector3 vrel=0.5*(vmiss-vrec);
 
-      double gen_pMiss_Mag = vmiss.Mag();
-      double gen_pe_Mag = ve.Mag();
       double gen_Nu = Ebeam - ve.Mag();
-      double gen_QSq = vq.Mag2() - sq(gen_Nu);
-      double gen_xB = gen_QSq/(2.*mN*gen_Nu);
-      double gen_q_Mag = vq.Mag();
-      double gen_pLead_Mag = vlead.Mag();
-      double gen_pRec_Mag = vrec.Mag();
 
       // Delta Cut
-      double w = sqrt(sq(m_12C + gen_Nu) - vq.Mag2());
-      double Lambda = 0.5*(sq(m_11B) - sq(mN) + sq(w));
-      double y = ((m_12C + gen_Nu)*sqrt(sq(Lambda) - sq(m_11B*w)) - vq.Mag()*Lambda)/sq(w);
+      double W = sqrt(sq(m_4He + gen_Nu) - vq.Mag2());
+      double Lambda = 0.5*(sq(m_3H) - sq(mN) + sq(W));
+      double y = ((m_4He + gen_Nu)*sqrt(sq(Lambda) - sq(m_3H*W)) - vq.Mag()*Lambda)/sq(W);
 
-      if (gen_Nu > -0.22*y + (0.95))
+      if (gen_Nu > -1.28*y + (0.901))
+	continue;
+
+      // Missing Mass Cut
+      double Elead = sqrt(vlead.Mag2() + sq(mN));
+      double Erec = sqrt(vrec.Mag2() + sq(mN));
+      double m_miss = sqrt(sq(gen_Nu + m_4He - Elead - Erec) - vcm.Mag2());
+      if (m_miss > 1.)
 	continue;
       
       // Load up tree
-      Q2 = gen_QSq;
-      Xb = gen_xB;
-      Nu = gen_Nu;
-      Pe_size = gen_pe_Mag;
-      theta_e = ve.Theta() * 180./M_PI;
-      phi_e = ve.Phi()*180./M_PI;
-      Pp_size[0] = gen_pLead_Mag;
-      Pp_size[1] = gen_pRec_Mag;
-      pq_angle[0] = vq.Angle(vlead)*180./M_PI;
-      pq_angle[1] = vq.Angle(vrec)*180./M_PI;
-      Ep[0] = sqrt(gen_pLead_Mag*gen_pLead_Mag + mN*mN);
-      Ep[1] = sqrt(gen_pRec_Mag*gen_pRec_Mag + mN*mN);
-      theta_p[0] = vlead.Theta()*180./M_PI;
-      theta_p[1] = vrec.Theta()*180./M_PI;
-      phi_p[0] = vlead.Phi()*180./M_PI;
-      phi_p[1] = vrec.Phi()*180./M_PI;
       for (int i=0 ; i<3 ; i++)
 	{
-	  q[i] = vq[i];
 	  Pe[i] = gen_pe[i];
 	  Pp[0][i] = vlead[i];
 	  Pp[1][i] = vrec[i];
-	  Pmiss[0][i] = vlead[i] - vq[i];
-	  Pmiss[1][i] = vrec[i] - vq[i];
 	}
 
-      Pmiss_q_angle[0] = (vlead - vq).Angle(vq) * 180./M_PI;
-      Pmiss_q_angle[1] = (vrec - vq).Angle(vq) * 180./M_PI;
-      
-      Pmiss_size[0] = (vlead - vq).Mag();
-      Pmiss_size[1] = (vrec - vq).Mag();
-
-      // Gen Phase Space
+      // Generated phase space tree for examining generating restrictions
       TVector3 ve_gen(gen_pe[0],gen_pe[1],gen_pe[2]);
       TVector3 vlead_gen(gen_pLead[0],gen_pLead[1],gen_pLead[2]);
       TVector3 vrec_gen(gen_pRec[0],gen_pRec[1],gen_pRec[2]);
