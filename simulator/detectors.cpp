@@ -82,6 +82,8 @@ bool HAND(TVector3 &v, double phi_central)
   double theta_central = 0.5*M_PI;
   double d = 20.01; //ns
 
+  double t_res = 1.5;
+  
   double p = v.Mag();
   double theta = v.Theta();
   double phi = v.Phi();
@@ -97,8 +99,9 @@ bool HAND(TVector3 &v, double phi_central)
   // Resolution Smearing
   
   double tof = d*sqrt(1.+sq(mN/p));
-  tof += 1.5*myRand.Gaus();
-  p = mN/sqrt(1-sq(tof/d));
+  tof += t_res*myRand.Gaus();
+  
+  p = mN/sqrt(sq(tof/d)-1);
     
   phi += 15e-3*myRand.Gaus();
   theta += 15e-3*myRand.Gaus();

@@ -101,14 +101,14 @@ int main(int argc, char ** argv)
   
   TFile * outfile = new TFile(argv[3],"RECREATE");
   
-  // Output Tree (1p)
+  // Output Tree
   TTree * outTree = new TTree("T","Simulated Data Tree");
   Float_t Pe[3], Pp[2][3];
   Double_t weightpp, weightpn, lcweightpp, lcweightpn;
   Double_t thetak_gen, phik_gen, thetaRel_gen, phiRel_gen, pRel_gen;
   
   outTree->Branch("Pe",Pe,"Pe[3]/F");
-  outTree->Branch("Pp",Pp,"Pp[1][3]/F");
+  outTree->Branch("Pp",Pp,"Pp[2][3]/F");
   outTree->Branch("weightpp",&weightpp,"weightpp/D");
   outTree->Branch("weightpn",&weightpn,"weightpn/D");
   outTree->Branch("lcweightpp",&lcweightpp,"lcweightpp/D");
@@ -170,7 +170,7 @@ int main(int argc, char ** argv)
       weightpn = gen_weight * 1.E33;
       lcweightpp = gen_lcweight * 1.E33;
       lcweightpn = gen_lcweight * 1.E33;
-
+      
       // Recoil Detection and Fiducial Cuts
       if (rec_type == pCode)
 	{
@@ -192,7 +192,7 @@ int main(int argc, char ** argv)
 	      lcweightpn = 0.;
 	    }
 	}
-      
+            
       if (fabs(vrec.Phi() - phirec_central) > 4*M_PI/180.)
 	continue;
 	
@@ -200,7 +200,7 @@ int main(int argc, char ** argv)
 	continue;
       
   
-      if (weightpp == 0. and weightpn == 0. and lcweightpp == 0. and lcweightpn == 0)
+      if (weightpp <= 0. and weightpn <= 0. and lcweightpp <= 0. and lcweightpn <= 0)
 	continue;
       
       // Derived vectors
@@ -220,17 +220,17 @@ int main(int argc, char ** argv)
       if (gen_Nu > -1.28*y + (0.901))
 	continue;
 
-      // Missing Mass Cut
+      // (e,e'p) Missing Mass Cut
       double Elead = sqrt(vlead.Mag2() + sq(mN));
       double Erec = sqrt(vrec.Mag2() + sq(mN));
-      double m_miss = sqrt(sq(gen_Nu + m_4He - Elead - Erec) - vcm.Mag2());
+      double m_miss = sqrt(sq(gen_Nu + 2*mN - Elead) - vmiss.Mag2());
       if (m_miss > 1.)
 	continue;
       
       // Load up tree
       for (int i=0 ; i<3 ; i++)
 	{
-	  Pe[i] = gen_pe[i];
+	  Pe[i] = ve[i];
 	  Pp[0][i] = vlead[i];
 	  Pp[1][i] = vrec[i];
 	}
