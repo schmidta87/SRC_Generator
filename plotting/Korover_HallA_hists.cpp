@@ -65,32 +65,32 @@ int main(int argc, char ** argv)
   // Create histograms
   vector<TH1*> h_list;
   
-  TH1D * hpn_cosgamma = new TH1D("epn_cosgamma","epn;cos gamma;Counts",25,-1.,-0.94);
+  TH1D * hpn_cosgamma = new TH1D("epn_cosgamma","epn;cos gamma;Counts",25*4,-1.,-0.94);
   h_list.push_back(hpn_cosgamma);
-  TH1D * hpn_mMiss = new TH1D("epn_Mmiss","epn;mMiss [GeV];Counts",40,1.7,2.2);
+  TH1D * hpn_mMiss = new TH1D("epn_Mmiss","epn;mMiss [GeV];Counts",40*4,1.7,2.2);
   h_list.push_back(hpn_mMiss);
-  TH1D * hpp_mMiss = new TH1D("epp_Mmiss","epp;mMiss [GeV];Counts",40,1.7,2.2);
+  TH1D * hpp_mMiss = new TH1D("epp_Mmiss","epp;mMiss [GeV];Counts",40*4,1.7,2.2);
   h_list.push_back(hpp_mMiss);
 
-  TH1D * hpn_cosgamma_1 = new TH1D("epn_cosgamma_1","epn;cos gamma;Counts",25,-1.,-0.94);
+  TH1D * hpn_cosgamma_1 = new TH1D("epn_cosgamma_1","epn;cos gamma;Counts",25*4,-1.,-0.94);
   h_list.push_back(hpn_cosgamma_1);
-  TH1D * hpn_mMiss_1 = new TH1D("epn_Mmiss_1","epn;mMiss [GeV];Counts",40,1.7,2.2);
+  TH1D * hpn_mMiss_1 = new TH1D("epn_Mmiss_1","epn;mMiss [GeV];Counts",40*4,1.7,2.2);
   h_list.push_back(hpn_mMiss_1);
-  TH1D * hpp_mMiss_1 = new TH1D("epp_Mmiss_1","epp;mMiss [GeV];Counts",40,1.7,2.2);
+  TH1D * hpp_mMiss_1 = new TH1D("epp_Mmiss_1","epp;mMiss [GeV];Counts",40*4,1.7,2.2);
   h_list.push_back(hpp_mMiss_1);
   
-  TH1D * hpn_cosgamma_2 = new TH1D("epn_cosgamma_2","epn;cos gamma;Counts",25,-1.,-0.94);
+  TH1D * hpn_cosgamma_2 = new TH1D("epn_cosgamma_2","epn;cos gamma;Counts",25*4,-1.,-0.94);
   h_list.push_back(hpn_cosgamma_2);
-  TH1D * hpn_mMiss_2 = new TH1D("epn_Mmiss_2","epn;mMiss [GeV];Counts",40,1.7,2.2);
+  TH1D * hpn_mMiss_2 = new TH1D("epn_Mmiss_2","epn;mMiss [GeV];Counts",40*4,1.7,2.2);
   h_list.push_back(hpn_mMiss_2);
-  TH1D * hpp_mMiss_2 = new TH1D("epp_Mmiss_2","epp;mMiss [GeV];Counts",40,1.7,2.2);
+  TH1D * hpp_mMiss_2 = new TH1D("epp_Mmiss_2","epp;mMiss [GeV];Counts",40*4,1.7,2.2);
   h_list.push_back(hpp_mMiss_2);
   
-  TH1D * hpn_cosgamma_3 = new TH1D("epn_cosgamma_3","epn;cos gamma;Counts",25,-1.,-0.94);
+  TH1D * hpn_cosgamma_3 = new TH1D("epn_cosgamma_3","epn;cos gamma;Counts",25*4,-1.,-0.94);
   h_list.push_back(hpn_cosgamma_3);
-  TH1D * hpn_mMiss_3 = new TH1D("epn_Mmiss_3","epn;mMiss [GeV];Counts",40,1.7,2.2);
+  TH1D * hpn_mMiss_3 = new TH1D("epn_Mmiss_3","epn;mMiss [GeV];Counts",40*4,1.7,2.2);
   h_list.push_back(hpn_mMiss_3);
-  TH1D * hpp_mMiss_3 = new TH1D("epp_Mmiss_3","epp;mMiss [GeV];Counts",40,1.7,2.2);
+  TH1D * hpp_mMiss_3 = new TH1D("epp_Mmiss_3","epp;mMiss [GeV];Counts",40*4,1.7,2.2);
   h_list.push_back(hpp_mMiss_3);
 
   for (int i=0; i<h_list.size(); i++)
@@ -137,8 +137,6 @@ int main(int argc, char ** argv)
       TVector3 vmiss = vlead - vq;
       TVector3 vcm = vmiss + vrec;
 
-      cout << vrec[1] << "\n";
-      
       double cosgamma = cos(vmiss.Angle(vrec));
       hpn_cosgamma_1->Fill(cosgamma,weightpn);
 
@@ -254,11 +252,14 @@ int main(int argc, char ** argv)
   double N_pp_1 = 7.5;
   double N_pp_2 = 20.;
   double N_pp_3 = 22.5;
+
+  double N_pn = 113.;
+  double N_pp = 37.;
   
   hpn_cosgamma_1->Scale(N_pn_1/hpn_cosgamma_1->Integral());
   hpn_cosgamma_2->Scale(N_pn_2/hpn_cosgamma_2->Integral());
   hpn_cosgamma_3->Scale(N_pn_3/hpn_cosgamma_3->Integral());
-
+  
   hpn_mMiss_1->Scale(N_pn_1/hpn_mMiss_1->Integral());
   hpn_mMiss_2->Scale(N_pn_2/hpn_mMiss_2->Integral());
   hpn_mMiss_3->Scale(N_pn_3/hpn_mMiss_3->Integral());
@@ -270,14 +271,17 @@ int main(int argc, char ** argv)
   hpn_cosgamma->Add(hpn_cosgamma_1);
   hpn_cosgamma->Add(hpn_cosgamma_2);
   hpn_cosgamma->Add(hpn_cosgamma_3);
+  hpn_cosgamma->Scale(N_pn/hpn_cosgamma->Integral());
 
   hpn_mMiss->Add(hpn_mMiss_1);
   hpn_mMiss->Add(hpn_mMiss_2);
   hpn_mMiss->Add(hpn_mMiss_3);
+  hpn_mMiss->Scale(N_pn/hpn_mMiss->Integral());
   
   hpp_mMiss->Add(hpp_mMiss_1);
   hpp_mMiss->Add(hpp_mMiss_2);
   hpp_mMiss->Add(hpp_mMiss_3);
+  hpp_mMiss->Scale(N_pp/hpp_mMiss->Integral());
   
   outfile->cd();
 
