@@ -5,6 +5,7 @@
 #include <string.h>
 #include <iostream>
 #include <cstdlib>
+#include "TRandom3.h"
 
 Nuclear_Info::Nuclear_Info(int thisZ, int thisN, char* uType)
 {
@@ -34,6 +35,7 @@ void Nuclear_Info::set_Nucleus(int thisZ, int thisN){
   if ((Z==1) && (N==1))
     {
       sigmaCM=0.;
+      d_sigmaCM=0.;
       mA=m_2H;
       mAmpp=0.;
       mAmpn=0.;
@@ -42,6 +44,7 @@ void Nuclear_Info::set_Nucleus(int thisZ, int thisN){
   else if ((Z==2) && (N==1))
     {
       sigmaCM=0.1;
+      d_sigmaCM=0.02;
       mA=m_3He;
       mAmpp=mN;
       mAmpn=mN;
@@ -50,6 +53,7 @@ void Nuclear_Info::set_Nucleus(int thisZ, int thisN){
  else if ((Z==1) && (N==2))
     {
       sigmaCM=0.1;
+      d_sigmaCM=0.02;
       mA=m_3H;
       mAmpp=mN;
       mAmpn=mN;
@@ -58,6 +62,7 @@ void Nuclear_Info::set_Nucleus(int thisZ, int thisN){
   else if ((Z==2) && (N==2))
     {
       sigmaCM=0.1;
+      d_sigmaCM=0.02;
       mA=m_4He;
       mAmpp=2*mN;
       mAmpn=m_2H;
@@ -66,6 +71,7 @@ void Nuclear_Info::set_Nucleus(int thisZ, int thisN){
   else if ((Z==6) && (N==6))
     {
       sigmaCM=0.15;
+      d_sigmaCM=0.02;
       mA=m_12C;
       mAmpp=m_10Be;
       mAmpn=m_10B;
@@ -93,6 +99,17 @@ void Nuclear_Info::set_Nucleus(int thisZ, int thisN){
       exit(-2);
     }
   
+}
+
+void Nuclear_Info::randomize()
+{
+  TRandom3 myRand(0);
+  sigmaCM += myRand.Gaus(0.,d_sigmaCM);
+  Cpp0 += myRand.Gaus(0.,d_Cpp0);
+  Cpn0 += myRand.Gaus(0.,d_Cpn0);
+  Cnn0 += myRand.Gaus(0.,d_Cnn0);
+  Cpn1 += myRand.Gaus(0.,d_Cpn1);
+  Estar = myRand.Uniform()*0.030;
 }
 
 void Nuclear_Info::setCustomValues(double newSigma, double newEstar, double newCpp0 ,double newCnn0 ,double newCpn0, double newCpn1){

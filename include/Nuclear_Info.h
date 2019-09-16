@@ -27,6 +27,7 @@ class Nuclear_Info
   double get_Cpp0();
   double get_Cpn0();
   double get_Cpn1();
+  void randomize();
 
   void set_Nucleus(int thisZ, int thisN);
   void setCustomValues(double newSigma, double newEstar, double newCpp0, double Cnn0, double newCpn0, double newCpn1);
@@ -50,6 +51,7 @@ class Nuclear_Info
   double mAmpn;
   double mAmnn;
   double sigmaCM;
+  double d_sigmaCM;
   double phiSq_pp0[100];
   double phiSq_nn0[100];
   double phiSq_pn0[100];

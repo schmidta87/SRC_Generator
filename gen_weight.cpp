@@ -57,7 +57,8 @@ int main(int argc, char ** argv)
   bool do_sCM = false;
   double sCM;
   double Estar = 0.;
-  double pRel_cut = 0.3;
+  double pRel_cut = 0.30;
+  double pRel_range = 0.10;
   csMethod csMeth=cc1;
   ffModel ffMod=kelly;
   bool rand_flag = false;
@@ -225,6 +226,14 @@ int main(int argc, char ** argv)
   if (do_sCM)
     myInfo.set_sigmaCM(sCM);
   myInfo.set_Estar(Estar);
+
+  // Randomization
+  TRandom3 myRand(0);
+  if (rand_flag)
+    {
+      myInfo.randomize();
+      pRel_cut = pRel_cut + (myRand.Uniform() - 0.5)*pRel_range;
+    }
   
   // Adapt cross section to custom arguments
   Cross_Sections myCS(csMeth,ffMod);
@@ -265,7 +274,6 @@ int main(int argc, char ** argv)
     }
 
   // Masses and sigma of CM momentum
-  TRandom3 myRand(0);
   const double mA = myInfo.get_mA();
   const double mbar = mA/Anum;
   const double mAmpp = myInfo.get_mAmpp(); // this includes the effect of Estar
