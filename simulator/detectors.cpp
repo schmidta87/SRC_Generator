@@ -1,3 +1,4 @@
+#include <cmath>
 #include "detectors.h"
 #include "TRandom3.h"
 #include "helpers.h"
@@ -24,13 +25,13 @@ bool HRS_hallA(TVector3 &v, double p_central, double phi_central)
 
   // Acceptance Region
 
-  if (abs(p/p_central - 1) > 4.5e-2)
+  if (fabs(p/p_central - 1) > 4.5e-2)
     return false;
 
-  if (abs(phi - phi_central) > 30e-3)
+  if (fabs(phi - phi_central) > 30e-3)
     return false;
   
-  if (abs(theta - theta_central) > 60e-3)
+  if (fabs(theta - theta_central) > 60e-3)
     return false;
 
   // Resolution Smearing
@@ -59,10 +60,10 @@ bool BigBite(TVector3 &v, double phi_central)
 
   // Acceptance Region
 
-  if (abs(phi - phi_central) > 80e-3)
+  if (fabs(phi - phi_central) > 80e-3)
     return false;
   
-  if (abs(theta - theta_central) > 300e-3)
+  if (fabs(theta - theta_central) > 300e-3)
     return false;
 
   // Resolution Smearing
@@ -82,23 +83,26 @@ bool HAND(TVector3 &v, double phi_central)
   double theta_central = 0.5*M_PI;
   double d = 20.01; //ns
 
+  double t_res = 1.5;
+  
   double p = v.Mag();
   double theta = v.Theta();
   double phi = v.Phi();
 
   // Acceptance Region
   
-  if (abs(phi - phi_central) > 80e-3)
+  if (fabs(phi - phi_central) > 80e-3)
     return false;
   
-  if (abs(theta - theta_central) > 300e-3)
+  if (fabs(theta - theta_central) > 300e-3)
     return false;
 
   // Resolution Smearing
   
   double tof = d*sqrt(1.+sq(mN/p));
-  tof += 1.5*myRand.Gaus();
-  p = mN/sqrt(1-sq(tof/d));
+  tof += t_res*myRand.Gaus();
+  
+  p = mN/sqrt(sq(tof/d)-1);
     
   phi += 15e-3*myRand.Gaus();
   theta += 15e-3*myRand.Gaus();

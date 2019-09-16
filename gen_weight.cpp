@@ -26,6 +26,7 @@ void print_help()
        << "-T: Print full output tree\n"
        << "-z: Print zero-weight events\n"
        << "-P: Use text file to generate phase space\n"
+       << "-o: Turn off radiative effects\n"
        << "-s <Sigma_CM [GeV]>\n"
        << "-E <E* [GeV]>==<0>\n"
        << "-u <NN interaction>==<AV18>\n"
@@ -66,21 +67,21 @@ int main(int argc, char ** argv)
   // Probability windows
   bool custom_ps = false;
   char* phase_space;
-  double Qmin=1.;
-  double Qmax=5.;
-  double Xmin=1.;
-  double Xmax=2.;
   double phi3min=0.;
   double phi3max=2*M_PI;
-  double phiRecmin=0.;
-  double phiRecmax=2*M_PI;
-  double thetaRecmin=0.;
-  double thetaRecmax=M_PI;
-
+  double theta3min=0.;
+  double theta3max=M_PI/2.;
+  double pRelmin = 0.25;
+  double pRelmax = 1.05;
+  double phiRelmin=0.;
+  double phiRelmax=2*M_PI;
+  double thetaRelmin=0.;
+  double thetaRelmax=M_PI;  
+  
   double deltaHard(double QSq);
   
   int c;
-  while ((c=getopt (argc-4, &argv[4], "hvTzs:E:u:k:c:f:rRP:")) != -1) // First five arguments are not optional flags.
+  while ((c=getopt (argc-4, &argv[4], "hvTzs:E:u:k:c:f:rRP:o")) != -1) // First five arguments are not optional flags.
     switch(c)
       {
       case 'h':
@@ -145,6 +146,9 @@ int main(int argc, char ** argv)
 	custom_ps = true;
 	phase_space = optarg;
 	break;
+      case 'o':
+	doRad = false;
+	break;
       case '?':
 	return -1;
       default:
@@ -158,17 +162,7 @@ int main(int argc, char ** argv)
       double low, high;
       while (ps_file >> param >> low >> high)
 	{
-	  if (param == "x" or param == "xB")
-	    {
-	      Xmin = low;
-	      Xmax = high;
-	    }
-	  else if (param == "Q" or param == "QSq")
-	    {
-	      Qmin = low;
-	      Qmax = high;
-	    }
-	  else if (param == "phi3" or param == "phik")
+	  if (param == "phi3" or param == "phik")
 	    {
 	      phi3min = low;
 	      phi3max = high;
@@ -178,25 +172,40 @@ int main(int argc, char ** argv)
 	      phi3min = low*M_PI/180.;
 	      phi3max = high*M_PI/180.;
 	    }
-	  else if (param == "phirec" or param == "phiRec")
+	  else if (param == "theta3" or param == "thetak")
 	    {
-	      phiRecmin = low;
-	      phiRecmax = high;
+	      theta3min = low;
+	      theta3max = high;
 	    }
-	  else if (param == "phirec_deg" or param == "phiRec_deg")
+	  else if (param == "theta3_deg" or param == "thetak_deg")
 	    {
-	      phiRecmin = low*M_PI/180.;
-	      phiRecmax = high*M_PI/180.;
+	      theta3min = low*M_PI/180.;
+	      theta3max = high*M_PI/180.;
 	    }
-	  else if (param == "thetarec" or param == "thetaRec")
+	  else if (param == "pRel" or param == "prel")
 	    {
-	      thetaRecmin = low;
-	      thetaRecmax = high;
+	      pRelmin = low;
+	      pRelmax = high;
 	    }
-	  else if (param == "thetarec_deg" or param == "thetaRec_deg")
+	  else if (param == "phiRel" or param == "phik")
 	    {
-	      thetaRecmin = low*M_PI/180.;
-	      thetaRecmax = high*M_PI/180.;
+	      phi3min = low;
+	      phi3max = high;
+	    }
+	  else if (param == "phiRel_deg" or param == "phirel_deg")
+	    {
+	      phiRelmin = low*M_PI/180.;
+	      phiRelmax = high*M_PI/180.;
+	    }
+	  else if (param == "thetaRel" or param == "thetarel")
+	    {
+	      thetaRelmin = low;
+	      thetaRelmax = high;
+	    }
+	  else if (param == "thetaRel_deg" or param == "thetarel_deg")
+	    {
+	      thetaRelmin = low*M_PI/180.;
+	      thetaRelmax = high*M_PI/180.;
 	    }
 	  else
 	    {
@@ -206,8 +215,10 @@ int main(int argc, char ** argv)
 	}
     }
 
-  double cosThetaRecmin = cos(thetaRecmax);
-  double cosThetaRecmax = cos(thetaRecmin);
+  double cosTheta3min = cos(theta3max);
+  double cosTheta3max = cos(theta3min);
+  double cosThetaRelmin = cos(thetaRelmax);
+  double cosThetaRelmax = cos(thetaRelmin);
 
   // Initialize Nucleus
   Nuclear_Info myInfo(Z,N,u);
@@ -291,206 +302,153 @@ int main(int argc, char ** argv)
       double DeltaEi = doRad ? pow(myRand.Rndm(),1./lambda_ei) * Ebeam : 0.;
       double Ebeam_eff = Ebeam - DeltaEi;
 
-      // Pick a random xB, QSq prior to FSR
-      double xB_eff = Xmin + (Xmax - Xmin)*myRand.Rndm();
-      double QSq_eff = Qmin + (Qmax-Qmin)*myRand.Rndm();
-      double nu_eff = QSq_eff/(2.*mN*xB_eff);
-      double pe_Mag_eff = Ebeam_eff - nu_eff;
-
-      if (pe_Mag_eff < 0.)
-	{
-	  weight=0.;
-	  lcweight=0.;
-	}
-      else
-	{
-      
-      // The outgoing electron angle won't change in the peaking approximation
-      double cosTheta3 = 1. - QSq_eff/(2.*Ebeam_eff*pe_Mag_eff);
-      if (fabs(cosTheta3) > 1.)
-	{
-	  weight=0.;
-	  lcweight=0.;
-	}
-      else
-      {
-	
+      // Pick random electron angles
       double phi3 = phi3min + (phi3max-phi3min)*myRand.Rndm();
+      double cosTheta3 = cosTheta3min + (cosTheta3max - cosTheta3min)*myRand.Rndm();
       double theta3 = acos(cosTheta3);
-      TVector3 v3_eff;
-      v3_eff.SetMagThetaPhi(pe_Mag_eff, theta3, phi3);
-      TVector3 vq_eff = TVector3(0.,0.,Ebeam_eff) - v3_eff;
-      TVector3 vqhat_eff = vq_eff.Unit();
-	  
-      // Sample radiation off the outgoing electron
-      double lambda_ef = alpha/M_PI * (log( 4.*pe_Mag_eff*pe_Mag_eff/(me*me)) - 1.);
-      double DeltaEf = doRad? pow(myRand.Rndm(),1./lambda_ef) * pe_Mag_eff : 0.;
-      pe_Mag = pe_Mag_eff - DeltaEf;
-
-      // This will allow us to calculate apparent quantities
-      QSq = 2. * Ebeam * pe_Mag * (1.-cosTheta3);
-      nu = Ebeam - pe_Mag;
-      xB = QSq/(2.*mN*nu);
-
-      // Fill into vectors
-      TVector3 v3;
-      v3.SetMagThetaPhi(pe_Mag,theta3,phi3);
-      pe[0]=v3.X();
-      pe[1]=v3.Y();
-      pe[2]=v3.Z();
-      TVector3 vq = v1 - v3;
-      q[0]=vq.X();
-      q[1]=vq.Y();
-      q[2]=vq.Z();
-      q_Mag = vq.Mag();
-
+      TVector3 v3hat_eff;
+      v3hat_eff.SetMagThetaPhi(1,theta3,phi3);
+      
       // Pick random CM motion
       TVector3 vCM_eff(myRand.Gaus(0.,sigCM),myRand.Gaus(0.,sigCM),myRand.Gaus(0.,sigCM));
       TVector3 vAm2 = -vCM_eff;
-      double EAm2 = sqrt(vCM_eff.Mag2() + sq(mAm2));
-      TVector3 vZ = vCM_eff + vq_eff; // 3 momentum of the pair, useful for calculating kinematics
-      double X = mA + nu_eff - EAm2;
-      double Z = vZ.Mag();
-      double YSq = sq(X) - sq(Z);
+      double EAm2 = sqrt(vAm2.Mag2() + sq(mAm2));
 
-      // Pick random recoil angles
-      double phiRec = phiRecmin + (phiRecmax-phiRecmin)*myRand.Rndm();
-      double cosThetaRec = cosThetaRecmin + (cosThetaRecmax-cosThetaRecmin)*myRand.Rndm();// Maybe in the future figure out min and max angles, and restrict
-      double thetaRec = acos(cosThetaRec);
+      // Pick random relative motion
+      double phiRel = phiRelmin + (phiRelmax-phiRelmin)*myRand.Rndm();
+      double cosThetaRel = cosThetaRelmin + (cosThetaRelmax - cosThetaRelmin)*myRand.Rndm();
+      double thetaRel = acos(cosThetaRel);
+      double pRel_Mag_eff = pRelmin + (pRelmax - pRelmin)*myRand.Rndm();
+      TVector3 vRel_eff;
+      vRel_eff.SetMagThetaPhi(pRel_Mag_eff,thetaRel,phiRel);
 
-      // Determine other angles
-      double thetaCM = vCM_eff.Theta();
-      double phiCM = vCM_eff.Phi();
-      double cosThetaCMRec = sin(thetaCM)*sin(thetaRec) * (cos(phiCM)*cos(phiRec) + sin(phiCM)*sin(phiRec)) + cos(thetaCM)*cosThetaRec;
-      double thetaQ = vq_eff.Theta();
-      double phiQ = vq_eff.Phi();
-      double cosThetaQRec = sin(thetaQ)*sin(thetaRec) * (cos(phiQ)*cos(phiRec) + sin(phiQ)*sin(phiRec)) + cos(thetaQ)*cosThetaRec;
-      double thetaZ = vZ.Theta();
-      double phiZ = vZ.Phi();
-      double cosThetaZRec = sin(thetaZ)*sin(thetaRec) * (cos(phiZ)*cos(phiRec) + sin(phiZ)*sin(phiRec)) + cos(thetaZ)*cosThetaRec;
+      // Determine initial nucleon momenta
+      TVector3 vMiss_eff = 0.5*vCM_eff + vRel_eff;
+      TVector3 vRec = 0.5*vCM_eff - vRel_eff;
+      pRec[0]=vRec.X();
+      pRec[1]=vRec.Y();
+      pRec[2]=vRec.Z();
+      double Erec = sqrt(sq(mN) + vRec.Mag2());	      
+      
+      // Calculate scattered electron energy
+      TVector3 veN = TVector3(0.,0.,Ebeam_eff) + vMiss_eff;
+      double pe_Mag_eff = 0.5*(sq(mA + Ebeam_eff - Erec - EAm2) - veN.Mag2() - sq(mN))/(mA + Ebeam_eff - Erec - EAm2 - veN.Dot(v3hat_eff));
 
-      // Determine recoil momentum
-      double D = sq(X)*(sq(YSq) + sq(2.*mN)*(vZ.Mag2()*sq(cosThetaZRec) - sq(X)));
-
-      if (D<0)
+      if ((pe_Mag_eff < 0.) or (pe_Mag_eff > Ebeam))
 	{
 	  weight=0.;
 	  lcweight=0.;
 	}
       else
 	{
-	  double momRec1 = 0.5*(YSq*Z*cosThetaZRec + sqrt(D))/(sq(X) - vZ.Mag2()*sq(cosThetaZRec));
-	  double momRec2 = 0.5*(YSq*Z*cosThetaZRec - sqrt(D))/(sq(X) - vZ.Mag2()*sq(cosThetaZRec));
+	  TVector3 v3_eff;
+	  v3_eff.SetMagThetaPhi(pe_Mag_eff,theta3,phi3);
+	  TVector3 vq_eff = TVector3(0.,0.,Ebeam_eff) - v3_eff;
+	  TVector3 vqhat_eff = vq_eff.Unit();
+	  double QSq_eff = 2.*Ebeam_eff * pe_Mag_eff * (1 - cosTheta3); 
+	  double nu_eff = Ebeam_eff - pe_Mag_eff;
+	  
+	  // Sample radiation off the outgoing electron
+	  double lambda_ef = alpha/M_PI * (log( 4.*pe_Mag_eff*pe_Mag_eff/(me*me)) - 1.);
+	  double DeltaEf = doRad? pow(myRand.Rndm(),1./lambda_ef) * pe_Mag_eff : 0.;
+	  pe_Mag = pe_Mag_eff - DeltaEf;
 
-          bool momRec1Valid = (momRec1>=0.) && (X - sqrt(sq(momRec1) + sq(mN)) >=0.) && (sq(X) - sq(Z) + 2.*Z*momRec1*cosThetaZRec > 0.);
-          bool momRec2Valid = (momRec2>=0.) && (X - sqrt(sq(momRec2) + sq(mN)) >=0.) && (sq(X) - sq(Z) + 2.*Z*momRec2*cosThetaZRec >= 0.);
+	  // This will allow us to calculate apparent quantities
+	  QSq = 2. * Ebeam * pe_Mag * (1.-cosTheta3);
+	  nu = Ebeam - pe_Mag;
+	  xB = QSq/(2.*mN*nu);
+	
+	  // Fill into vectors
+	  TVector3 v3;
+	  v3.SetMagThetaPhi(pe_Mag,theta3,phi3);
+	  pe[0]=v3.X();
+	  pe[1]=v3.Y();
+	  pe[2]=v3.Z();
+	  TVector3 vq = v1 - v3;
+	  q[0]=vq.X();
+	  q[1]=vq.Y();
+	  q[2]=vq.Z();
+	  q_Mag = vq.Mag();
 
-          if ( (!momRec1Valid) && (!momRec2Valid))
-            {
-              weight=0.;
-	      lcweight=0.;
-            }
-          else
-            {
-              if (!momRec1Valid)
-                pRec_Mag = momRec2;
-              else if (!momRec2Valid)
-                pRec_Mag = momRec1;
-              else
-		{
-		  pRec_Mag = (gRandom->Rndm()>0.5)? momRec1 : momRec2;
-		  weight*=2.; // because the solution we picked is half as likely
-		  lcweight*=2.; 
-		}
+	  // Determine other angles
+	  //double thetaCM = vCM_eff.Theta();
+	  //double phiCM = vCM_eff.Phi();
+	  //double cosThetaCMRec = sin(thetaCM)*sin(thetaRec) * (cos(phiCM)*cos(phiRec) + sin(phiCM)*sin(phiRec)) + cos(thetaCM)*cosThetaRec;
+	  //double thetaQ = vq_eff.Theta();
+	  //double phiQ = vq_eff.Phi();
+	  //double cosThetaQRec = sin(thetaQ)*sin(thetaRec) * (cos(phiQ)*cos(phiRec) + sin(phiQ)*sin(phiRec)) + cos(thetaQ)*cosThetaRec;
 
-	      // Define the recoil vector
-	      TVector3 vRec;
-	      vRec.SetMagThetaPhi(pRec_Mag,acos(cosThetaRec),phiRec);
-	      pRec[0]=vRec.X();
-	      pRec[1]=vRec.Y();
-	      pRec[2]=vRec.Z();
+	  // Define the other vectors in the tree
+	  TVector3 vLead = vMiss_eff + vq_eff; // This is the true plead
+	  pLead[0] = vLead.X();
+	  pLead[1] = vLead.Y();
+	  pLead[2] = vLead.Z();
+	  pLead_Mag = vLead.Mag();
+	  TVector3 vMiss = vLead - vq; // This is the apparent pmiss
+	  pMiss[0] = vMiss.X();
+	  pMiss[1] = vMiss.Y();
+	  pMiss[2] = vMiss.Z();
+	  pMiss_Mag = vMiss.Mag();
+	  
+	  double Elead = sqrt(sq(mN) + vLead.Mag2()); // True values
 
-	      // Define the other vectors in the tree
-	      TVector3 vMiss_eff = vCM_eff - vRec; // This is the true pmiss
-	      TVector3 vLead = vMiss_eff + vq_eff; // This is the true plead
-	      pLead[0] = vLead.X();
-	      pLead[1] = vLead.Y();
-	      pLead[2] = vLead.Z();
-	      pLead_Mag = vLead.Mag();
-	      TVector3 vMiss = vLead - vq; // This is the apparent pmiss
-	      pMiss[0] = vMiss.X();
-	      pMiss[1] = vMiss.Y();
-	      pMiss[2] = vMiss.Z();
-	      pMiss_Mag = vMiss.Mag();
-	      TVector3 vRel_eff = 0.5*(vMiss_eff - vRec); // This is the true pRel
-	      double pRel_eff_Mag = vRel_eff.Mag();
+	  // Calculate some lightcone quantities
+	  double alpha2 = (Erec - vRec.Dot(vqhat_eff))/mbar;
+	  double alpha1 = (Elead - nu_eff - vMiss_eff.Dot(vqhat_eff))/mbar;
+	  double alphaCM = alpha1 + alpha2;
+	  double alpharel = 2*alpha2/alphaCM;
+	  double alphaAm2 = Anum - alphaCM;
+	  
+	  TVector3 vMiss_eff_perp = vMiss_eff - vMiss_eff.Dot(vqhat_eff)*vqhat_eff;
+	  TVector3 vRec_perp = vRec - vRec.Dot(vqhat_eff)*vqhat_eff;
+	  TVector3 k_perp = alpha1/alphaCM*vRec_perp - alpha2/alphaCM*vMiss_eff_perp;
+	  double kSq = (sq(mN) + k_perp.Mag2())/(alpharel*(2.-alpharel)) - sq(mN);
+	  double k = sqrt(kSq);
 
-	      double Elead = sqrt(sq(mN) + vLead.Mag2()); // True values
-	      double Erec = sqrt(sq(mN) + vRec.Mag2());
+	  // Do a safeguard cut
+	  if (pRel_Mag_eff < pRel_cut)
+	    weight=0.;
+	  if (k < pRel_cut)
+	    lcweight=0.;
+	  
+	  pRel[0] = 0.5*(pMiss[0] - pRec[0]); // This is the apparent pRel;
+	  pRel[1] = 0.5*(pMiss[1] - pRec[1]);
+	  pRel[2] = 0.5*(pMiss[2] - pRec[2]);
+	  TVector3 vRel(pRel[0],pRel[1],pRel[2]);
+	  pRel_Mag = vRel.Mag();
+	  
+	  pCM[0] = pMiss[0] + pRec[0]; // Apparent pCM
+	  pCM[1] = pMiss[1] + pRec[1];
+	  pCM[2] = pMiss[2] + pRec[2];
+	  TVector3 vCM(pCM[0],pCM[1],pCM[2]);
+	  pCM_Mag = vCM.Mag();
+	  
+	  // These are apparent angles
+	  theta_pmq = acos((pMiss[0]*q[0] + pMiss[1]*q[1] + pMiss[2]*q[2])/pMiss_Mag /q_Mag);
+	  theta_prq = acos((pRec[0]*q[0] + pRec[1]*q[1] + pRec[2]*q[2])/pRec_Mag /q_Mag);
 
-	      // Calculate some lightcone quantities
-	      double alpha2 = (Erec - vRec.Dot(vqhat_eff))/mbar;
-	      double alpha1 = (Elead - nu_eff - vMiss_eff.Dot(vqhat_eff))/mbar;
-	      double alphaCM = alpha1 + alpha2;
-	      double alpharel = 2*alpha2/alphaCM;
-	      double alphaAm2 = Anum - alphaCM;
-
-	      // Perpendicular components are also EFFECTIVE quantities
-	      TVector3 vMiss_eff_perp = vMiss_eff - vMiss_eff.Dot(vqhat_eff)*vqhat_eff;
-	      TVector3 vRec_perp = vRec - vRec.Dot(vqhat_eff)*vqhat_eff;
-	      TVector3 k_perp = alpha1/alphaCM*vRec_perp - alpha2/alphaCM*vMiss_eff_perp;
-	      double kSq = (sq(mN) + k_perp.Mag2())/(alpharel*(2.-alpharel)) - sq(mN);
-	      double k = sqrt(kSq);
-
-	      
-	      // Do a safeguard cut
-	      if (pRel_eff_Mag < pRel_cut)
-		  weight=0.;
-	      if (k < pRel_cut)
-		  lcweight=0.;
-
-	      pRel[0] = 0.5*(pMiss[0] - pRec[0]); // This is the apparent pRel;
-	      pRel[1] = 0.5*(pMiss[1] - pRec[1]);
-	      pRel[2] = 0.5*(pMiss[2] - pRec[2]);
-	      TVector3 vRel(pRel[0],pRel[1],pRel[2]);
-	      pRel_Mag = vRel.Mag();
-
-	      pCM[0] = pMiss[0] + pRec[0]; // Apparent pCM
-	      pCM[1] = pMiss[1] + pRec[1];
-	      pCM[2] = pMiss[2] + pRec[2];
-	      TVector3 vCM(pCM[0],pCM[1],pCM[2]);
-	      pCM_Mag = vCM.Mag();
-
-	      // These are apparent angles
-	      theta_pmq = acos((pMiss[0]*q[0] + pMiss[1]*q[1] + pMiss[2]*q[2])/pMiss_Mag /q_Mag);
-	      theta_prq = acos((pRec[0]*q[0] + pRec[1]*q[1] + pRec[2]*q[2])/pRec_Mag /q_Mag);
-
-	      // Calculate the weight
-	      weight *= myCS.sigma_eN(Ebeam_eff, v3_eff, vLead, (lead_type==pCode)) // eN cross section
-		* nu_eff/(2.*xB_eff*Ebeam_eff*pe_Mag_eff) * (Qmax-Qmin) * (Xmax-Xmin) // Jacobian for QSq,xB
+	  // Calculate the weight
+	  weight *= myCS.sigma_eN(Ebeam_eff, v3_eff, vLead, (lead_type==pCode)) // eN cross section
+	    * (doRad ? (1. - deltaHard(QSq_eff)) * pow(Ebeam/sqrt(Ebeam*pe_Mag),lambda_ei) * pow(pe_Mag_eff/sqrt(Ebeam*pe_Mag),lambda_ef) : 1.) // Radiative weights
+	    * 1./(2.*sq(M_PI)) * (phi3max - phi3min)/(2*M_PI) * (cosTheta3max - cosTheta3min)/(2) * (phiRelmax - phiRelmin)/(2*M_PI) * (cosThetaRelmax - cosThetaRelmin)/(2) // Angular terms
+	    * myInfo.get_S(pRel_Mag_eff,lead_type,rec_type) * (pRelmax - pRelmin) // Contacts
+	    * sq(pRel_Mag_eff) / fabs(1 - vLead.Dot(v3hat_eff)/Elead); // Jacobian for delta fnc.
+	    
+	  if (kSq < 0)
+	    lcweight = 0;
+	  else
+	    {
+	      // Calculate the lightcone weight
+	      lcweight *= myCS.sigma_eN(Ebeam_eff, v3_eff, vLead, (lead_type==pCode))/alpha1 // eN cross section
 		* (doRad ? (1. - deltaHard(QSq_eff)) * pow(Ebeam/sqrt(Ebeam*pe_Mag),lambda_ei) * pow(pe_Mag_eff/sqrt(Ebeam*pe_Mag),lambda_ef) : 1.) // Radiative weights
-		* 1./(4.*sq(M_PI)) * (phi3max-phi3min)/(2*M_PI) * (phiRecmax-phiRecmin)/(2*M_PI) * (cosThetaRecmax - cosThetaRecmin)/(2) // Angular terms
-		* ((lead_type==rec_type) ? myInfo.get_pp(pRel_eff_Mag) : myInfo.get_pn(pRel_eff_Mag)) // Contacts
-		* vRec.Mag2() * Erec * Elead / fabs(Erec*(pRec_Mag - Z*cosThetaZRec) + Elead*pRec_Mag); // Jacobian for delta fnc.
-
-	      if (kSq < 0)
-		lcweight = 0;
-	      else
-		{
-		  // Calculate the lightcone weight
-		  lcweight *= myCS.sigma_eN(Ebeam_eff, v3_eff, vLead, (lead_type==pCode))/alpha1 // eN cross section
-		    * nu_eff/(2.*xB_eff*Ebeam_eff*pe_Mag_eff) * (Qmax-Qmin) * (Xmax-Xmin) // Jacobian for QSq,xB
-		    * (doRad ? (1. - deltaHard(QSq_eff)) * pow(Ebeam/sqrt(Ebeam*pe_Mag),lambda_ei) * pow(pe_Mag_eff/sqrt(Ebeam*pe_Mag),lambda_ef) : 1.) // Radiative weights
-		    * 1./(4.*sq(M_PI)) * (phi3max-phi3min)/(2*M_PI) * (phiRecmax-phiRecmin)/(2*M_PI) * (cosThetaRecmax - cosThetaRecmin)/(2) // Angular terms
-		    * sqrt(mN*mN + kSq)/Erec * 1./(2.-alpharel) * myInfo.get_S(k,lead_type,rec_type) // Contacts
-		    * vRec.Mag2() * Erec * Elead / fabs(Erec*(pRec_Mag - Z*cosThetaZRec) + Elead*pRec_Mag) // Jacobian for delta fnc.
-		    * mbar*((Anum>2)?(alphaAm2/EAm2 * exp((sq(vCM_eff.Dot(vqhat_eff))-sq(mbar*(2.-alphaCM)))/(2.*sq(sigCM)))):1.); // Change in center-of-mass motion in lightcone picture
-		}
+		* 1./(2.*sq(M_PI)) * (phi3max - phi3min)/(2*M_PI) * (cosTheta3max - cosTheta3min)/(2) * (phiRelmax - phiRelmin)/(2*M_PI) * (cosThetaRelmax - cosThetaRelmin)/(2) // Angular terms
+		* sqrt(mN*mN + kSq)/Erec * 1./(2.-alpharel) * myInfo.get_S(k,lead_type,rec_type) * (pRelmax - pRelmin) // Contacts
+		* sq(pRel_Mag_eff) / fabs(1 - vLead.Dot(v3hat_eff)/Elead) // Jacobian for delta fnc.
+		* mbar * ((Anum>2)?(alphaAm2/EAm2 * exp((sq(vCM_eff.Dot(vqhat_eff))-sq(mbar*(2.-alphaCM)))/(2.*sq(sigCM)))):1.); // Change in center-of-mass motion in lightcone picture
 	    }
+	  
 	}
-	}
-	}
-      
+            
       // Fill the tree
       if ((weight > 0.) || (lcweight > 0.) || print_zeros)
 	outtree->Fill();
