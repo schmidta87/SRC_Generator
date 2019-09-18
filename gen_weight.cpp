@@ -9,6 +9,7 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TRandom3.h"
+#include "TVectorT.h"
 
 #include "constants.h"
 #include "helpers.h"
@@ -32,7 +33,9 @@ void print_help()
        << "-u <NN interaction>==<AV18>\n"
        << "-k <kRel cutoff [GeV]==0.25>\n"
        << "-c <Cross section method>==<cc1>\n"
-       << "-f <Form Factor model>==<kelly>\n\n\n";
+       << "-f <Form Factor model>==<kelly>\n"
+       << "-r: Randomize uncertain parameters\n"
+       << "-R: Use same randomized parameters as given file\n\n\n";
 }
 
 int main(int argc, char ** argv)
@@ -56,7 +59,8 @@ int main(int argc, char ** argv)
   char* u = "AV18";
   bool do_sCM = false;
   double sCM;
-  double Estar = 0.;
+  bool do_Estar = false;
+  double Estar;
   double pRel_cut = 0.30;
   double pRel_range = 0.10;
   csMethod csMeth=cc1;
@@ -65,6 +69,9 @@ int main(int argc, char ** argv)
   bool doRad = true;
   bool print_full_tree=false;
   bool print_zeros = false;
+  bool use_input_params = false;
+  TFile * param_file;
+  TVectorT<double> params(7);
   // Probability windows
   bool custom_ps = false;
   char* phase_space;
@@ -82,7 +89,7 @@ int main(int argc, char ** argv)
   double deltaHard(double QSq);
   
   int c;
-  while ((c=getopt (argc-4, &argv[4], "hvTzs:E:u:k:c:f:rRP:o")) != -1) // First five arguments are not optional flags.
+  while ((c=getopt (argc-5, &argv[5], "hvTzs:E:u:k:c:f:rP:oR:")) != -1) // First five arguments are not optional flags.
     switch(c)
       {
       case 'h':
@@ -102,6 +109,7 @@ int main(int argc, char ** argv)
 	sCM = atof(optarg);
         break;
       case 'E':
+	do_Estar = true;
 	Estar = atof(optarg);
         break;
       case 'u':
@@ -140,15 +148,16 @@ int main(int argc, char ** argv)
       case 'r':
 	rand_flag = true;
 	break;
-      case 'R':
-	doRad = false;
-	break;
       case 'P':
 	custom_ps = true;
 	phase_space = optarg;
 	break;
       case 'o':
 	doRad = false;
+	break;
+      case 'R':
+	use_input_params = true;
+	param_file = new TFile(optarg,"READ");
 	break;
       case '?':
 	return -1;
@@ -225,7 +234,8 @@ int main(int argc, char ** argv)
   Nuclear_Info myInfo(Z,N,u);
   if (do_sCM)
     myInfo.set_sigmaCM(sCM);
-  myInfo.set_Estar(Estar);
+  if (do_Estar)
+    myInfo.set_Estar(Estar);
 
   // Randomization
   TRandom3 myRand(0);
@@ -233,6 +243,18 @@ int main(int argc, char ** argv)
     {
       myInfo.randomize();
       pRel_cut = pRel_cut + (myRand.Uniform() - 0.5)*pRel_range;
+    }
+  else if (use_input_params)
+    {
+      params = *(TVectorT<double>*)param_file->Get("parameters");
+      param_file->Close();
+      myInfo.set_sigmaCM(params[0]);
+      myInfo.set_Cpp0(params[1]);
+      myInfo.set_Cpn0(params[2]);
+      myInfo.set_Cnn0(params[3]);
+      myInfo.set_Cpn1(params[4]);
+      myInfo.set_Estar(params[5]);
+      pRel_cut = params[6];
     }
   
   // Adapt cross section to custom arguments
@@ -279,8 +301,17 @@ int main(int argc, char ** argv)
   const double mAmpp = myInfo.get_mAmpp(); // this includes the effect of Estar
   const double mAmpn = myInfo.get_mAmpn();
   const double mAmnn = myInfo.get_mAmnn();
-  const double sigCM =myInfo.get_sigmaCM();
+  const double sigCM = myInfo.get_sigmaCM();
 
+  // Prepare vector of parameters to be output
+  params[0] = sigCM;
+  params[1] = myInfo.get_Cpp0();
+  params[2] = myInfo.get_Cpn0();
+  params[3] = myInfo.get_Cnn0();
+  params[4] = myInfo.get_Cpn1();
+  params[5] = myInfo.get_Estar();
+  params[6] = pRel_cut;
+  
   // Loop over events
   for (int event=0 ; event < nEvents ; event++)
     {
@@ -464,7 +495,9 @@ int main(int argc, char ** argv)
     } 	  
 
   // Clean up
+  outfile->cd();
   outtree->Write();
+  params.Write("parameters");
   outfile->Close();
   return 0;
 }
