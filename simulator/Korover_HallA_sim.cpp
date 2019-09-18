@@ -24,47 +24,34 @@ int main(int argc, char ** argv)
   if (argc < 4)
     {
       cerr << "Wrong number of arguments. Instead use:\n"
-	   << "\tKorover_HallA_sim /path/to/gen/file setting /path/to/out/file\n\n";
+	   << "\tKorover_HallA_sim /path/to/gen/file /path/to/out/file\n\n";
 	return -1;
     }
 
   TFile * infile = new TFile(argv[1]);
-  int setting = atoi(argv[2]);
 
   double theta_central = 0.5*M_PI;
   double pe_central = 3.602;
   double phie_central = -20.3*M_PI/180.;
-  double plead_central, philead_central, phirec_central;
+  double phirec_central;
+  
+  double plead_central_500 = 1.38;
+  double philead_central_500 = 33.5*M_PI/180.;
+  double phirec_central_500 = 97.*M_PI/180.;      
+
+  double plead_central_625 = 1.3;
+  double philead_central_625 = 29.*M_PI/180.;
+
+  double plead_central_750 = 1.19;
+  double philead_central_750 = 24.5*M_PI/180.;
+  double phirec_central_750 = 92.*M_PI/180.;
 
   double eta_pp = 0.73;
   double eta_pn = 0.40;
 
   double TL = 0.75;
   double TR = 0.695;
-  
-  switch(setting)
-    {
-    case 1:
-      plead_central = 1.38;
-      philead_central = 33.5*M_PI/180.;
-      phirec_central = 97.*M_PI/180.;
-      break;
-    case 2:
-      plead_central = 1.3;
-      philead_central = 29.*M_PI/180.;
-      phirec_central = 97.*M_PI/180.;
-      break;
-    case 3:
-      plead_central = 1.19;
-      philead_central = 24.5*M_PI/180.;
-      phirec_central = 92.*M_PI/180.;
-      break;
-    case '?':
-      return -1;
-    default:
-      abort();
-    }
-    
+      
   const double Ebeam = 4.454;
   
   bool verbose = false;
@@ -72,7 +59,7 @@ int main(int argc, char ** argv)
   bool doFCuts = true;
 
   int c;
-  while ((c=getopt (argc-3, &argv[3], "vrC")) != -1)
+  while ((c=getopt (argc-2, &argv[2], "vrC")) != -1)
     switch(c)
       {
       case 'v':
@@ -106,13 +93,14 @@ int main(int argc, char ** argv)
   // Other set up
   TRandom3 myRand(0);
   
-  TFile * outfile = new TFile(argv[3],"RECREATE");
+  TFile * outfile = new TFile(argv[2],"RECREATE");
   
   // Output Tree
   TTree * outTree = new TTree("T","Simulated Data Tree");
   Float_t Pe[3], Pp[2][3];
   Double_t weightp, weightpp, weightpn, lcweightp, lcweightpp, lcweightpn;
   Double_t thetak_gen, phik_gen, thetaRel_gen, phiRel_gen, pRel_gen;
+  Int_t setting;
   
   outTree->Branch("Pe",Pe,"Pe[3]/F");
   outTree->Branch("Pp",Pp,"Pp[2][3]/F");
@@ -127,6 +115,7 @@ int main(int argc, char ** argv)
   outTree->Branch("thetaRel_gen",&thetaRel_gen,"thetaRel_gen/D");
   outTree->Branch("phiRel_gen",&phiRel_gen,"phiRel_gen/D");
   outTree->Branch("pRel_gen",&pRel_gen,"pRel_gen/D");
+  outTree->Branch("setting",&setting,"setting/I");
 
   const int nEvents = inTree->GetEntries();
   for (int event=0 ; event < nEvents ; event++)
@@ -135,7 +124,10 @@ int main(int argc, char ** argv)
 	cout << "Working on event " << event << " out of " << nEvents <<"\n";
 
       inTree->GetEvent(event);
-
+      if (gen_weight == 0. and gen_lcweight == 0.)
+	continue;
+      setting = 0;
+      
       // Require a leading proton
       if (lead_type != pCode)
 	continue;
@@ -145,7 +137,7 @@ int main(int argc, char ** argv)
       TVector3 vlead(gen_pLead[2],gen_pLead[0],gen_pLead[1]);
       TVector3 vrec(gen_pRec[2],gen_pRec[0],gen_pRec[1]);
 
-      // Electron Detection and Fiducial Cuts
+      // Electron Detection and Fiducial Cuts; common to all settings
       if (!HRS_hallA(ve, pe_central, phie_central))
 	continue;
       
@@ -158,22 +150,32 @@ int main(int argc, char ** argv)
       if (fabs(ve.Theta() - theta_central) > 58e-3)
 	continue;
 
-      // Lead Proton Detection and Fiducial Cuts
-      if (!HRS_hallA(vlead, plead_central, philead_central))
+      // Lead Proton Detection and Fiducial Cuts; determines detection setting
+      if (HRS_hallA(vlead, plead_central_500, philead_central_500))
+	{
+	  if (fabs(vlead.Mag()/plead_central_500 - 1) < 4.5e-2
+	      and fabs(vlead.Phi() - philead_central_500) < 27e-3
+	      and fabs(vlead.Theta() - theta_central) < 58e-3)
+	    setting = 500;
+	}
+      else if (HRS_hallA(vlead, plead_central_625, philead_central_625))
+	{
+	  if (fabs(vlead.Mag()/plead_central_625 - 1) < 4.5e-2
+	      and fabs(vlead.Phi() - philead_central_625) < 27e-3
+	      and fabs(vlead.Theta() - theta_central) < 58e-3)
+	    setting = 625;
+	}
+      else if (HRS_hallA(vlead, plead_central_750, philead_central_750))
+	{
+	  if (fabs(vlead.Mag()/plead_central_750 - 1) < 4.5e-2
+	      and fabs(vlead.Phi() - philead_central_750) < 27e-3
+	      and fabs(vlead.Theta() - theta_central) < 58e-3)
+	    setting = 750;
+	}
+      
+      if (setting == 0.)
 	continue;
       
-      if (fabs(vlead.Mag()/plead_central - 1) > 4.5e-2)
-	continue;
-      
-      if (fabs(vlead.Phi() - philead_central) > 27e-3)
-	continue;
-	
-      if (fabs(vlead.Theta() - theta_central) > 58e-3)
-	continue;      
-
-      if (gen_weight == 0. and gen_lcweight == 0.)
-	continue;
-
       weightp = gen_weight * 1.E33 * TL;
       weightpp = gen_weight * 1.E33 * eta_pp * TL * TR;
       weightpn = gen_weight * 1.E33 * eta_pp * TL * TR;
@@ -183,6 +185,19 @@ int main(int argc, char ** argv)
   
       if (weightp <= 0. and lcweightp <= 0.)
 	continue;
+      
+      switch(setting)
+	{
+	case 500:
+	case 625:
+	  phirec_central = phirec_central_500;
+	  break;
+	case 750:
+	  phirec_central = phirec_central_750;
+	  break;
+	default:
+	  abort();
+	}
       
       // Recoil Detection and Fiducial Cuts
       if (rec_type == pCode)
