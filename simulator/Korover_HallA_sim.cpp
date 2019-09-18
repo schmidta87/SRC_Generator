@@ -35,6 +35,13 @@ int main(int argc, char ** argv)
   double pe_central = 3.602;
   double phie_central = -20.3*M_PI/180.;
   double plead_central, philead_central, phirec_central;
+
+  double eta_pp = 0.73;
+  double eta_pn = 0.40;
+
+  double TL = 0.75;
+  double TR = 0.695;
+  
   switch(setting)
     {
     case 1:
@@ -82,7 +89,7 @@ int main(int argc, char ** argv)
       default:
 	abort();
       }
-
+  
   //Input Tree
   TTree * inTree = (TTree*)infile->Get("genT");
 
@@ -104,13 +111,15 @@ int main(int argc, char ** argv)
   // Output Tree
   TTree * outTree = new TTree("T","Simulated Data Tree");
   Float_t Pe[3], Pp[2][3];
-  Double_t weightpp, weightpn, lcweightpp, lcweightpn;
+  Double_t weightp, weightpp, weightpn, lcweightp, lcweightpp, lcweightpn;
   Double_t thetak_gen, phik_gen, thetaRel_gen, phiRel_gen, pRel_gen;
   
   outTree->Branch("Pe",Pe,"Pe[3]/F");
   outTree->Branch("Pp",Pp,"Pp[2][3]/F");
+  outTree->Branch("weightp",&weightp,"weightp/D");
   outTree->Branch("weightpp",&weightpp,"weightpp/D");
   outTree->Branch("weightpn",&weightpn,"weightpn/D");
+  outTree->Branch("lcweightp",&lcweightp,"lcweightp/D");
   outTree->Branch("lcweightpp",&lcweightpp,"lcweightpp/D");
   outTree->Branch("lcweightpn",&lcweightpn,"lcweightpn/D");
   outTree->Branch("thetak_gen",&thetak_gen,"thetak_gen/D");
@@ -160,16 +169,20 @@ int main(int argc, char ** argv)
 	continue;
 	
       if (fabs(vlead.Theta() - theta_central) > 58e-3)
-	continue;
-      
+	continue;      
 
       if (gen_weight == 0. and gen_lcweight == 0.)
 	continue;
-      
-      weightpp = gen_weight * 1.E33;
-      weightpn = gen_weight * 1.E33;
-      lcweightpp = gen_lcweight * 1.E33;
-      lcweightpn = gen_lcweight * 1.E33;
+
+      weightp = gen_weight * 1.E33 * TL;
+      weightpp = gen_weight * 1.E33 * eta_pp * TL * TR;
+      weightpn = gen_weight * 1.E33 * eta_pp * TL * TR;
+      lcweightp = gen_lcweight * 1.E33 * TL;
+      lcweightpp = gen_lcweight * 1.E33 * eta_pn * TL * TR;
+      lcweightpn = gen_lcweight * 1.E33 * eta_pn * TL * TR;
+  
+      if (weightp <= 0. and lcweightp <= 0.)
+	continue;
       
       // Recoil Detection and Fiducial Cuts
       if (rec_type == pCode)
@@ -194,14 +207,20 @@ int main(int argc, char ** argv)
 	}
             
       if (fabs(vrec.Phi() - phirec_central) > 4*M_PI/180.)
-	continue;
+	{
+	  weightpp *= 0;
+	  weightpn *= 0;
+	  lcweightpp *= 0;
+	  lcweightpn *= 0;
+	}
 	
       if (fabs(vrec.Theta() - theta_central) > 14*M_PI/180.)
-	continue;
-      
-  
-      if (weightpp <= 0. and weightpn <= 0. and lcweightpp <= 0. and lcweightpn <= 0)
-	continue;
+	{
+	  weightpp *= 0;
+	  weightpn *= 0;
+	  lcweightpp *= 0;
+	  lcweightpn *= 0;
+	}
       
       // Derived vectors
       TVector3 vbeam(Ebeam,0.,0.);
