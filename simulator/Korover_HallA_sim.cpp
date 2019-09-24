@@ -21,7 +21,7 @@ using namespace std;
 
 int main(int argc, char ** argv)
 {
-  if (argc < 4)
+  if (argc < 3)
     {
       cerr << "Wrong number of arguments. Instead use:\n"
 	   << "\tKorover_HallA_sim /path/to/gen/file /path/to/out/file\n\n";
@@ -49,8 +49,8 @@ int main(int argc, char ** argv)
   double eta_pp = 0.73;
   double eta_pn = 0.40;
 
-  double TL = 0.75;
-  double TR = 0.695;
+  double TL;
+  double TR;
       
   const double Ebeam = 4.454;
   
@@ -189,10 +189,16 @@ int main(int argc, char ** argv)
       switch(setting)
 	{
 	case 500:
+	  TL = 0.75;
+	  TR = 0.66;
 	case 625:
+	  TL = 0.752;
+	  TR = 0.7;
 	  phirec_central = phirec_central_500;
 	  break;
 	case 750:
+	  TL = 0.756;
+	  TR = 0.734;
 	  phirec_central = phirec_central_750;
 	  break;
 	default:
@@ -230,6 +236,13 @@ int main(int argc, char ** argv)
 	}
 	
       if (fabs(vrec.Theta() - theta_central) > 14*M_PI/180.)
+	{
+	  weightpp *= 0;
+	  weightpn *= 0;
+	  lcweightpp *= 0;
+	  lcweightpn *= 0;
+	}
+      if (vrec.Mag() > 0.9 or vrec.Mag() < 0.3)
 	{
 	  weightpp *= 0;
 	  weightpn *= 0;
