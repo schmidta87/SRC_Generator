@@ -48,7 +48,8 @@ int main(int argc, char ** argv)
 
   double eta_pp = 0.73;
   double eta_pn = 0.40;
-
+  double eta;
+  
   double TL;
   double TR;
       
@@ -98,24 +99,23 @@ int main(int argc, char ** argv)
   // Output Tree
   TTree * outTree = new TTree("T","Simulated Data Tree");
   Float_t Pe[3], Pp[2][3];
-  Double_t weightp, weightpp, weightpn, lcweightp, lcweightpp, lcweightpn;
+  Double_t weightp, weightpN, lcweightp, lcweightpN;
   Double_t thetak_gen, phik_gen, thetaRel_gen, phiRel_gen, pRel_gen;
-  Int_t setting;
+  Int_t setting, rec_code;
   
   outTree->Branch("Pe",Pe,"Pe[3]/F");
   outTree->Branch("Pp",Pp,"Pp[2][3]/F");
   outTree->Branch("weightp",&weightp,"weightp/D");
-  outTree->Branch("weightpp",&weightpp,"weightpp/D");
-  outTree->Branch("weightpn",&weightpn,"weightpn/D");
+  outTree->Branch("weightpN",&weightpN,"weightpN/D");
   outTree->Branch("lcweightp",&lcweightp,"lcweightp/D");
-  outTree->Branch("lcweightpp",&lcweightpp,"lcweightpp/D");
-  outTree->Branch("lcweightpn",&lcweightpn,"lcweightpn/D");
+  outTree->Branch("lcweightpN",&lcweightpN,"lcweightpN/D");
   outTree->Branch("thetak_gen",&thetak_gen,"thetak_gen/D");
   outTree->Branch("phik_gen",&phik_gen,"phik_gen/D");
   outTree->Branch("thetaRel_gen",&thetaRel_gen,"thetaRel_gen/D");
   outTree->Branch("phiRel_gen",&phiRel_gen,"phiRel_gen/D");
   outTree->Branch("pRel_gen",&pRel_gen,"pRel_gen/D");
   outTree->Branch("setting",&setting,"setting/I");
+  outTree->Branch("rec_code",&rec_code,"rec_code/I");
 
   const int nEvents = inTree->GetEntries();
   for (int event=0 ; event < nEvents ; event++)
@@ -175,13 +175,23 @@ int main(int argc, char ** argv)
       
       if (setting == 0.)
 	continue;
+
+      switch(rec_type)
+	{
+	case pCode:
+	  eta = eta_pp;
+	  break;
+	case nCode:
+	  eta = eta_pn;
+	  break;
+	default:
+	  abort();
+	}
       
       weightp = gen_weight * 1.E33 * TL;
-      weightpp = gen_weight * 1.E33 * eta_pp * TL * TR;
-      weightpn = gen_weight * 1.E33 * eta_pp * TL * TR;
+      weightpN = gen_weight * 1.E33 * eta * TL * TR;
       lcweightp = gen_lcweight * 1.E33 * TL;
-      lcweightpp = gen_lcweight * 1.E33 * eta_pn * TL * TR;
-      lcweightpn = gen_lcweight * 1.E33 * eta_pn * TL * TR;
+      lcweightpN = gen_lcweight * 1.E33 * eta * TL * TR;
   
       if (weightp <= 0. and lcweightp <= 0.)
 	continue;
@@ -208,46 +218,37 @@ int main(int argc, char ** argv)
       // Recoil Detection and Fiducial Cuts
       if (rec_type == pCode)
 	{
-	  weightpn = 0.;
-	  lcweightpn = 0.;
 	  if (!BigBite(vrec,phirec_central))
 	    {
-	      weightpp = 0.;
-	      lcweightpp = 0.;
+	      weightpN = 0.;
+	      lcweightpN = 0.;
 	    }
 	}
       else
 	{
-	  weightpp = 0.;
-	  lcweightpp = 0.;
 	  if (!HAND(vrec,phirec_central))
 	    {
-	      weightpn = 0.;
-	      lcweightpn = 0.;
+	      weightpN = 0.;
+	      lcweightpN = 0.;
 	    }
 	}
             
       if (fabs(vrec.Phi() - phirec_central) > 4*M_PI/180.)
 	{
-	  weightpp *= 0;
-	  weightpn *= 0;
-	  lcweightpp *= 0;
-	  lcweightpn *= 0;
+	  weightpN *= 0;
+	  lcweightpN *= 0;
 	}
 	
       if (fabs(vrec.Theta() - theta_central) > 14*M_PI/180.)
 	{
-	  weightpp *= 0;
-	  weightpn *= 0;
-	  lcweightpp *= 0;
-	  lcweightpn *= 0;
+	  weightpN *= 0;
+	  lcweightpN *= 0;
 	}
+      
       if (vrec.Mag() > 0.9 or vrec.Mag() < 0.3)
 	{
-	  weightpp *= 0;
-	  weightpn *= 0;
-	  lcweightpp *= 0;
-	  lcweightpn *= 0;
+	  weightpN *= 0;
+	  lcweightpN *= 0;
 	}
       
       // Derived vectors
@@ -275,6 +276,7 @@ int main(int argc, char ** argv)
 	continue;
       
       // Load up tree
+      rec_code = rec_type;
       for (int i=0 ; i<3 ; i++)
 	{
 	  Pe[i] = ve[i];

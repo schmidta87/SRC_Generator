@@ -79,6 +79,17 @@ int main(int argc, char ** argv)
   TH1D * hpp_Pm = new TH1D("epp_Pm","epp;pMiss [GeV];Counts",Pm_bins,0.2,1.);
   h_list.push_back(hpp_Pm);
 
+  TH1D * hp_setting = new TH1D("ep_setting","ep;pMiss [MeV];Counts",3,437.5,812.5);
+  h_list.push_back(hp_setting);
+  TH1D * hp_n_setting = new TH1D("ep_n_setting","ep(n);pMiss [MeV];Counts",3,437.5,812.5);
+  h_list.push_back(hp_n_setting);
+  TH1D * hp_p_setting = new TH1D("ep_p_setting","ep(p);pMiss [MeV];Counts",3,437.5,812.5);
+  h_list.push_back(hp_p_setting);
+  TH1D * hpn_setting = new TH1D("epn_setting","epn;pMiss [MeV];Counts",3,437.5,812.5);
+  h_list.push_back(hpn_setting);
+  TH1D * hpp_setting = new TH1D("epp_setting","epp;pMiss [MeV];Counts",3,437.5,812.5);
+  h_list.push_back(hpp_setting);
+  
   TH1D * hpn_cosgamma_set[3];
   TH1D * hpn_mMiss_set[3];
   TH1D * hpp_mMiss_set[3];
@@ -135,11 +146,19 @@ int main(int argc, char ** argv)
   for (int i=0; i<h_list.size(); i++)
     h_list[i]->Sumw2();
 
+  // Acceptance Factors:
+  TGraphAsymmErrors * pn_acc = new TGraphAsymmErrors();
+  pn_acc->SetName("pn_acc");
+  pn_acc->SetTitle("pn_acc;p_miss [MeV]; pn acceptance");
+  TGraphAsymmErrors * pp_acc = new TGraphAsymmErrors();
+  pp_acc->SetName("pp_acc");
+  pp_acc->SetTitle("pp_acc;p_miss [MeV]; pp acceptance");
+	  
   // Tree Variable initialization
   Float_t Pe[3], Pp[2][3];
-  Double_t weightp, weightpp, weightpn;
+  Double_t weightp, weightpN;
   Double_t thetak_gen, phik_gen, thetaRel_gen, phiRel_gen, pRel_gen;
-  Int_t setting;
+  Int_t setting, rec_code;
   
   // Input Tree (full)
   TTree * inTree_full = (TTree*)infile_full->Get("T");
@@ -149,14 +168,12 @@ int main(int argc, char ** argv)
   if (!use_lc)
     {
       inTree_full->SetBranchAddress("weightp",&weightp);
-      inTree_full->SetBranchAddress("weightpp",&weightpp);
-      inTree_full->SetBranchAddress("weightpn",&weightpn);
+      inTree_full->SetBranchAddress("weightpN",&weightpN);
     }
   else
     {
       inTree_full->SetBranchAddress("lcweightp",&weightp);
-      inTree_full->SetBranchAddress("lcweightpp",&weightpp);
-      inTree_full->SetBranchAddress("lcweightpn",&weightpn);
+      inTree_full->SetBranchAddress("lcweightpN",&weightpN);
     }
   inTree_full->SetBranchAddress("thetak_gen",&thetak_gen);
   inTree_full->SetBranchAddress("phik_gen",&phik_gen);
@@ -164,6 +181,7 @@ int main(int argc, char ** argv)
   inTree_full->SetBranchAddress("phiRel_gen",&phiRel_gen);
   inTree_full->SetBranchAddress("pRel_gen",&pRel_gen);
   inTree_full->SetBranchAddress("setting",&setting);
+  inTree_full->SetBranchAddress("rec_code",&rec_code);
   
   const int nEvents_full = inTree_full->GetEntries();
   for (int event=0 ; event < nEvents_full ; event++)
@@ -194,7 +212,19 @@ int main(int argc, char ** argv)
       TVector3 vmiss = vlead - vq;
       double pmiss = vmiss.Mag();
       hp_Pm_set[set_bin]->Fill(pmiss,weightp);
-
+      hp_setting->Fill(setting,weightp);
+      
+      if (rec_code == pCode)
+	{
+	  hp_p_setting->Fill(setting,weightp);
+	}
+      else if (rec_code == nCode)
+	{
+	  hp_n_setting->Fill(setting,weightp);
+	}
+      else
+	abort();
+      
     }
 
   infile_full->Close();
@@ -207,14 +237,12 @@ int main(int argc, char ** argv)
   if (!use_lc)
     {
       inTree_sub->SetBranchAddress("weightp",&weightp);
-      inTree_sub->SetBranchAddress("weightpp",&weightpp);
-      inTree_sub->SetBranchAddress("weightpn",&weightpn);
+      inTree_sub->SetBranchAddress("weightpN",&weightpN);
     }
   else
     {
       inTree_sub->SetBranchAddress("lcweightp",&weightp);
-      inTree_sub->SetBranchAddress("lcweightpp",&weightpp);
-      inTree_sub->SetBranchAddress("lcweightpn",&weightpn);
+      inTree_sub->SetBranchAddress("lcweightpN",&weightpN);
     }
   inTree_sub->SetBranchAddress("thetak_gen",&thetak_gen);
   inTree_sub->SetBranchAddress("phik_gen",&phik_gen);
@@ -222,6 +250,7 @@ int main(int argc, char ** argv)
   inTree_sub->SetBranchAddress("phiRel_gen",&phiRel_gen);
   inTree_sub->SetBranchAddress("pRel_gen",&pRel_gen);
   inTree_sub->SetBranchAddress("setting",&setting);
+  inTree_sub->SetBranchAddress("rec_code",&rec_code);
   
   const int nEvents_sub = inTree_sub->GetEntries();
   for (int event=0 ; event < nEvents_sub ; event++)
@@ -254,18 +283,30 @@ int main(int argc, char ** argv)
       TVector3 vcm = vmiss + vrec;
 
       double cosgamma = cos(vmiss.Angle(vrec));
-      hpn_cosgamma_set[set_bin]->Fill(cosgamma,weightpn);
 
       double Elead = sqrt(vlead.Mag2() + sq(mN));
       double Erec = sqrt(vrec.Mag2() + sq(mN));
       double nu = Ebeam - ve.Mag();
       double m_miss = sqrt(sq(nu + m_4He - Elead - Erec) - vcm.Mag2());
-      hpn_mMiss_set[set_bin]->Fill(m_miss,weightpn);
-      hpp_mMiss_set[set_bin]->Fill(m_miss,weightpp);
 
       double pmiss = vmiss.Mag();
-      hpn_Pm_set[set_bin]->Fill(pmiss,weightpn);
-      hpp_Pm_set[set_bin]->Fill(pmiss,weightpp);
+
+      if (rec_code == pCode)
+	{
+	  hpp_mMiss_set[set_bin]->Fill(m_miss,weightpN);
+	  hpp_Pm_set[set_bin]->Fill(pmiss,weightpN);
+	  hpp_setting->Fill(setting,weightpN);
+	}
+      else if (rec_code == nCode)
+	{
+	  hpn_cosgamma_set[set_bin]->Fill(cosgamma,weightpN);
+	  hpn_mMiss_set[set_bin]->Fill(m_miss,weightpN);
+	  hpn_Pm_set[set_bin]->Fill(pmiss,weightpN);
+	  hpn_setting->Fill(setting,weightpN);
+	}
+      else
+	abort();
+	  
     }
 
   infile_sub->Close();
@@ -294,6 +335,11 @@ int main(int argc, char ** argv)
   
   outfile->cd();
 
+  pn_acc->BayesDivide(hpn_setting,hp_n_setting);
+  pp_acc->BayesDivide(hpp_setting,hp_p_setting);
+  pn_acc->Write();
+  pp_acc->Write();
+  
   for (int i=0; i<h_list.size(); i++)
     h_list[i]->Write();
   
