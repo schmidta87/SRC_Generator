@@ -21,18 +21,17 @@ using namespace std;
 
 int main(int argc, char ** argv)
 {
-  if (argc < 5)
+  if (argc < 4)
     {
       cerr << "Wrong number of arguments. Instead use:\n"
-	   << "\tKorover_HallA_sim /path/to/sim/file/1 /path/to/sim/file/2 /path/to/sim/file/3 /path/to/out/file\n\n";
+	   << "\tKorover_HallA_sim /path/to/sim/file/(e,e'p) /path/to/sim/file/(e,e'pN) /path/to/out/file\n\n";
 	return -1;
     }
 
-  TFile * infile_1 = new TFile(argv[1]);
-  TFile * infile_2 = new TFile(argv[2]);
-  TFile * infile_3 = new TFile(argv[3]);
+  TFile * infile_full = new TFile(argv[1]);
+  TFile * infile_sub = new TFile(argv[2]);
 
-  TFile * outfile = new TFile(argv[4],"RECREATE");
+  TFile * outfile = new TFile(argv[3],"RECREATE");
 
   //Constants
   const double Ebeam = 4.454;
@@ -45,7 +44,7 @@ int main(int argc, char ** argv)
   TRandom3 myRand(0);
 
   int c;
-  while ((c=getopt (argc-5, &argv[5], "vrCl")) != -1)
+  while ((c=getopt (argc-4, &argv[4], "vrCl")) != -1)
     switch(c)
       {
       case 'v':
@@ -67,67 +66,184 @@ int main(int argc, char ** argv)
   
   TH1D * hpn_cosgamma = new TH1D("epn_cosgamma","epn;cos gamma;Counts",25*4,-1.,-0.94);
   h_list.push_back(hpn_cosgamma);
-  TH1D * hpn_mMiss = new TH1D("epn_Mmiss","epn;mMiss [GeV];Counts",40*4,1.7,2.2);
+  int mMiss_bins = 40*4;
+  TH1D * hpn_mMiss = new TH1D("epn_Mmiss","epn;mMiss [GeV];Counts",mMiss_bins,1.7,2.2);
   h_list.push_back(hpn_mMiss);
-  TH1D * hpp_mMiss = new TH1D("epp_Mmiss","epp;mMiss [GeV];Counts",40*4,1.7,2.2);
+  TH1D * hpp_mMiss = new TH1D("epp_Mmiss","epp;mMiss [GeV];Counts",mMiss_bins,1.7,2.2);
   h_list.push_back(hpp_mMiss);
+  int Pm_bins = 40*4;
+  TH1D * hp_Pm = new TH1D("ep_Pm","ep;pMiss [GeV];Counts",Pm_bins,0.2,1.);
+  h_list.push_back(hp_Pm);
+  TH1D * hpn_Pm = new TH1D("epn_Pm","epn;pMiss [GeV];Counts",Pm_bins,0.2,1.);
+  h_list.push_back(hpn_Pm);
+  TH1D * hpp_Pm = new TH1D("epp_Pm","epp;pMiss [GeV];Counts",Pm_bins,0.2,1.);
+  h_list.push_back(hpp_Pm);
 
-  TH1D * hpn_cosgamma_1 = new TH1D("epn_cosgamma_1","epn;cos gamma;Counts",25*4,-1.,-0.94);
-  h_list.push_back(hpn_cosgamma_1);
-  TH1D * hpn_mMiss_1 = new TH1D("epn_Mmiss_1","epn;mMiss [GeV];Counts",40*4,1.7,2.2);
-  h_list.push_back(hpn_mMiss_1);
-  TH1D * hpp_mMiss_1 = new TH1D("epp_Mmiss_1","epp;mMiss [GeV];Counts",40*4,1.7,2.2);
-  h_list.push_back(hpp_mMiss_1);
-  
-  TH1D * hpn_cosgamma_2 = new TH1D("epn_cosgamma_2","epn;cos gamma;Counts",25*4,-1.,-0.94);
-  h_list.push_back(hpn_cosgamma_2);
-  TH1D * hpn_mMiss_2 = new TH1D("epn_Mmiss_2","epn;mMiss [GeV];Counts",40*4,1.7,2.2);
-  h_list.push_back(hpn_mMiss_2);
-  TH1D * hpp_mMiss_2 = new TH1D("epp_Mmiss_2","epp;mMiss [GeV];Counts",40*4,1.7,2.2);
-  h_list.push_back(hpp_mMiss_2);
-  
-  TH1D * hpn_cosgamma_3 = new TH1D("epn_cosgamma_3","epn;cos gamma;Counts",25*4,-1.,-0.94);
-  h_list.push_back(hpn_cosgamma_3);
-  TH1D * hpn_mMiss_3 = new TH1D("epn_Mmiss_3","epn;mMiss [GeV];Counts",40*4,1.7,2.2);
-  h_list.push_back(hpn_mMiss_3);
-  TH1D * hpp_mMiss_3 = new TH1D("epp_Mmiss_3","epp;mMiss [GeV];Counts",40*4,1.7,2.2);
-  h_list.push_back(hpp_mMiss_3);
+  TH1D * hpn_cosgamma_set[3];
+  TH1D * hpn_mMiss_set[3];
+  TH1D * hpp_mMiss_set[3];
+  TH1D * hp_Pm_set[3];
+  TH1D * hpn_Pm_set[3];
+  TH1D * hpp_Pm_set[3];
 
+  for (int i = 0; i<3; i++)
+    {
+      char temp[100];
+
+      int set;
+      switch(i)
+	{
+	case 0:
+	  set = 500;
+	  break;
+	case 1:
+	  set = 625;
+	  break;
+	case 2:
+	  set = 750;
+	  break;
+	default:
+	  abort();
+	    }
+
+      sprintf(temp,"epn_cosgamma_%i",set);
+      hpn_cosgamma_set[i] = new TH1D(temp,"epn;cos gamma;Counts",25*4,-1.,-0.94);
+      h_list.push_back(hpn_cosgamma_set[i]);
+
+      sprintf(temp,"epn_Mmiss_%i",set);
+      hpn_mMiss_set[i] = new TH1D(temp,"epn;mMiss [GeV];Counts",mMiss_bins,1.7,2.2);
+      h_list.push_back(hpn_mMiss_set[i]);
+
+      sprintf(temp,"epp_Mmiss_%i",set);
+      hpp_mMiss_set[i] = new TH1D(temp,"epp;mMiss [GeV];Counts",mMiss_bins,1.7,2.2);
+      h_list.push_back(hpp_mMiss_set[i]);
+
+      sprintf(temp,"ep_Pm_%i",set);
+      hp_Pm_set[i] = new TH1D(temp,"ep;pMiss [GeV];Counts",Pm_bins,0.2,1.);
+      h_list.push_back(hp_Pm_set[i]);
+
+      sprintf(temp,"epn_Pm_%i",set);
+      hpn_Pm_set[i] = new TH1D(temp,"epn;pMiss [GeV];Counts",Pm_bins,0.2,1.);
+      h_list.push_back(hpn_Pm_set[i]);
+
+      sprintf(temp,"epp_Pm_%i",set);
+      hpp_Pm_set[i] = new TH1D(temp,"epp;pMiss [GeV];Counts",Pm_bins,0.2,1.);
+      h_list.push_back(hpp_Pm_set[i]);
+
+    }
+  
   for (int i=0; i<h_list.size(); i++)
     h_list[i]->Sumw2();
 
   // Tree Variable initialization
   Float_t Pe[3], Pp[2][3];
-  Double_t weightpp, weightpn;
+  Double_t weightp, weightpp, weightpn;
   Double_t thetak_gen, phik_gen, thetaRel_gen, phiRel_gen, pRel_gen;
+  Int_t setting;
   
+  // Input Tree (full)
+  TTree * inTree_full = (TTree*)infile_full->Get("T");
   
-  // Input Tree (1)
-  TTree * inTree_1 = (TTree*)infile_1->Get("T");
-  
-  inTree_1->SetBranchAddress("Pe",Pe);
-  inTree_1->SetBranchAddress("Pp",Pp);
+  inTree_full->SetBranchAddress("Pe",Pe);
+  inTree_full->SetBranchAddress("Pp",Pp);
   if (!use_lc)
     {
-      inTree_1->SetBranchAddress("weightpp",&weightpp);
-      inTree_1->SetBranchAddress("weightpn",&weightpn);
+      inTree_full->SetBranchAddress("weightp",&weightp);
+      inTree_full->SetBranchAddress("weightpp",&weightpp);
+      inTree_full->SetBranchAddress("weightpn",&weightpn);
     }
   else
     {
-      inTree_1->SetBranchAddress("lcweightpp",&weightpp);
-      inTree_1->SetBranchAddress("lcweightpn",&weightpn);
+      inTree_full->SetBranchAddress("lcweightp",&weightp);
+      inTree_full->SetBranchAddress("lcweightpp",&weightpp);
+      inTree_full->SetBranchAddress("lcweightpn",&weightpn);
     }
-  inTree_1->SetBranchAddress("thetak_gen",&thetak_gen);
-  inTree_1->SetBranchAddress("phik_gen",&phik_gen);
-  inTree_1->SetBranchAddress("thetaRel_gen",&thetaRel_gen);
-  inTree_1->SetBranchAddress("phiRel_gen",&phiRel_gen);
-  inTree_1->SetBranchAddress("pRel_gen",&pRel_gen);
-
-  const int nEvents_1 = inTree_1->GetEntries();
-  for (int event=0 ; event < nEvents_1 ; event++)
+  inTree_full->SetBranchAddress("thetak_gen",&thetak_gen);
+  inTree_full->SetBranchAddress("phik_gen",&phik_gen);
+  inTree_full->SetBranchAddress("thetaRel_gen",&thetaRel_gen);
+  inTree_full->SetBranchAddress("phiRel_gen",&phiRel_gen);
+  inTree_full->SetBranchAddress("pRel_gen",&pRel_gen);
+  inTree_full->SetBranchAddress("setting",&setting);
+  
+  const int nEvents_full = inTree_full->GetEntries();
+  for (int event=0 ; event < nEvents_full ; event++)
     {
 
-      inTree_1->GetEvent(event);
+      inTree_full->GetEvent(event);
+
+      int set_bin;
+      switch(setting)
+	{
+	case 500:
+	  set_bin = 0;
+	  break;
+	case 625:
+	  set_bin = 1;
+	  break;
+	case 750:
+	  set_bin = 2;
+	  break;
+	default:
+	  abort();
+	    }
+
+      TVector3 ve(Pe[0],Pe[1],Pe[2]);
+      TVector3 vlead(Pp[0][0],Pp[0][1],Pp[0][2]);
+      
+      TVector3 vq = vBeam - ve;
+      TVector3 vmiss = vlead - vq;
+      double pmiss = vmiss.Mag();
+      hp_Pm_set[set_bin]->Fill(pmiss,weightp);
+
+    }
+
+  infile_full->Close();
+
+  // Input Tree (sub)
+  TTree * inTree_sub = (TTree*)infile_sub->Get("T");
+  
+  inTree_sub->SetBranchAddress("Pe",Pe);
+  inTree_sub->SetBranchAddress("Pp",Pp);
+  if (!use_lc)
+    {
+      inTree_sub->SetBranchAddress("weightp",&weightp);
+      inTree_sub->SetBranchAddress("weightpp",&weightpp);
+      inTree_sub->SetBranchAddress("weightpn",&weightpn);
+    }
+  else
+    {
+      inTree_sub->SetBranchAddress("lcweightp",&weightp);
+      inTree_sub->SetBranchAddress("lcweightpp",&weightpp);
+      inTree_sub->SetBranchAddress("lcweightpn",&weightpn);
+    }
+  inTree_sub->SetBranchAddress("thetak_gen",&thetak_gen);
+  inTree_sub->SetBranchAddress("phik_gen",&phik_gen);
+  inTree_sub->SetBranchAddress("thetaRel_gen",&thetaRel_gen);
+  inTree_sub->SetBranchAddress("phiRel_gen",&phiRel_gen);
+  inTree_sub->SetBranchAddress("pRel_gen",&pRel_gen);
+  inTree_sub->SetBranchAddress("setting",&setting);
+  
+  const int nEvents_sub = inTree_sub->GetEntries();
+  for (int event=0 ; event < nEvents_sub ; event++)
+    {
+
+      inTree_sub->GetEvent(event);
+
+      int set_bin;
+      switch(setting)
+	{
+	case 500:
+	  set_bin = 0;
+	  break;
+	case 625:
+	  set_bin = 1;
+	  break;
+	case 750:
+	  set_bin = 2;
+	  break;
+	default:
+	  abort();
+	    }
 
       TVector3 ve(Pe[0],Pe[1],Pe[2]);
       TVector3 vlead(Pp[0][0],Pp[0][1],Pp[0][2]);
@@ -138,150 +254,43 @@ int main(int argc, char ** argv)
       TVector3 vcm = vmiss + vrec;
 
       double cosgamma = cos(vmiss.Angle(vrec));
-      hpn_cosgamma_1->Fill(cosgamma,weightpn);
+      hpn_cosgamma_set[set_bin]->Fill(cosgamma,weightpn);
 
       double Elead = sqrt(vlead.Mag2() + sq(mN));
       double Erec = sqrt(vrec.Mag2() + sq(mN));
       double nu = Ebeam - ve.Mag();
       double m_miss = sqrt(sq(nu + m_4He - Elead - Erec) - vcm.Mag2());
-      hpn_mMiss_1->Fill(m_miss,weightpn);
-      hpp_mMiss_1->Fill(m_miss,weightpp);
+      hpn_mMiss_set[set_bin]->Fill(m_miss,weightpn);
+      hpp_mMiss_set[set_bin]->Fill(m_miss,weightpp);
+
+      double pmiss = vmiss.Mag();
+      hpn_Pm_set[set_bin]->Fill(pmiss,weightpn);
+      hpp_Pm_set[set_bin]->Fill(pmiss,weightpp);
     }
 
-  infile_1->Close();
+  infile_sub->Close();
 
-  // Input Tree (2)
-  TTree * inTree_2 = (TTree*)infile_2->Get("T");
-  
-  inTree_2->SetBranchAddress("Pe",Pe);
-  inTree_2->SetBranchAddress("Pp",Pp);
-  if (!use_lc)
+  double Np [] = {3100., 1619., 1228.};
+
+  for (int i = 0; i<2; i++)
     {
-      inTree_2->SetBranchAddress("weightpp",&weightpp);
-      inTree_2->SetBranchAddress("weightpn",&weightpn);
-    }
-  else
-    {
-      inTree_2->SetBranchAddress("lcweightpp",&weightpp);
-      inTree_2->SetBranchAddress("lcweightpn",&weightpn);
-    }
-  inTree_2->SetBranchAddress("thetak_gen",&thetak_gen);
-  inTree_2->SetBranchAddress("phik_gen",&phik_gen);
-  inTree_2->SetBranchAddress("thetaRel_gen",&thetaRel_gen);
-  inTree_2->SetBranchAddress("phiRel_gen",&phiRel_gen);
-  inTree_2->SetBranchAddress("pRel_gen",&pRel_gen);
-
-  const int nEvents_2 = inTree_2->GetEntries();
-  for (int event=0 ; event < nEvents_2 ; event++)
-    {
-
-      inTree_2->GetEvent(event);
-
-      TVector3 ve(Pe[0],Pe[1],Pe[2]);
-      TVector3 vlead(Pp[0][0],Pp[0][1],Pp[0][2]);
-      TVector3 vrec(Pp[1][0],Pp[1][1],Pp[1][2]);
+      double normp = Np[i]/hp_Pm_set[i]->Integral();
+      double normpN = normp;
       
-      TVector3 vq = vBeam - ve;
-      TVector3 vmiss = vlead - vq;
-      TVector3 vcm = vmiss + vrec;
-
-      double cosgamma = cos(vmiss.Angle(vrec));
-      hpn_cosgamma_2->Fill(cosgamma,weightpn);
-	
-      double Elead = sqrt(vlead.Mag2() + sq(mN));
-      double Erec = sqrt(vrec.Mag2() + sq(mN));
-      double nu = Ebeam - ve.Mag();
-      double m_miss = sqrt(sq(nu + m_4He - Elead - Erec) - vcm.Mag2());
-      hpn_mMiss_2->Fill(m_miss,weightpn);
-      hpp_mMiss_2->Fill(m_miss,weightpp);
-    }
-
-  infile_2->Close();
-
-  // Input Tree (3)
-  TTree * inTree_3 = (TTree*)infile_3->Get("T");
-  
-  inTree_3->SetBranchAddress("Pe",Pe);
-  inTree_3->SetBranchAddress("Pp",Pp);
-  if (!use_lc)
-    {
-      inTree_3->SetBranchAddress("weightpp",&weightpp);
-      inTree_3->SetBranchAddress("weightpn",&weightpn);
-    }
-  else
-    {
-      inTree_3->SetBranchAddress("lcweightpp",&weightpp);
-      inTree_3->SetBranchAddress("lcweightpn",&weightpn);
-    }
-  inTree_3->SetBranchAddress("thetak_gen",&thetak_gen);
-  inTree_3->SetBranchAddress("phik_gen",&phik_gen);
-  inTree_3->SetBranchAddress("thetaRel_gen",&thetaRel_gen);
-  inTree_3->SetBranchAddress("phiRel_gen",&phiRel_gen);
-  inTree_3->SetBranchAddress("pRel_gen",&pRel_gen);
-
-  const int nEvents_3 = inTree_3->GetEntries();
-  for (int event=0 ; event < nEvents_3 ; event++)
-    {
-
-      inTree_3->GetEvent(event);
-
-      TVector3 ve(Pe[0],Pe[1],Pe[2]);
-      TVector3 vlead(Pp[0][0],Pp[0][1],Pp[0][2]);
-      TVector3 vrec(Pp[1][0],Pp[1][1],Pp[1][2]);
+      hpn_cosgamma_set[i]->Scale(normpN);
+      hpn_mMiss_set[i]->Scale(normpN);
+      hpp_mMiss_set[i]->Scale(normpN);
+      hp_Pm_set[i]->Scale(normp);
+      hpn_Pm_set[i]->Scale(normpN);
+      hpp_Pm_set[i]->Scale(normpN);
       
-      TVector3 vq = vBeam - ve;
-      TVector3 vmiss = vlead - vq;
-      TVector3 vcm = vmiss + vrec;
-
-      double cosgamma = cos(vmiss.Angle(vrec));
-      hpn_cosgamma_3->Fill(cosgamma,weightpn);
-	
-      double Elead = sqrt(vlead.Mag2() + sq(mN));
-      double Erec = sqrt(vrec.Mag2() + sq(mN));
-      double nu = Ebeam - ve.Mag();
-      double m_miss = sqrt(sq(nu + m_4He - Elead - Erec) - vcm.Mag2());
-      hpn_mMiss_3->Fill(m_miss,weightpn);
-      hpp_mMiss_3->Fill(m_miss,weightpp);
+      hpn_cosgamma->Add(hpn_cosgamma_set[i]);
+      hpn_mMiss->Add(hpn_mMiss_set[i]);
+      hpp_mMiss->Add(hpp_mMiss_set[i]);
+      hp_Pm->Add(hp_Pm_set[i]);
+      hpn_Pm->Add(hpn_Pm_set[i]);
+      hpp_Pm->Add(hpp_Pm_set[i]);
     }
-
-  infile_3->Close();
-  
-  double N_pn_1 = 107.;
-  double N_pn_2 = 66.;
-  double N_pn_3 = 50.;
-  double N_pp_1 = 7.5;
-  double N_pp_2 = 20.;
-  double N_pp_3 = 22.5;
-
-  double N_pn = 113.;
-  double N_pp = 37.;
-  
-  hpn_cosgamma_1->Scale(N_pn_1/hpn_cosgamma_1->Integral());
-  hpn_cosgamma_2->Scale(N_pn_2/hpn_cosgamma_2->Integral());
-  hpn_cosgamma_3->Scale(N_pn_3/hpn_cosgamma_3->Integral());
-  
-  hpn_mMiss_1->Scale(N_pn_1/hpn_mMiss_1->Integral());
-  hpn_mMiss_2->Scale(N_pn_2/hpn_mMiss_2->Integral());
-  hpn_mMiss_3->Scale(N_pn_3/hpn_mMiss_3->Integral());
-
-  hpp_mMiss_1->Scale(N_pp_1/hpp_mMiss_1->Integral());
-  hpp_mMiss_2->Scale(N_pp_2/hpp_mMiss_2->Integral());
-  hpp_mMiss_3->Scale(N_pp_3/hpp_mMiss_3->Integral());
-
-  hpn_cosgamma->Add(hpn_cosgamma_1);
-  hpn_cosgamma->Add(hpn_cosgamma_2);
-  hpn_cosgamma->Add(hpn_cosgamma_3);
-  hpn_cosgamma->Scale(N_pn/hpn_cosgamma->Integral());
-
-  hpn_mMiss->Add(hpn_mMiss_1);
-  hpn_mMiss->Add(hpn_mMiss_2);
-  hpn_mMiss->Add(hpn_mMiss_3);
-  hpn_mMiss->Scale(N_pn/hpn_mMiss->Integral());
-  
-  hpp_mMiss->Add(hpp_mMiss_1);
-  hpp_mMiss->Add(hpp_mMiss_2);
-  hpp_mMiss->Add(hpp_mMiss_3);
-  hpp_mMiss->Scale(N_pp/hpp_mMiss->Integral());
   
   outfile->cd();
 
@@ -289,6 +298,6 @@ int main(int argc, char ** argv)
     h_list[i]->Write();
   
   outfile->Close();
-  
+
   return 0;
 }
