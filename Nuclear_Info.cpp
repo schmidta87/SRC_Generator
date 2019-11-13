@@ -109,7 +109,13 @@ void Nuclear_Info::randomize()
   Cpn0 += myRand.Gaus(0.,d_Cpn0);
   Cnn0 += myRand.Gaus(0.,d_Cnn0);
   Cpn1 += myRand.Gaus(0.,d_Cpn1);
-  Estar = myRand.Uniform()*0.030;
+  double Estar_range = 0.030;
+  if (A == 2 or A == 3)
+    Estar_range = 0.000;
+  else if (A == 4)
+    Estar_range = 0.010;
+
+  Estar = myRand.Uniform()*Estar_range;
 }
 
 void Nuclear_Info::setCustomValues(double newSigma, double newEstar, double newCpp0 ,double newCnn0 ,double newCpn0, double newCpn1){
