@@ -74,11 +74,11 @@ int main(int argc, char ** argv)
   int Pm_bins = 81;
   double Pm_lo = 0.355;
   double Pm_hi = 0.923;
-  TH1D * hp_Pm = new TH1D("ep_Pm","ep;pMiss [GeV];Counts",Pm_bins,Pm_low,Pm_hi);
+  TH1D * hp_Pm = new TH1D("ep_Pm","ep;pMiss [GeV];Counts",Pm_bins,Pm_lo,Pm_hi);
   h_list.push_back(hp_Pm);
-  TH1D * hpn_Pm = new TH1D("epn_Pm","epn;pMiss [GeV];Counts",Pm_bins,,Pm_low,Pm_hi);
+  TH1D * hpn_Pm = new TH1D("epn_Pm","epn;pMiss [GeV];Counts",Pm_bins,Pm_lo,Pm_hi);
   h_list.push_back(hpn_Pm);
-  TH1D * hpp_Pm = new TH1D("epp_Pm","epp;pMiss [GeV];Counts",Pm_bins,,Pm_low,Pm_hi);
+  TH1D * hpp_Pm = new TH1D("epp_Pm","epp;pMiss [GeV];Counts",Pm_bins,Pm_lo,Pm_hi);
   h_list.push_back(hpp_Pm);
 
   TH1D * hp_setting = new TH1D("ep_setting","ep;pMiss [MeV];Counts",3,437.5,812.5);
@@ -134,15 +134,15 @@ int main(int argc, char ** argv)
       h_list.push_back(hpp_mMiss_set[i]);
 
       sprintf(temp,"ep_Pm_%i",set);
-      hp_Pm_set[i] = new TH1D(temp,"ep;pMiss [GeV];Counts",Pm_bins,,Pm_low,Pm_hi);
+      hp_Pm_set[i] = new TH1D(temp,"ep;pMiss [GeV];Counts",Pm_bins,Pm_lo,Pm_hi);
       h_list.push_back(hp_Pm_set[i]);
 
       sprintf(temp,"epn_Pm_%i",set);
-      hpn_Pm_set[i] = new TH1D(temp,"epn;pMiss [GeV];Counts",Pm_bins,,Pm_low,Pm_hi);
+      hpn_Pm_set[i] = new TH1D(temp,"epn;pMiss [GeV];Counts",Pm_bins,Pm_lo,Pm_hi);
       h_list.push_back(hpn_Pm_set[i]);
 
       sprintf(temp,"epp_Pm_%i",set);
-      hpp_Pm_set[i] = new TH1D(temp,"epp;pMiss [GeV];Counts",Pm_bins,,Pm_low,Pm_hi);
+      hpp_Pm_set[i] = new TH1D(temp,"epp;pMiss [GeV];Counts",Pm_bins,Pm_lo,Pm_hi);
       h_list.push_back(hpp_Pm_set[i]);
 
       sprintf(temp,"ep_Em_%i",set);
