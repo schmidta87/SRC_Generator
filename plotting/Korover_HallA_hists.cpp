@@ -341,6 +341,7 @@ int main(int argc, char ** argv)
       hp_Pm_set[i]->Scale(normp);
       hpn_Pm_set[i]->Scale(normpN);
       hpp_Pm_set[i]->Scale(normpN);
+      hp_Em_set[i]->Scale(normp);
       
       hpn_cosgamma->Add(hpn_cosgamma_set[i]);
       hpn_mMiss->Add(hpn_mMiss_set[i]);
