@@ -275,14 +275,14 @@ int main(int argc, char ** argv)
   outtree->Branch("pRec",pRec,"pRec[3]/D");
   outtree->Branch("weight",&weight,"weight/D");
   outtree->Branch("lcweight",&lcweight,"lcweight/D");
+  outtree->Branch("QSq",&QSq,"QSq/D");
+  outtree->Branch("xB",&xB,"xB/D");
   if (print_full_tree)
     {
       outtree->Branch("q",q,"q[3]/D");
       outtree->Branch("pMiss",pMiss,"pMiss[3]/D");
       outtree->Branch("pCM",pCM,"pCM[3]/D");
       outtree->Branch("pRel",pRel,"pRel[3]/D");
-      outtree->Branch("QSq",&QSq,"QSq/D");
-      outtree->Branch("xB",&xB,"xB/D");
       outtree->Branch("nu",&nu,"nu/D");
       outtree->Branch("pe_Mag",&pe_Mag,"pe_Mag/D");
       outtree->Branch("q_Mag",&q_Mag,"q_Mag/D");
