@@ -71,12 +71,14 @@ int main(int argc, char ** argv)
   h_list.push_back(hpn_mMiss);
   TH1D * hpp_mMiss = new TH1D("epp_Mmiss","epp;mMiss [GeV];Counts",mMiss_bins,1.7,2.2);
   h_list.push_back(hpp_mMiss);
-  int Pm_bins = 40*4;
-  TH1D * hp_Pm = new TH1D("ep_Pm","ep;pMiss [GeV];Counts",Pm_bins,0.2,1.);
+  int Pm_bins = 81;
+  double Pm_lo = 0.355;
+  double Pm_hi = 0.923;
+  TH1D * hp_Pm = new TH1D("ep_Pm","ep;pMiss [GeV];Counts",Pm_bins,Pm_lo,Pm_hi);
   h_list.push_back(hp_Pm);
-  TH1D * hpn_Pm = new TH1D("epn_Pm","epn;pMiss [GeV];Counts",Pm_bins,0.2,1.);
+  TH1D * hpn_Pm = new TH1D("epn_Pm","epn;pMiss [GeV];Counts",Pm_bins,Pm_lo,Pm_hi);
   h_list.push_back(hpn_Pm);
-  TH1D * hpp_Pm = new TH1D("epp_Pm","epp;pMiss [GeV];Counts",Pm_bins,0.2,1.);
+  TH1D * hpp_Pm = new TH1D("epp_Pm","epp;pMiss [GeV];Counts",Pm_bins,Pm_lo,Pm_hi);
   h_list.push_back(hpp_Pm);
 
   TH1D * hp_setting = new TH1D("ep_setting","ep;pMiss [MeV];Counts",3,437.5,812.5);
@@ -96,6 +98,8 @@ int main(int argc, char ** argv)
   TH1D * hp_Pm_set[3];
   TH1D * hpn_Pm_set[3];
   TH1D * hpp_Pm_set[3];
+  int Em_bins = 3*45;
+  TH1D * hp_Em_set[3];
 
   for (int i = 0; i<3; i++)
     {
@@ -130,16 +134,20 @@ int main(int argc, char ** argv)
       h_list.push_back(hpp_mMiss_set[i]);
 
       sprintf(temp,"ep_Pm_%i",set);
-      hp_Pm_set[i] = new TH1D(temp,"ep;pMiss [GeV];Counts",Pm_bins,0.2,1.);
+      hp_Pm_set[i] = new TH1D(temp,"ep;pMiss [GeV];Counts",Pm_bins,Pm_lo,Pm_hi);
       h_list.push_back(hp_Pm_set[i]);
 
       sprintf(temp,"epn_Pm_%i",set);
-      hpn_Pm_set[i] = new TH1D(temp,"epn;pMiss [GeV];Counts",Pm_bins,0.2,1.);
+      hpn_Pm_set[i] = new TH1D(temp,"epn;pMiss [GeV];Counts",Pm_bins,Pm_lo,Pm_hi);
       h_list.push_back(hpn_Pm_set[i]);
 
       sprintf(temp,"epp_Pm_%i",set);
-      hpp_Pm_set[i] = new TH1D(temp,"epp;pMiss [GeV];Counts",Pm_bins,0.2,1.);
+      hpp_Pm_set[i] = new TH1D(temp,"epp;pMiss [GeV];Counts",Pm_bins,Pm_lo,Pm_hi);
       h_list.push_back(hpp_Pm_set[i]);
+
+      sprintf(temp,"ep_Em_%i",set);
+      hp_Em_set[i] = new TH1D(temp,"ep;EMiss [GeV];Counts",Em_bins,0.0,0.45);
+      h_list.push_back(hp_Em_set[i]);
 
     }
   
@@ -214,6 +222,12 @@ int main(int argc, char ** argv)
       hp_Pm_set[set_bin]->Fill(pmiss,weightp);
       hp_setting->Fill(setting,weightp);
       
+      // Missing Energy Definition from Thesis
+      double Mspec = 2*mN;
+      double Mrecoil = sqrt(sq(Mspec + sqrt(sq(mN) + sq(pmiss))) - sq(pmiss));
+      double Em = Mrecoil + mN - m_4He;
+      hp_Em_set[set_bin]->Fill(Em,weightp);
+
       if (rec_code == pCode)
 	{
 	  hp_p_setting->Fill(setting,weightp);
@@ -313,10 +327,13 @@ int main(int argc, char ** argv)
 
   double Np [] = {3100., 1619., 1228.};
 
-  for (int i = 0; i<2; i++)
+  double normp;
+  double normpN;
+
+  for (int i = 0; i<3; i++)
     {
-      double normp = Np[i]/hp_Pm_set[i]->Integral();
-      double normpN = normp;
+      normp = Np[i]/hp_Pm_set[i]->Integral();
+      normpN = normp;
       
       hpn_cosgamma_set[i]->Scale(normpN);
       hpn_mMiss_set[i]->Scale(normpN);
@@ -324,15 +341,20 @@ int main(int argc, char ** argv)
       hp_Pm_set[i]->Scale(normp);
       hpn_Pm_set[i]->Scale(normpN);
       hpp_Pm_set[i]->Scale(normpN);
+      hp_Em_set[i]->Scale(normp);
       
-      hpn_cosgamma->Add(hpn_cosgamma_set[i]);
-      hpn_mMiss->Add(hpn_mMiss_set[i]);
-      hpp_mMiss->Add(hpp_mMiss_set[i]);
       hp_Pm->Add(hp_Pm_set[i]);
       hpn_Pm->Add(hpn_Pm_set[i]);
       hpp_Pm->Add(hpp_Pm_set[i]);
     }
-  
+
+  for (int i = 1; i<3; i++)
+    {
+      hpn_cosgamma->Add(hpn_cosgamma_set[i]);
+      hpn_mMiss->Add(hpn_mMiss_set[i]);
+      hpp_mMiss->Add(hpp_mMiss_set[i]);
+    }  
+
   outfile->cd();
 
   pn_acc->BayesDivide(hpn_setting,hp_n_setting);

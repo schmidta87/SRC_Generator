@@ -172,8 +172,8 @@ int main(int argc, char ** argv)
 	      and fabs(vlead.Theta() - theta_central) < 58e-3)
 	    setting = 750;
 	}
-      
-      if (setting == 0.)
+
+      if (setting == 0)
 	continue;
 
       switch(rec_type)
@@ -187,15 +187,7 @@ int main(int argc, char ** argv)
 	default:
 	  abort();
 	}
-      
-      weightp = gen_weight * 1.E33 * TL;
-      weightpN = gen_weight * 1.E33 * eta * TL * TR;
-      lcweightp = gen_lcweight * 1.E33 * TL;
-      lcweightpN = gen_lcweight * 1.E33 * eta * TL * TR;
-  
-      if (weightp <= 0. and lcweightp <= 0.)
-	continue;
-      
+
       switch(setting)
 	{
 	case 500:
@@ -214,7 +206,15 @@ int main(int argc, char ** argv)
 	default:
 	  abort();
 	}
-      
+
+      weightp = gen_weight * 1.E33 * TL;
+      weightpN = gen_weight * 1.E33 * eta * TL * TR;
+      lcweightp = gen_lcweight * 1.E33 * TL;
+      lcweightpN = gen_lcweight * 1.E33 * eta * TL * TR;
+  
+      if (weightp <= 0. and lcweightp <= 0.)
+	continue;
+
       // Recoil Detection and Fiducial Cuts
       if (rec_type == pCode)
 	{
@@ -272,9 +272,10 @@ int main(int argc, char ** argv)
       double Elead = sqrt(vlead.Mag2() + sq(mN));
       double Erec = sqrt(vrec.Mag2() + sq(mN));
       double m_miss = sqrt(sq(gen_Nu + 2*mN - Elead) - vmiss.Mag2());
+
       if (m_miss > 1.)
 	continue;
-      
+
       // Load up tree
       rec_code = rec_type;
       for (int i=0 ; i<3 ; i++)
@@ -303,15 +304,15 @@ int main(int argc, char ** argv)
       phik_gen = ve_gen.Phi()*180./M_PI;
       if (phik_gen < 0)
 	phik_gen += 360.;
-      
+
       outTree->Fill();
     }
 
-  infile->Close();
-  
   outfile->cd();
   outTree->Write();
   outfile->Close();
-  
+
+  infile->Close();
+    
   return 0;
 }
