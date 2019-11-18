@@ -60,7 +60,7 @@ int main(int argc, char ** argv){
 // TTree to save values during the loop
   TFile * outfile = new TFile(argv[3], "RECREATE");
   TTree * outtree = new TTree("genT", "Generator Tree");
-  double weight, QSq, xB, E_miss, w, q_mag,P1_mag, Phi_Eb, pLead_mag, theta_Eb, pe_mag;
+  double weight, QSq, xB, E_miss, w, Phi_Eb, theta_Eb;
   double P1_vec[3], pe[3], pLead[3],  q_vec[3];
   int lead_type;
   
@@ -91,8 +91,7 @@ int main(int argc, char ** argv){
 for (int event = 0 ; event < nEvents ; event++){
   
 // Reset tree variable to zero after every loop
-  weight = QSq = xB = E_miss = lead_type = q_mag = w = 0.;
-  pe_mag = theta_Eb = Phi_Eb = P1_mag = pLead_mag = 0.;
+  weight = QSq = xB = E_miss = lead_type = w = theta_Eb = Phi_Eb = 0.;
   memset(pLead, 0, sizeof(pLead));
   memset(pe, 0, sizeof(pe));
   memset(P1_vec,0, sizeof(P1_vec));
@@ -124,28 +123,28 @@ for (int event = 0 ; event < nEvents ; event++){
 
   
 // Define variables from electron scatter
-  w = QSq / (2 * Mn * xB);	                // Energy transfered to nucleon from scatter event; Gev
-  if (me + w > Eb) continue;                    // discontinue if unphysical (more energy transfered than initially had)
-  double Eb_prime = Eb - w;	                // Energy of scattered electron; Gev
-  pe_mag = sqrt(Eb_prime*Eb_prime - me*me);     // Momentum of scattered Electron; Gev
-  q_mag = sqrt(QSq + w*w);                      // Momentum transfered to nucleon from photon; Gev  
+  w = QSq / (2 * Mn * xB);	                       // Energy transfered to nucleon from scatter event; Gev
+  if (me + w > Eb) continue;                           // discontinue if unphysical (more energy transfered than initially had)
+  double Eb_prime = Eb - w;	                       // Energy of scattered electron; Gev
+  double pe_mag = sqrt(Eb_prime*Eb_prime - me*me);     // Momentum of scattered Electron; Gev
+  double q_mag = sqrt(QSq + w*w);                      // Momentum transfered to nucleon from photon; Gev  
   double cos_theta_Eb = (Pb_mag*Pb_mag + pe_mag*pe_mag - q_mag*q_mag)/(2*Pb_mag*pe_mag);  // cos(angle) of scattered electron with Z-axis
-  if (fabs(cos_theta_Eb) > 1.) continue;        // discontinue if unphysical
-  theta_Eb = acos(cos_theta_Eb);                // angle of scattered electron with z axis
-  pe[0] = pe_mag*sin(theta_Eb)*cos(Phi_Eb);     // Scattered electron's X-momentum; Gev
-  pe[1] = pe_mag*sin(theta_Eb)*sin(Phi_Eb);     // Scattered electron's Y-momentum; Gev
-  pe[2] = pe_mag*cos(theta_Eb);                 // Scattered electron's Z-momentum; Gev
-  q_vec[0] = -pe[0];                            // X-momentum transfered to nucleon from photon; Gev
-  q_vec[1] = -pe[1];                            // Y-momentum transfered to nucleon from photon; Gev
-  q_vec[2] = Pb_z - pe[2];                      // Z-momentum transfered to nucleon from photon Gev
+  if (fabs(cos_theta_Eb) > 1.) continue;               // discontinue if unphysical
+  theta_Eb = acos(cos_theta_Eb);                       // angle of scattered electron with z axis
+  pe[0] = pe_mag*sin(theta_Eb)*cos(Phi_Eb);            // Scattered electron's X-momentum; Gev
+  pe[1] = pe_mag*sin(theta_Eb)*sin(Phi_Eb);            // Scattered electron's Y-momentum; Gev
+  pe[2] = pe_mag*cos(theta_Eb);                        // Scattered electron's Z-momentum; Gev
+  q_vec[0] = -pe[0];                                   // X-momentum transfered to nucleon from photon; Gev
+  q_vec[1] = -pe[1];                                   // Y-momentum transfered to nucleon from photon; Gev
+  q_vec[2] = Pb_z - pe[2];                             // Z-momentum transfered to nucleon from photon Gev
 
   
 // Define nucleus momentum and enery variables
-  P1_mag = sqrt(P1_vec[0]*P1_vec[0] + P1_vec[1]*P1_vec[1] + P1_vec[2]*P1_vec[2]); // Momentum of initial nucleon to be ejected; Gev
+  double P1_mag = sqrt(P1_vec[0]*P1_vec[0] + P1_vec[1]*P1_vec[1] + P1_vec[2]*P1_vec[2]); // Momentum of initial nucleon to be ejected; Gev
   pLead[0] = P1_vec[0] + q_vec[0];                                         // final X-momentum of ejected nucleon; Gev   
   pLead[1] = P1_vec[1] + q_vec[1];                                         // final Y-momentum of ejected nucleon; Gev
   pLead[2] = P1_vec[2] + q_vec[2];                                         // final Z-momentum of ejected nucleon; Gev
-  pLead_mag = sqrt(pLead[0]*pLead[0] + pLead[1]*pLead[1] + pLead[2]*pLead[2]);  // final Momentum of ejected nucleon; Gev
+  double pLead_mag = sqrt(pLead[0]*pLead[0] + pLead[1]*pLead[1] + pLead[2]*pLead[2]);  // final Momentum of ejected nucleon; Gev
   double E1_prime = sqrt(pLead_mag*pLead_mag + Mn*Mn);  // final Energy of ejected nucleon; Gev
   double PA_prime_mag = P1_mag;                         // Momentum of final recoil nucleus; Gev
   double PA_prime_x = -P1_vec[0];                       // Momentum of final recoil nucleus 'x'; Gev
@@ -161,8 +160,8 @@ for (int event = 0 ; event < nEvents ; event++){
 // Variables that require outside calculation: spectral functin and differential cross section
   TVector3 pe_TVec(pe[0], pe[1], pe[2]); 
   TVector3 pLead_TVec(pLead[0], pLead[1], pLead[2]);    
-  double sigma = Sig.sigma_eN(Eb, pe_TVec, pLead_TVec, isProton);  // cross section sigma_eN from Andrew and Jackson: Takes in (double Ebeam, TVector3 ejected electron, TVector3 ejected nucleon, bool isProton) returns in cm^2
-  double spec = (pow(0.197345,3))*(0.001)*Spec_func.spec_find((double)P1_mag/0.197345, (double)(E_miss)*1000., lead_type);  // Spectral function for (P_1,E*); Uses spec_find: P_1: inverse femtometers, E*: MeV; Final unit in 1/(geV^4);
+  double sigma = Sig.sigma_eN(Eb, pe_TVec, pLead_TVec, isProton);  // cross section sigma_eN: Takes in (double Ebeam, TVector3 momentum of ejected electron, TVector3 momentum of ejected nucleon, bool isProton) returns in cm^2
+  double spec = (pow(0.197345,3))*(0.001)*Spec_func.spec_find((double)P1_mag/0.197345, (double)(E_miss)*1000., lead_type);  // Spectral function for (P1,E*); Uses spec_find: P1: inverse femtometers, E*: MeV; Final unit converted to 1/(geV^4);
 
 // Find differential Cross Section
   double diff_cross = spec * sigma * (w / (2 * Eb * Eb_prime * xB));   
