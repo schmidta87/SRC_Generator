@@ -10,7 +10,7 @@ void spec_info::read_file(){
   neutron_spec = new TH2D("neutron spec", "neutron spec", 200, 0.025, 9.975, 1000, 0.5, 999.5); //data_x, x_min, x_max
   proton_spec = new TH2D("proton spec", "proton spec", 200, 0.025, 9.975, 1000, 0.5, 999.5);
 
-  std::ifstream  data_p("../../SRC_Generator/include/SSP4.csv"); // Path from Build Directory
+  std::ifstream  data_p("../SRC_Generator/include/SSP4.csv"); // Path from Build Directory
 // check if file opens
     if ( ! data_p.is_open() ) {                 
       cout <<" Failed to open SSP4.csv in spectral_interpolation.cpp\n" << endl;
@@ -28,7 +28,7 @@ void spec_info::read_file(){
         }
         parsedCsv_p.push_back(parsedRow_p);
     }
-    std::ifstream  data_n("../../SRC_Generator/include/SSN4.csv"); // Path from Build Directory
+    std::ifstream  data_n("../SRC_Generator/include/SSN4.csv"); // Path from Build Directory
 // check if file opens
     if ( ! data_n.is_open() ) {                 
       cout <<" Failed to open SSN4.csv in spectral_interpolation.cpp" << endl;
