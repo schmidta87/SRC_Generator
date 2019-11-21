@@ -223,9 +223,8 @@ int main(int argc, char ** argv)
       hp_setting->Fill(setting,weightp);
       
       // Missing Energy Definition from Thesis
-      double Mspec = 2*mN;
-      double Mrecoil = sqrt(sq(Mspec + sqrt(sq(mN) + sq(pmiss))) - sq(pmiss));
-      double Em = Mrecoil + mN - m_4He;
+      double omega = Ebeam - ve.Mag();
+      double Em = mN - m_4He + sqrt(sq(omega + m_4He - sqrt(vlead.Mag2() + sq(mN))) - sq(pmiss));
       hp_Em_set[set_bin]->Fill(Em,weightp);
 
       if (rec_code == pCode)
