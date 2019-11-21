@@ -25,6 +25,21 @@ const double m_12C = 12.*mU - 6*me;
 const double m_14N = 14.0030740048*mU - 7*me;
 const double m_16O = 15.99491461956*mU - 8*me;
 
+const double m_25Na = 24.9899540*mU - 11*me;
+const double m_25Mg = 24.98583696*mU - 12*me;
+const double m_25Al = 24.99042831*mU - 13*me;
+const double m_27Al = 26.98153841*mU - 13*me;
+
+const double m_54Cr = 53.9388804*mU - 24*me;
+const double m_54Mn = 53.9403589*mU - 25*me;
+const double m_54Fe = 53.9396090*mU - 26*me;
+const double m_56Fe = 55.9349363*mU - 26*me;
+
+const double m_206Hg = 205.977514*mU - 80*me;
+const double m_206Tl = 205.9761103*mU - 81*me;
+const double m_206Pb = 205.9744653*mU - 82*me;
+const double m_208Pb = 207.9766521*mU - 82*me;
+
 // nucleon codes
 const int pCode = 2212;
 const int nCode = 2112;

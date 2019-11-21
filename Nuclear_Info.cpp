@@ -40,6 +40,7 @@ void Nuclear_Info::set_Nucleus(int thisZ, int thisN){
       mAmpp=0.;
       mAmpn=0.;
       mAmnn=0.;
+      Estar_max = 0.0;
     }
   else if ((Z==2) && (N==1))
     {
@@ -49,6 +50,7 @@ void Nuclear_Info::set_Nucleus(int thisZ, int thisN){
       mAmpp=mN;
       mAmpn=mN;
       mAmnn=mN;
+      Estar_max = 0.0;
     }  
  else if ((Z==1) && (N==2))
     {
@@ -58,6 +60,7 @@ void Nuclear_Info::set_Nucleus(int thisZ, int thisN){
       mAmpp=mN;
       mAmpn=mN;
       mAmnn=mN;
+      Estar_max = 0.0;
     }
   else if ((Z==2) && (N==2))
     {
@@ -67,6 +70,7 @@ void Nuclear_Info::set_Nucleus(int thisZ, int thisN){
       mAmpp=2*mN;
       mAmpn=m_2H;
       mAmnn=2*mN;
+      Estar_max = 0.010;
     }
   else if ((Z==6) && (N==6))
     {
@@ -76,6 +80,37 @@ void Nuclear_Info::set_Nucleus(int thisZ, int thisN){
       mAmpp=m_10Be;
       mAmpn=m_10B;
       mAmnn=m_10C;
+      Estar_max = 0.030;
+    }
+  else if ((Z==13) && (N==14))
+    {
+      sigmaCM=0.15;
+      d_sigmaCM=0.02;
+      mA=m_27Al;
+      mAmpp=m_25Na;
+      mAmpn=m_25Mg;
+      mAmnn=m_25Al;
+      Estar_max = 0.040;
+    }
+  else if ((Z==26) && (N==30))
+    {
+      sigmaCM=0.15;
+      d_sigmaCM=0.02;
+      mA=m_56Fe;
+      mAmpp=m_54Cr;
+      mAmpn=m_54Mn;
+      mAmnn=m_54Fe;
+      Estar_max = 0.050;
+    }
+  else if ((Z==82) && (N==126))
+    {
+      sigmaCM=0.15;
+      d_sigmaCM=0.02;
+      mA=m_208Pb;
+      mAmpp=m_206Hg;
+      mAmpn=m_206Tl;
+      mAmnn=m_206Pb;
+      Estar_max = 0.100;
     }
   else
     {
@@ -91,6 +126,10 @@ void Nuclear_Info::set_Nucleus(int thisZ, int thisN){
   else if (set_Contacts_SS_r())
     {
       std::cout << "You are using r-space contact values from the Scale and Scheme paper.\n";
+    }
+  else if (set_Contacts_EG2())
+    {
+      std::cout << "You are using contact ratios from fits to EG2 data. You must be truly desperate...\n";
     }
   else
     {
@@ -109,13 +148,7 @@ void Nuclear_Info::randomize()
   Cpn0 += myRand.Gaus(0.,d_Cpn0);
   Cnn0 += myRand.Gaus(0.,d_Cnn0);
   Cpn1 += myRand.Gaus(0.,d_Cpn1);
-  double Estar_range = 0.030;
-  if (A == 2 or A == 3)
-    Estar_range = 0.000;
-  else if (A == 4)
-    Estar_range = 0.010;
-
-  Estar = myRand.Uniform()*Estar_range;
+  Estar = myRand.Uniform()*Estar_max;
 }
 
 void Nuclear_Info::setCustomValues(double newSigma, double newEstar, double newCpp0 ,double newCnn0 ,double newCpn0, double newCpn1){
@@ -1036,6 +1069,215 @@ bool Nuclear_Info::set_Contacts_SS_k()
 	  d_Cpn0=0.164 * ( A * 0.5);
 	  Cpn1=4.476 * ( A * 0.5);
 	  d_Cpn1=0.460 * ( A * 0.5);
+	  return true;
+	}
+    }
+  return false;
+}
+
+bool Nuclear_Info::set_Contacts_EG2()
+{
+  if ((Z==6) && (N==6))
+    {
+      if (u==AV18)
+	{
+	  double R01 = 0.067;
+	  double C1 = 16.;
+	  double C0 = R01*C1;
+	    
+	  Cpp0=C0;
+	  d_Cpp0=0.;
+	  Cnn0=C0;
+	  d_Cnn0=0.;
+	  Cpn0=C0;
+	  d_Cpn0=0.;
+	  Cpn1=C1;
+	  d_Cpn1=0.;
+	  return true;
+	}
+      else if (u==N2LO_10)
+	{
+	  double R01 = 0.081;
+	  double C1 = 16.;
+	  double C0 = R01*C1;
+	    
+	  Cpp0=C0;
+	  d_Cpp0=0.;
+	  Cnn0=C0;
+	  d_Cnn0=0.;
+	  Cpn0=C0;
+	  d_Cpn0=0.;
+	  Cpn1=C1;
+	  d_Cpn1=0.;
+	  return true;
+	}
+      else if (u==N2LO_12)
+	{
+	  double R01 = 0.151;
+	  double C1 = 16.;
+	  double C0 = R01*C1;
+	    
+	  Cpp0=C0;
+	  d_Cpp0=0.;
+	  Cnn0=C0;
+	  d_Cnn0=0.;
+	  Cpn0=C0;
+	  d_Cpn0=0.;
+	  Cpn1=C1;
+	  d_Cpn1=0.;
+	  return true;
+	}
+    }
+  else if ((Z==13) && (N==14))
+    {
+      if (u==AV18)
+	{
+	  double R01 = 0.045;
+	  double C1 = 16.;
+	  double C0 = R01*C1;
+	    
+	  Cpp0=C0;
+	  d_Cpp0=0.;
+	  Cnn0=C0;
+	  d_Cnn0=0.;
+	  Cpn0=C0;
+	  d_Cpn0=0.;
+	  Cpn1=C1;
+	  d_Cpn1=0.;
+	  return true;
+	}
+      else if (u==N2LO_10)
+	{
+	  double R01 = 0.053;
+	  double C1 = 16.;
+	  double C0 = R01*C1;
+	    
+	  Cpp0=C0;
+	  d_Cpp0=0.;
+	  Cnn0=C0;
+	  d_Cnn0=0.;
+	  Cpn0=C0;
+	  d_Cpn0=0.;
+	  Cpn1=C1;
+	  d_Cpn1=0.;
+	  return true;
+	}
+      else if (u==N2LO_12)
+	{
+	  double R01 = 0.097;
+	  double C1 = 16.;
+	  double C0 = R01*C1;
+	    
+	  Cpp0=C0;
+	  d_Cpp0=0.;
+	  Cnn0=C0;
+	  d_Cnn0=0.;
+	  Cpn0=C0;
+	  d_Cpn0=0.;
+	  Cpn1=C1;
+	  d_Cpn1=0.;
+	  return true;
+	}
+    }
+  else if ((Z==26) && (N==30))
+    {
+      if (u==AV18)
+	{
+	  double R01 = 0.064;
+	  double C1 = 16.;
+	  double C0 = R01*C1;
+	    
+	  Cpp0=C0;
+	  d_Cpp0=0.;
+	  Cnn0=C0;
+	  d_Cnn0=0.;
+	  Cpn0=C0;
+	  d_Cpn0=0.;
+	  Cpn1=C1;
+	  d_Cpn1=0.;
+	  return true;
+	}
+      else if (u==N2LO_10)
+	{
+	  double R01 = 0.080;
+	  double C1 = 16.;
+	  double C0 = R01*C1;
+	    
+	  Cpp0=C0;
+	  d_Cpp0=0.;
+	  Cnn0=C0;
+	  d_Cnn0=0.;
+	  Cpn0=C0;
+	  d_Cpn0=0.;
+	  Cpn1=C1;
+	  d_Cpn1=0.;
+	  return true;
+	}
+      else if (u==N2LO_12)
+	{
+	  double R01 = 0.132;
+	  double C1 = 16.;
+	  double C0 = R01*C1;
+	    
+	  Cpp0=C0;
+	  d_Cpp0=0.;
+	  Cnn0=C0;
+	  d_Cnn0=0.;
+	  Cpn0=C0;
+	  d_Cpn0=0.;
+	  Cpn1=C1;
+	  d_Cpn1=0.;
+	  return true;
+	}
+    }
+    else if ((Z==82) && (N==126))
+    {
+      if (u==AV18)
+	{
+	  double R01 = 0.014;
+	  double C1 = 16.;
+	  double C0 = R01*C1;
+	    
+	  Cpp0=C0*Z/N;
+	  d_Cpp0=0.;
+	  Cnn0=C0*N/Z;
+	  d_Cnn0=0.;
+	  Cpn0=C0;
+	  d_Cpn0=0.;
+	  Cpn1=C1;
+	  d_Cpn1=0.;
+	  return true;
+	}
+      else if (u==N2LO_10)
+	{
+	  double R01 = 0.018;
+	  double C1 = 16.;
+	  double C0 = R01*C1;
+	    
+	  Cpp0=C0*Z/N;
+	  d_Cpp0=0.;
+	  Cnn0=C0*N/Z;
+	  d_Cnn0=0.;
+	  Cpn0=C0;
+	  d_Cpn0=0.;
+	  Cpn1=C1;
+	  d_Cpn1=0.;
+	  return true;
+	}
+      else if (u==N2LO_12)
+	{
+	  double R01 = 0.036;
+	  double C1 = 16.;
+	  double C0 = R01*C1;
+	    
+	  Cpp0=C0*Z/N;
+	  d_Cpp0=0.;
+	  Cnn0=C0*N/Z;
+	  d_Cnn0=0.;
+	  Cpn0=C0;
+	  d_Cpn0=0.;
+	  Cpn1=C1;
+	  d_Cpn1=0.;
 	  return true;
 	}
     }

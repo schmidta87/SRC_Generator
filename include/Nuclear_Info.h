@@ -65,12 +65,14 @@ class Nuclear_Info
   double Cpn1;
   double d_Cpn1;
   double Estar;
+  double Estar_max;
   double sigmaE;
   
   double get_phiSq(double *phiPtr, double k_rel);
 
   bool set_Contacts_SS_r();
   bool set_Contacts_SS_k();
+  bool set_Contacts_EG2();
   
   void fill_arrays_AV18();
   void fill_arrays_n2lo_local();
