@@ -19,6 +19,11 @@
 
 using namespace std;
 
+double eta_pp = 0.73;
+double eta_pn = 0.40;
+
+double TR;
+
 int main(int argc, char ** argv)
 {
   if (argc < 4)
@@ -205,12 +210,15 @@ int main(int argc, char ** argv)
 	{
 	case 500:
 	  set_bin = 0;
+	  TR = 0.66;
 	  break;
 	case 625:
 	  set_bin = 1;
+	  TR = 0.7;
 	  break;
 	case 750:
 	  set_bin = 2;
+	  TR = 0.734;
 	  break;
 	default:
 	  abort();
@@ -232,11 +240,11 @@ int main(int argc, char ** argv)
 
       if (rec_code == pCode)
 	{
-	  hp_p_setting->Fill(setting,weightp);
+	  hp_p_setting->Fill(setting,weightp*TR*eta_pp);
 	}
       else if (rec_code == nCode)
 	{
-	  hp_n_setting->Fill(setting,weightp);
+	  hp_n_setting->Fill(setting,weightp*TR*eta_pn);
 	}
       else
 	abort();
