@@ -48,6 +48,8 @@ int main(int argc, char ** argv)
 
   double eta_pp = 0.73;
   double eta_pn = 0.40;
+  double sig_eta_pp = 0.01;
+  double sig_eta_pn = 0.014;
   double eta;
   
   double TL;
@@ -77,6 +79,12 @@ int main(int argc, char ** argv)
       default:
 	abort();
       }
+
+  if (rand_flag)
+    {
+      eta_pp += myRand.Gaus(0,sig_eta_pp);
+      eta_pn += myRand.Gaus(0,sig_eta_pn);
+    }
   
   //Input Tree
   TTree * inTree = (TTree*)infile->Get("genT");
