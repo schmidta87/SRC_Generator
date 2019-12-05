@@ -24,5 +24,5 @@ add_executable(smearTree smearTree.cpp)
 target_link_libraries(smearTree ${ROOT_LIBRARIES})
 
 # Add executable for generator
-add_executable(gen_root MF_generator.cpp spectral_interpolation.cpp Cross_Sections.cpp helpers/helpers.cpp)
-target_link_libraries(gen_root ${ROOT_LIBRARIES})
+add_executable(gen_mean MF_generator.cpp spectral_interpolation.cpp Cross_Sections.cpp helpers/helpers.cpp)
+target_link_libraries(gen_mean ${ROOT_LIBRARIES})
