@@ -193,6 +193,8 @@ int main(int argc, char ** argv)
 	case 500:
 	  TL = 0.75;
 	  TR = 0.66;
+	  phirec_central = phirec_central_500;
+	  break;
 	case 625:
 	  TL = 0.752;
 	  TR = 0.7;

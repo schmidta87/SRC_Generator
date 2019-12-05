@@ -19,6 +19,11 @@
 
 using namespace std;
 
+double eta_pp = 0.73;
+double eta_pn = 0.40;
+
+double TR;
+
 int main(int argc, char ** argv)
 {
   if (argc < 4)
@@ -98,7 +103,7 @@ int main(int argc, char ** argv)
   TH1D * hp_Pm_set[3];
   TH1D * hpn_Pm_set[3];
   TH1D * hpp_Pm_set[3];
-  int Em_bins = 3*45;
+  int Em_bins;
   TH1D * hp_Em_set[3];
 
   for (int i = 0; i<3; i++)
@@ -110,12 +115,15 @@ int main(int argc, char ** argv)
 	{
 	case 0:
 	  set = 500;
+	  Em_bins = 3*45;
 	  break;
 	case 1:
 	  set = 625;
+	  Em_bins = 100;
 	  break;
 	case 2:
 	  set = 750;
+	  Em_bins = 100;
 	  break;
 	default:
 	  abort();
@@ -202,12 +210,15 @@ int main(int argc, char ** argv)
 	{
 	case 500:
 	  set_bin = 0;
+	  TR = 0.66;
 	  break;
 	case 625:
 	  set_bin = 1;
+	  TR = 0.7;
 	  break;
 	case 750:
 	  set_bin = 2;
+	  TR = 0.734;
 	  break;
 	default:
 	  abort();
@@ -223,18 +234,17 @@ int main(int argc, char ** argv)
       hp_setting->Fill(setting,weightp);
       
       // Missing Energy Definition from Thesis
-      double Mspec = 2*mN;
-      double Mrecoil = sqrt(sq(Mspec + sqrt(sq(mN) + sq(pmiss))) - sq(pmiss));
-      double Em = Mrecoil + mN - m_4He;
+      double omega = Ebeam - ve.Mag();
+      double Em = mN - m_4He + sqrt(sq(omega + m_4He - sqrt(vlead.Mag2() + sq(mN))) - sq(pmiss));
       hp_Em_set[set_bin]->Fill(Em,weightp);
 
       if (rec_code == pCode)
 	{
-	  hp_p_setting->Fill(setting,weightp);
+	  hp_p_setting->Fill(setting,weightp*TR*eta_pp);
 	}
       else if (rec_code == nCode)
 	{
-	  hp_n_setting->Fill(setting,weightp);
+	  hp_n_setting->Fill(setting,weightp*TR*eta_pn);
 	}
       else
 	abort();
