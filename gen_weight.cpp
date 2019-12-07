@@ -75,7 +75,7 @@ int main(int argc, char ** argv)
   bool print_zeros = false;
   bool use_input_params = false;
   TFile * param_file;
-  TVectorT<double> params(7);
+  TVectorT<double> params(19);
   // Probability windows
   bool custom_ps = false;
   char* phase_space;
