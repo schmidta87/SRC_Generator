@@ -1,5 +1,6 @@
 #ifndef __NUCLEAR_INFO_H__
 #define __NUCLEAR_INFO_H__
+#include <vector>
 
 enum NNModel {AV18, AV4Pc, N2LO_10, N2LO_12, N3LO_600};
 
@@ -28,6 +29,9 @@ class Nuclear_Info
   double get_Cpn0();
   double get_Cpn1();
   void randomize();
+  
+  void do_SCX(int &lead_type, int &rec_type, double r);
+  std::vector<double> get_SCX_Ps();
 
   void set_Nucleus(int thisZ, int thisN);
   void setCustomValues(double newSigma, double newEstar, double newCpp0, double Cnn0, double newCpn0, double newCpn1);
@@ -40,6 +44,18 @@ class Nuclear_Info
   void set_Cpn0(double newCpn0);
   void set_Cpn1(double newCpn1);
   void set_sigmaE(double newSigE);
+  void set_SCX_Ps(double pPP2NP_new,
+		 double pPP2PN_new,
+		 double pPP2NN_new,
+		 double pPN2NN_new,
+		 double pPN2PP_new,
+		 double pPN2NP_new,
+		 double pNP2PP_new,
+		 double pNP2NN_new,
+		 double pNP2PN_new,
+		 double pNN2PN_new,
+		 double pNN2NP_new,
+		 double pNN2PP_new);
   
  private:
   int Z;
@@ -79,6 +95,34 @@ class Nuclear_Info
   void fill_arrays_n3lo_nonlocal();
   void fill_arrays_n2lo_12_local();
   void fill_arrays_AV4Pc();
+
+  double pPP2NP;
+  double d_pPP2NP;
+  double pPP2PN;
+  double d_pPP2PN;
+  double pPP2NN;
+  double d_pPP2NN;
+
+  double pPN2NN;
+  double d_pPN2NN;
+  double pPN2PP;
+  double d_pPN2PP;
+  double pPN2NP;
+  double d_pPN2NP;
+
+  double pNP2PP;
+  double d_pNP2PP;
+  double pNP2NN;
+  double d_pNP2NN;
+  double pNP2PN;
+  double d_pNP2PN;
+
+  double pNN2PN;
+  double d_pNN2PN;
+  double pNN2NP;
+  double d_pNN2NP;
+  double pNN2PP;
+  double d_pNN2PP;
   
 };
 

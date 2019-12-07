@@ -18,6 +18,8 @@
 
 using namespace std;
 
+void do_SCX(int $lead_type, int &rec_type, double r);
+
 void print_help()
 {
   cerr << "Usage: ./gen_weight [Z] [N] [Beam energy (GeV)] [path/to/output.root] [# of events] [optional flags]\n"
@@ -27,7 +29,8 @@ void print_help()
        << "-T: Print full output tree\n"
        << "-z: Print zero-weight events\n"
        << "-P: Use text file to generate phase space\n"
-       << "-o: Turn off radiative effects\n"
+       << "-O: Turn off radiative effects\n"
+       << "-o: Turn on Single-Charge Exchange\n"
        << "-s <Sigma_CM [GeV]>\n"
        << "-E <E* [GeV]>==<0>\n"
        << "-u <NN interaction>==<AV18>\n"
@@ -67,6 +70,7 @@ int main(int argc, char ** argv)
   ffModel ffMod=kelly;
   bool rand_flag = false;
   bool doRad = true;
+  bool doSCX = false;
   bool print_full_tree=false;
   bool print_zeros = false;
   bool use_input_params = false;
@@ -89,7 +93,7 @@ int main(int argc, char ** argv)
   double deltaHard(double QSq);
   
   int c;
-  while ((c=getopt (argc-5, &argv[5], "hvTzs:E:u:k:c:f:rP:oR:")) != -1) // First five arguments are not optional flags.
+  while ((c=getopt (argc-5, &argv[5], "hvTzs:E:u:k:c:f:rP:OoR:")) != -1) // First five arguments are not optional flags.
     switch(c)
       {
       case 'h':
@@ -152,8 +156,11 @@ int main(int argc, char ** argv)
 	custom_ps = true;
 	phase_space = optarg;
 	break;
-      case 'o':
+      case 'O':
 	doRad = false;
+	break;
+      case 'o':
+	doSCX = true;
 	break;
       case 'R':
 	use_input_params = true;
@@ -254,7 +261,20 @@ int main(int argc, char ** argv)
       myInfo.set_Cnn0(params[3]);
       myInfo.set_Cpn1(params[4]);
       myInfo.set_Estar(params[5]);
-      pRel_cut = params[6];
+      
+      std::vector<double> Pscx = myInfo.get_SCX_Ps();
+      myInfo.set_SCX_Ps(Pscx[0],
+			Pscx[1],
+			Pscx[2],
+			Pscx[3],
+			Pscx[4],
+			Pscx[5],
+			Pscx[6],
+			Pscx[7],
+			Pscx[8],
+			Pscx[9],
+			Pscx[10],
+			Pscx[11]);
     }
   
   // Adapt cross section to custom arguments
@@ -311,7 +331,20 @@ int main(int argc, char ** argv)
   params[3] = myInfo.get_Cnn0();
   params[4] = myInfo.get_Cpn1();
   params[5] = myInfo.get_Estar();
-  params[6] = pRel_cut;
+  std::vector<double> Ps = myInfo.get_SCX_Ps();
+  params[6] = Ps[0];
+  params[7] = Ps[1];
+  params[8] = Ps[2];
+  params[9] = Ps[3];
+  params[10] = Ps[4];
+  params[11] = Ps[5];
+  params[12] = Ps[6];
+  params[13] = Ps[7];
+  params[14] = Ps[8];
+  params[15] = Ps[9];
+  params[16] = Ps[10];
+  params[17] = Ps[11];
+  params[18] = pRel_cut;
   
   // Loop over events
   for (int event=0 ; event < nEvents ; event++)
@@ -488,7 +521,13 @@ int main(int argc, char ** argv)
 	    }
 	  
 	}
-            
+
+      // Here is where we do single charge exchange
+      if (doSCX)
+	{
+	  myInfo.do_SCX(lead_type, rec_type, gRandom->Rndm());
+	}
+      
       // Fill the tree
       if ((weight > 0.) || (lcweight > 0.) || print_zeros)
 	outtree->Fill();

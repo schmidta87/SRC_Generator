@@ -81,6 +81,34 @@ void Nuclear_Info::set_Nucleus(int thisZ, int thisN){
       mAmpn=m_10B;
       mAmnn=m_10C;
       Estar_max = 0.030;
+      
+      pPP2NP = 0.041;
+      d_pPP2NP = 0.003;
+      pPP2PN = 0.048;
+      d_pPP2PN = 0.003;
+      pPP2NN = 0.0029;
+      d_pPP2NN = 0.0002;
+      
+      pPN2NN = 0.035;
+      d_pPN2NN = 0.002;
+      pPN2PP = 0.041;
+      d_pPN2PP = 0.003;
+      pPN2NP = 0.0021;
+      d_pPN2NP = 0.0001;
+      
+      pNP2PP = 0.035;
+      d_pNP2PP = 0.002;
+      pNP2NN = 0.041;
+      d_pNP2NN = 0.003;
+      pNP2PN = 0.0021;
+      d_pNP2PN = 0.0001;
+      
+      pNN2PN = 0.041;
+      d_pNN2PN = 0.003;
+      pNN2NP = 0.048;
+      d_pNN2NP = 0.003;
+      pNN2PP = 0.0029;
+      d_pNN2PP = 0.0002;
     }
   else if ((Z==13) && (N==14))
     {
@@ -91,6 +119,34 @@ void Nuclear_Info::set_Nucleus(int thisZ, int thisN){
       mAmpn=m_25Mg;
       mAmnn=m_25Al;
       Estar_max = 0.040;
+      
+      pPP2NP = 0.046;
+      d_pPP2NP = 0.004;
+      pPP2PN = 0.054;
+      d_pPP2PN = 0.005;
+      pPP2NN = 0.004;
+      d_pPP2NN = 0.0003;
+      
+      pPN2NN = 0.043;
+      d_pPN2NN = 0.004;
+      pPN2PP = 0.047;
+      d_pPN2PP = 0.005;
+      pPN2NP = 0.003;
+      d_pPN2NP = 0.0002;
+      
+      pNP2PP = 0.040;
+      d_pNP2PP = 0.004;
+      pNP2NN = 0.051;
+      d_pNP2NN = 0.005;
+      pNP2PN = 0.0003;
+      d_pNP2PN = 0.0002;
+      
+      pNN2PN = 0.043;
+      d_pNN2PN = 0.004;
+      pNN2NP = 0.050;
+      d_pNN2NP = 0.005;
+      pNN2PP = 0.004;
+      d_pNN2PP = 0.0003;
     }
   else if ((Z==26) && (N==30))
     {
@@ -101,6 +157,34 @@ void Nuclear_Info::set_Nucleus(int thisZ, int thisN){
       mAmpn=m_54Mn;
       mAmnn=m_54Fe;
       Estar_max = 0.050;
+      
+      pPP2NP = 0.048;
+      d_pPP2NP = 0.005;
+      pPP2PN = 0.057;
+      d_pPP2PN = 0.006;
+      pPP2NN = 0.004;
+      d_pPP2NN = 0.0003;
+      
+      pPN2NN = 0.046;
+      d_pPN2NN = 0.005;
+      pPN2PP = 0.047;
+      d_pPN2PP = 0.005;
+      pPN2NP = 0.004;
+      d_pPN2NP = 0.0003;
+      
+      pNP2PP = 0.040;
+      d_pNP2PP = 0.004;
+      pNP2NN = 0.054;
+      d_pNP2NN = 0.006;
+      pNP2PN = 0.0004;
+      d_pNP2PN = 0.0003;
+      
+      pNN2PN = 0.046;
+      d_pNN2PN = 0.005;
+      pNN2NP = 0.049;
+      d_pNN2NP = 0.005;
+      pNN2PP = 0.004;
+      d_pNN2PP = 0.0003;
     }
   else if ((Z==82) && (N==126))
     {
@@ -111,6 +195,34 @@ void Nuclear_Info::set_Nucleus(int thisZ, int thisN){
       mAmpn=m_206Tl;
       mAmnn=m_206Pb;
       Estar_max = 0.100;
+      
+      pPP2NP = 0.059;
+      d_pPP2NP = 0.006;
+      pPP2PN = 0.074;
+      d_pPP2PN = 0.007;
+      pPP2NN = 0.007;
+      d_pPP2NN = 0.0006;
+      
+      pPN2NN = 0.061;
+      d_pPN2NN = 0.006;
+      pPN2PP = 0.047;
+      d_pPN2PP = 0.005;
+      pPN2NP = 0.005;
+      d_pPN2NP = 0.0004;
+      
+      pNP2PP = 0.040;
+      d_pNP2PP = 0.004;
+      pNP2NN = 0.072;
+      d_pNP2NN = 0.008;
+      pNP2PN = 0.0005;
+      d_pNP2PN = 0.0004;
+      
+      pNN2PN = 0.061;
+      d_pNN2PN = 0.006;
+      pNN2NP = 0.048;
+      d_pNN2NP = 0.005;
+      pNN2PP = 0.007;
+      d_pNN2PP = 0.0006;
     }
   else
     {
@@ -149,6 +261,19 @@ void Nuclear_Info::randomize()
   Cnn0 += myRand.Gaus(0.,d_Cnn0);
   Cpn1 += myRand.Gaus(0.,d_Cpn1);
   Estar = myRand.Uniform()*Estar_max;
+  
+  pPP2NP += myRand.Gaus(0.,d_pPP2NP);
+  pPP2PN += myRand.Gaus(0.,d_pPP2PN);
+  pPP2NN += myRand.Gaus(0.,d_pPP2NN);
+  pPN2NN += myRand.Gaus(0.,d_pPN2NN);
+  pPN2PP += myRand.Gaus(0.,d_pPN2PP);
+  pPN2NP += myRand.Gaus(0.,d_pPN2NP);
+  pNP2PP = pPN2NN;
+  pNP2NN = pPN2PP;
+  pNP2PN = pPN2NP;
+  pNN2PN = pPP2NP;
+  pNN2NP = pPP2PN;
+  pNN2PP = pPP2NN;
 }
 
 void Nuclear_Info::setCustomValues(double newSigma, double newEstar, double newCpp0 ,double newCnn0 ,double newCpn0, double newCpn1){
@@ -252,6 +377,34 @@ void Nuclear_Info::set_sigmaE(double newSigE){
   
 }
 
+void Nuclear_Info::set_SCX_Ps(double pPP2NP_new,
+		double pPP2PN_new,
+		double pPP2NN_new,
+		double pPN2NN_new,
+		double pPN2PP_new,
+		double pPN2NP_new,
+		double pNP2PP_new,
+		double pNP2NN_new,
+		double pNP2PN_new,
+		double pNN2PN_new,
+		double pNN2NP_new,
+		double pNN2PP_new){
+
+  pPP2NP = pPP2NP_new;
+  pPP2PN = pPP2PN_new;
+  pPP2NN = pPP2NN_new;
+  pPN2NN = pPN2NN_new;
+  pPN2PP = pPN2PP_new;
+  pPN2NP = pPN2NP_new;
+  pNP2PP = pNP2PP_new;
+  pNP2NN = pNP2NN_new;
+  pNP2PN = pNP2PN_new;
+  pNN2PN = pNN2PN_new;
+  pNN2NP = pNN2NP_new;
+  pNN2PP = pNN2PP_new;
+  
+}
+
 
 NNModel Nuclear_Info::get_InteractionType(){
 
@@ -350,6 +503,97 @@ double Nuclear_Info::get_pn0(double k_rel)
 double Nuclear_Info::get_pn1(double k_rel)
 {
   return Cpn1 * get_phiSq(phiSq_pn1,k_rel);
+}
+
+void Nuclear_Info::do_SCX(int &lead_type, int &rec_type, double r)
+{
+  // Now we do a whole bunch of tests
+  if ((lead_type==pCode) && (rec_type==pCode))
+    {
+      if (r < pPP2NN)
+	{
+	  lead_type=nCode;
+	  rec_type=nCode;
+	}
+      else if (r < pPP2NN + pPP2NP)
+	{
+	  lead_type=nCode;
+	}
+      else if (r < pPP2NN + pPP2NP + pPP2PN)
+	{
+	  rec_type=nCode;
+	}
+    }
+  else if ((lead_type==nCode) && (rec_type==pCode))
+    {
+      if (r < pNP2PN)
+	{
+	  lead_type=pCode;
+	  rec_type=nCode;
+	}
+      else if (r < pNP2PN + pNP2PP)
+	{
+	  lead_type=pCode;
+	}
+      else if (r < pNP2PN + pNP2PP + pNP2NN)
+	{
+	  rec_type=nCode;
+	}
+    }
+  else if ((lead_type==pCode) && (rec_type==nCode))
+    {
+      if (r < pPN2NP)
+	{
+	  lead_type=nCode;
+	  rec_type=pCode;
+	}
+      else if (r < pPN2NP + pPN2NN)
+	{
+	  lead_type=nCode;
+	}
+      else if (r < pPN2NP + pPN2NN + pPN2PP)
+	{
+	  rec_type=pCode;
+	}
+    }
+  else if ((lead_type==nCode) && (rec_type==nCode))
+    {
+      if (r < pNN2PP)
+	{
+	  lead_type=pCode;
+	  rec_type=pCode;
+	}
+      else if (r < pNN2PP + pNN2PN)
+	{
+	  lead_type=pCode;
+	}
+      else if (r < pNN2PP + pNN2PN + pNN2NP)
+	{
+	  rec_type=pCode;
+	}
+    }
+  else
+    {
+      std::cerr << "Invalid nucleon codes. Check and fix. Exiting\n\n\n";
+    }
+}
+
+std::vector<double> Nuclear_Info::get_SCX_Ps()
+{
+  std::vector<double> Ps;
+  Ps.push_back(pPP2NP);
+  Ps.push_back(pPP2PN);
+  Ps.push_back(pPP2NN);
+  Ps.push_back(pPN2NN);
+  Ps.push_back(pPN2PP);
+  Ps.push_back(pPN2NP);
+  Ps.push_back(pNP2PP);
+  Ps.push_back(pNP2NN);
+  Ps.push_back(pNP2PN);
+  Ps.push_back(pNN2PN);
+  Ps.push_back(pNN2NP);
+  Ps.push_back(pNN2PP);
+  return Ps;
 }
 
 double Nuclear_Info::get_phiSq(double *phiPtr, double k_rel)
