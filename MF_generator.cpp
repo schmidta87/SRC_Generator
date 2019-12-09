@@ -38,7 +38,7 @@ int main(int argc, char ** argv){
   if( argc != 4)
     {
       std::cerr << "Wrong number of arguments. Instead try: \n\t"
-	   << "./gen_root [Beam Energy: GeV] [Total Events] [outfile = ..DATA/gen_file.root]\n";
+	   << "./gen_mean [Beam Energy: GeV] [Total Events] [outfile = ..DATA/gen_file.root]\n";
       
       return -1;
     }
