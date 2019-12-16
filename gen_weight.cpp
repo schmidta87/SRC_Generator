@@ -64,8 +64,8 @@ int main(int argc, char ** argv)
   double sCM;
   bool do_Estar = false;
   double Estar;
-  double pRel_cut = 0.30;
-  double pRel_range = 0.10;
+  double pRel_cut = 0.25;//0.30;
+  double pRel_range = 0.05;//0.10;
   csMethod csMeth=cc1;
   ffModel ffMod=kelly;
   bool rand_flag = false;
