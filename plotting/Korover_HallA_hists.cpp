@@ -169,6 +169,14 @@ int main(int argc, char ** argv)
   TGraphAsymmErrors * pp_acc = new TGraphAsymmErrors();
   pp_acc->SetName("pp_acc");
   pp_acc->SetTitle("pp_acc;p_miss [MeV]; pp acceptance");
+
+  // Ratios:
+  TGraphAsymmErrors * pn_to_p = new TGraphAsymmErrors();
+  pn_to_p->SetName("pn_to_p");
+  pn_to_p->SetTitle("pn_to_p;p_miss setting; pn/p");
+  TGraphAsymmErrors * pp_to_p = new TGraphAsymmErrors();
+  pp_to_p->SetName("pp_to_p");
+  pp_to_p->SetTitle("pp_to_p;p_miss setting; pp/p");
 	  
   // Tree Variable initialization
   Float_t Pe[3], Pp[2][3];
@@ -371,6 +379,11 @@ int main(int argc, char ** argv)
   pp_acc->BayesDivide(hpp_setting,hp_p_setting);
   pn_acc->Write();
   pp_acc->Write();
+
+  pn_to_p->BayesDivide(hpn_setting,hp_setting);
+  pp_to_p->BayesDivide(hpp_setting,hp_setting);
+  pn_to_p->Write();
+  pp_to_p->Write();
   
   for (int i=0; i<h_list.size(); i++)
     h_list[i]->Write();
