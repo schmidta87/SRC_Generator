@@ -22,8 +22,8 @@ using namespace std;
 
 double eta_pp = 0.85;
 
-double Tp = 0.53;
-double Tpp = 0.44;  
+double Tp;
+double Tpp;
 
 int main(int argc, char ** argv)
 {
@@ -237,12 +237,18 @@ int main(int argc, char ** argv)
 	{
 	case 350:
 	  set_bin = 0;
+	  Tp = 0.79;
+	  Tpp = Tp*0.84;
 	  break;
 	case 450:
 	  set_bin = 1;
+	  Tp = 0.77;
+	  Tpp = Tp*0.82;
 	  break;
 	case 550:
 	  set_bin = 2;
+	  Tp = 0.76;
+	  Tpp = Tp*0.81;
 	  break;
 	default:
 	  abort();
@@ -324,12 +330,18 @@ int main(int argc, char ** argv)
 	{
 	case 350:
 	  set_bin = 0;
+	  Tp = 0.79;
+	  Tpp = Tp*0.84;
 	  break;
 	case 450:
 	  set_bin = 1;
+	  Tp = 0.77;
+	  Tpp = Tp*0.82;
 	  break;
 	case 550:
 	  set_bin = 2;
+	  Tp = 0.76;
+	  Tpp = Tp*0.81;
 	  break;
 	default:
 	  abort();
