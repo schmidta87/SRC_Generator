@@ -55,10 +55,9 @@ int main(int argc, char ** argv)
   
   double eta = 0.85;
   
-  double Tp = 0.53;
-  double sig_Tp = 0.05;
-  double Tpp = 0.44;
-  double sig_Tpp = 0.04;
+  double Tp;
+  double Tpp;
+  double thetaMmin;
   
   const double Ebeam = 4.627;
   
@@ -100,17 +99,6 @@ int main(int argc, char ** argv)
   
   // Other set up
   TRandom3 myRand(0);
-
-  if (rand_flag)
-    {
-      Tp += myRand.Gaus(0,sig_Tp);
-      Tpp += myRand.Gaus(0,sig_Tpp);
-      if (verbose)
-	{
-	  cout << "Lead proton transparency selected as " << Tp << ".\n";
-	  cout << "Two-proton transparency selected as " << Tpp << ".\n";
-	}
-    }
     
   TFile * outfile = new TFile(argv[2],"RECREATE");
   
@@ -175,25 +163,46 @@ int main(int argc, char ** argv)
 	  if (fabs(vlead.Mag()/plead_central_350 - 1) < mom_cut
 	      and fabs(vlead.Phi() - philead_central_350) < inplane_cut
 	      and fabs(vlead.Theta() - theta_central) < outplane_cut)
-	    setting += 350;
+	    setting = 350;
 	}
-      if (HRS_hallA(vlead, plead_central_450, philead_central_450))
+      else if (HRS_hallA(vlead, plead_central_450, philead_central_450))
 	{
 	  if (fabs(vlead.Mag()/plead_central_450 - 1) < mom_cut
 	      and fabs(vlead.Phi() - philead_central_450) < inplane_cut
 	      and fabs(vlead.Theta() - theta_central) < outplane_cut)
-	    setting += 450;
+	    setting = 450;
 	}
-      if (HRS_hallA(vlead, plead_central_550, philead_central_550))
+      else if (HRS_hallA(vlead, plead_central_550, philead_central_550))
 	{
 	  if (fabs(vlead.Mag()/plead_central_550 - 1) < mom_cut
 	      and fabs(vlead.Phi() - philead_central_550) < inplane_cut
 	      and fabs(vlead.Theta() - theta_central) < outplane_cut)
-	    setting += 550;
+	    setting = 550;
 	}
       
       if (setting == 0)
 	continue;
+
+      switch(setting)
+	{
+	case 350:
+	  Tp = 0.79;
+	  Tpp = Tp*0.84;
+	  thetaMmin = 76.*M_PI/180.;
+	  break;
+	case 450:
+	  Tp = 0.77;
+	  Tpp = Tp*0.82;
+	  thetaMmin = 84.*M_PI/180.;
+	  break;
+	case 550:
+	  Tp = 0.76;
+	  Tpp = Tp*0.81;
+	  thetaMmin = 88.*M_PI/180.;
+	  break;
+	default:
+	  abort();
+	}
 
       weightp = gen_weight * 1.E33 * Tp;
       weightpp = gen_weight * 1.E33 * eta * Tpp;
@@ -253,11 +262,7 @@ int main(int argc, char ** argv)
       
       if (thetaMcut)
 	{
-	  if (setting == 350 and vmiss.Phi() < 76.*M_PI/180.)
-	    continue;
-	  if (setting == 450 and vmiss.Phi() < 84.*M_PI/180.)
-	    continue;
-	  if (setting == 550 and vmiss.Phi() < 88.*M_PI/180.)
+	  if (vmiss.Phi() < thetaMmin)
 	    continue;
 	}
       double QSq = vq.Mag2() - sq(omega);

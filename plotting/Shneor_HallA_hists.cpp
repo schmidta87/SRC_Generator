@@ -22,8 +22,8 @@ using namespace std;
 
 double eta_pp = 0.85;
 
-double Tp = 0.53;
-double Tpp = 0.44;  
+double Tp;
+double Tpp;
 
 double pmiss_lo;
 double pmiss_hi;
@@ -261,17 +261,23 @@ int main(int argc, char ** argv)
 	  pmiss_lo = 0.300;
 	  pmiss_hi = 0.400;
 	  weightp *= 24.2/14.5;
+	  Tp = 0.79;
+	  Tpp = Tp*0.84;
 	  break;
 	case 450:
 	  set_bin = 1;
 	  pmiss_lo = 0.400;
 	  pmiss_hi = 0.500;
 	  weightp *= 20.1/14.5;
+	  Tp = 0.77;
+	  Tpp = Tp*0.82;
 	  break;
 	case 550:
 	  set_bin = 2;
 	  pmiss_lo = 0.500;
 	  pmiss_hi = 0.600;
+	  Tp = 0.76;
+	  Tpp = Tp*0.81;
 	  break;
 	default:
 	  abort();
@@ -361,17 +367,23 @@ int main(int argc, char ** argv)
 	  pmiss_lo = 0.300;
 	  pmiss_hi = 0.400;
 	  weightpp *= 24.2/14.5;
+	  Tp = 0.79;
+	  Tpp = Tp*0.84;
 	  break;
 	case 450:
 	  set_bin = 1;
 	  pmiss_lo = 0.400;
 	  pmiss_hi = 0.500;
 	  weightpp *= 20.1/14.5;
+	  Tp = 0.77;
+	  Tpp = Tp*0.82;
 	  break;
 	case 550:
 	  set_bin = 2;
 	  pmiss_lo = 0.500;
 	  pmiss_hi = 0.600;
+	  Tp = 0.76;
+	  Tpp = Tp*0.81;
 	  break;
 	default:
 	  abort();
@@ -416,10 +428,21 @@ int main(int argc, char ** argv)
       normp = 87000./hp_Em_set[2]->Integral();
       normp = 142000./hp_Em_set[0]->Integral();
       normpp = normp;
-
+      
       hpp_cosgamma_set[i]->Scale(normpp);
       hp_Em_set[i]->Scale(normp);      
-      hp_Pm_set[i]->Scale(normp);
+      
+      hp_omega_set[i]->Scale(normp);      
+      hp_q_set[i]->Scale(normp);      
+      hp_xB_set[i]->Scale(normp);      
+      hp_thetaM_set[i]->Scale(normp);      
+      hp_thetaRec_set[i]->Scale(normp);      
+      hp_Pm_set[i]->Scale(normp);      
+
+      hpp_cosgamma_set[i]->Scale(normpp);
+      hpp_thetaM_set[i]->Scale(normpp);      
+      hpp_Pm_set[i]->Scale(normpp);      
+
     }
 
   for (int i = 1; i<3; i++)
