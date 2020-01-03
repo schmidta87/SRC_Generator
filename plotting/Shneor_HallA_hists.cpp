@@ -379,8 +379,18 @@ int main(int argc, char ** argv)
       normp = Np[i]/hp_Em_set[i]->Integral();
       normpp = normp;
       
-      hpp_cosgamma_set[i]->Scale(normpp);
       hp_Em_set[i]->Scale(normp);      
+      hp_omega_set[i]->Scale(normp);      
+      hp_q_set[i]->Scale(normp);      
+      hp_xB_set[i]->Scale(normp);      
+      hp_thetaM_set[i]->Scale(normp);      
+      hp_thetaRec_set[i]->Scale(normp);      
+      hp_Pm_set[i]->Scale(normp);      
+
+      hpp_cosgamma_set[i]->Scale(normpp);
+      hpp_thetaM_set[i]->Scale(normpp);      
+      hpp_Pm_set[i]->Scale(normpp);      
+
     }
 
   for (int i = 1; i<3; i++)
