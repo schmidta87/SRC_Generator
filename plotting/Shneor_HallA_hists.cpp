@@ -25,6 +25,9 @@ double eta_pp = 0.85;
 double Tp = 0.53;
 double Tpp = 0.44;  
 
+double pmiss_lo;
+double pmiss_hi;
+
 int main(int argc, char ** argv)
 {
   if (argc < 4)
@@ -76,6 +79,12 @@ int main(int argc, char ** argv)
   h_list.push_back(hp_p_setting);
   TH1D * hpp_setting = new TH1D("epp_setting","epp;pMiss [MeV];Counts",3,300,600);
   h_list.push_back(hpp_setting);
+  TH1D * hp_Pm_tot = new TH1D("ep_pmiss_tot","ep;pMiss [MeV];Counts",3,0.300,0.600);
+  h_list.push_back(hp_Pm_tot);
+  TH1D * hp_p_Pm_tot = new TH1D("ep_p_pmiss_tot","epp;pMiss [MeV];Counts",3,0.300,0.600);
+  h_list.push_back(hp_p_Pm_tot);
+  TH1D * hpp_Pm_tot = new TH1D("epp_pmiss_tot","epp;pMiss [MeV];Counts",3,0.300,0.600);
+  h_list.push_back(hpp_Pm_tot);
 
   TH1D * hpp_cosgamma = new TH1D("epp_cosgamma","epp;cos gamma;Counts",8*4,-1.,-0.90);
   h_list.push_back(hpp_cosgamma);
@@ -193,6 +202,10 @@ int main(int argc, char ** argv)
   pp_acc->SetName("pp_acc");
   pp_acc->SetTitle("pp_acc;p_miss [MeV]; pp acceptance");
 
+  TGraphAsymmErrors * pp_bin_acc = new TGraphAsymmErrors();
+  pp_bin_acc->SetName("pp_bin_acc");
+  pp_bin_acc->SetTitle("pp_acc;p_miss; pp acceptance");
+
   // Ratios:
   TGraphAsymmErrors * pp_to_p = new TGraphAsymmErrors();
   pp_to_p->SetName("pp_to_p");
@@ -201,6 +214,14 @@ int main(int argc, char ** argv)
   TGraphAsymmErrors * pp_to_p_cor = new TGraphAsymmErrors();
   pp_to_p_cor->SetName("pp_to_p_cor");
   pp_to_p_cor->SetTitle("pp_to_p_cor;p_miss setting; pp/p");
+  
+  TGraphAsymmErrors * pp_to_p_bin = new TGraphAsymmErrors();
+  pp_to_p_bin->SetName("pp_to_p_bin");
+  pp_to_p_bin->SetTitle("pp_to_p;p_miss; pp/p");
+
+  TGraphAsymmErrors * pp_to_p_bin_cor = new TGraphAsymmErrors();
+  pp_to_p_bin_cor->SetName("pp_to_p_bin_cor");
+  pp_to_p_bin_cor->SetTitle("pp_to_p_cor;p_miss; pp/p");
 
   // Tree Variable initialization
   Float_t Pe[3], Pp[2][3];
@@ -237,12 +258,20 @@ int main(int argc, char ** argv)
 	{
 	case 350:
 	  set_bin = 0;
+	  pmiss_lo = 0.300;
+	  pmiss_hi = 0.400;
+	  weightp *= 24.2/14.5;
 	  break;
 	case 450:
 	  set_bin = 1;
+	  pmiss_lo = 0.400;
+	  pmiss_hi = 0.500;
+	  weightp *= 20.1/14.5;
 	  break;
 	case 550:
 	  set_bin = 2;
+	  pmiss_lo = 0.500;
+	  pmiss_hi = 0.600;
 	  break;
 	default:
 	  abort();
@@ -255,7 +284,8 @@ int main(int argc, char ** argv)
       TVector3 vq = vBeam - ve;
       TVector3 vmiss = vq - vlead;
       double pmiss = vmiss.Mag();
-      hp_setting->Fill(setting,weightp);
+      if ((pmiss < pmiss_hi) and (pmiss > pmiss_lo))
+	hp_setting->Fill(setting,weightp);
       
       // Missing Energy Definition from Thesis
       double omega = Ebeam - ve.Mag();
@@ -281,12 +311,16 @@ int main(int argc, char ** argv)
 
       if (rec_code == pCode)
 	{
-	  hp_p_setting->Fill(setting,weightp*Tpp/Tp*eta_pp);
+	  if ((pmiss < pmiss_hi) and (pmiss > pmiss_lo))
+	    hp_p_setting->Fill(setting,weightp*Tpp/Tp*eta_pp);
+	  hp_p_Pm_tot->Fill(vmiss.Mag(),weightp*Tpp/Tp*eta_pp);  
 	}
       
       hp_thetaRec_set[set_bin]->Fill(vrec.Phi()*180./M_PI,weightp);  
 
       hp_phiRec_thetaRec_set[set_bin]->Fill(vrec.Theta()*180./M_PI-90.,vrec.Phi()*180./M_PI,weightp);  
+
+      hp_Pm_tot->Fill(vmiss.Mag(),weightp);  
 
     }
 
@@ -324,12 +358,20 @@ int main(int argc, char ** argv)
 	{
 	case 350:
 	  set_bin = 0;
+	  pmiss_lo = 0.300;
+	  pmiss_hi = 0.400;
+	  weightpp *= 24.2/14.5;
 	  break;
 	case 450:
 	  set_bin = 1;
+	  pmiss_lo = 0.400;
+	  pmiss_hi = 0.500;
+	  weightpp *= 20.1/14.5;
 	  break;
 	case 550:
 	  set_bin = 2;
+	  pmiss_lo = 0.500;
+	  pmiss_hi = 0.600;
 	  break;
 	default:
 	  abort();
@@ -343,32 +385,41 @@ int main(int argc, char ** argv)
       TVector3 vmiss = vq - vlead;
       TVector3 vcm = vmiss + vrec;
 
+      double pmiss = vmiss.Mag();
+      
       double cosgamma = cos(vmiss.Angle(-vrec));
 
       if (rec_code == pCode)
 	{
 	  hpp_cosgamma_set[set_bin]->Fill(cosgamma,weightpp);
-	  hpp_setting->Fill(setting,weightpp);
+	  if ((pmiss < pmiss_hi) and (pmiss > pmiss_lo))
+	    hpp_setting->Fill(setting,weightpp);
+	  
 	  hpp_thetaM_set[set_bin]->Fill(vmiss.Phi()*180./M_PI,weightpp);  
 	  hpp_Pm_set[set_bin]->Fill(vmiss.Mag(),weightpp);  
+
+	  hpp_Pm_tot->Fill(vmiss.Mag(),weightpp);  
+
 	}
-	  
+ 	  
     }
 
   infile_sub->Close();
 
-  double Np [] = {142000., 123000., 87000.};
-
+  double Q [] = {24.2, 20.1, 14.5};
+  
   double normp;
   double normpp;
 
   for (int i = 0; i<3; i++)
     {
-      normp = Np[i]/hp_Em_set[i]->Integral();
+      normp = 87000./hp_Em_set[2]->Integral();
+      normp = 142000./hp_Em_set[0]->Integral();
       normpp = normp;
-      
+
       hpp_cosgamma_set[i]->Scale(normpp);
       hp_Em_set[i]->Scale(normp);      
+      hp_Pm_set[i]->Scale(normp);
     }
 
   for (int i = 1; i<3; i++)
@@ -382,12 +433,22 @@ int main(int argc, char ** argv)
   pp_acc->BayesDivide(hpp_setting,hp_p_setting);
   pp_acc->Write();
 
+  pp_bin_acc->BayesDivide(hpp_Pm_tot,hp_p_Pm_tot);
+  pp_bin_acc->Write();
+
   pp_to_p->BayesDivide(hpp_setting,hp_setting);
   pp_to_p->Write();
+
+  pp_to_p_bin->BayesDivide(hpp_Pm_tot,hp_Pm_tot);
+  pp_to_p_bin->Write();
 
   pp_to_p_cor->BayesDivide(hp_p_setting,hp_setting);
   //pp_to_p_cor->Scale(Tp/Tpp*1/eta_pp);
   pp_to_p_cor->Write();
+
+  pp_to_p_bin_cor->BayesDivide(hp_p_Pm_tot,hp_Pm_tot);
+  //pp_to_p_cor->Scale(Tp/Tpp*1/eta_pp);
+  pp_to_p_bin_cor->Write();
 
   for (int i=0; i<h_list.size(); i++)
     h_list[i]->Write();
