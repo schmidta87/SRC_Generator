@@ -9,6 +9,7 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TRandom3.h"
+#include "TVectorT.h"
 
 #include "constants.h"
 #include "helpers.h"
@@ -16,6 +17,8 @@
 #include "Cross_Sections.h"
 
 using namespace std;
+
+void do_SCX(int $lead_type, int &rec_type, double r);
 
 void print_help()
 {
@@ -26,13 +29,16 @@ void print_help()
        << "-T: Print full output tree\n"
        << "-z: Print zero-weight events\n"
        << "-P: Use text file to generate phase space\n"
-       << "-o: Turn off radiative effects\n"
+       << "-O: Turn off radiative effects\n"
+       << "-o: Turn on Single-Charge Exchange\n"
        << "-s <Sigma_CM [GeV]>\n"
        << "-E <E* [GeV]>==<0>\n"
        << "-u <NN interaction>==<AV18>\n"
        << "-k <kRel cutoff [GeV]==0.25>\n"
        << "-c <Cross section method>==<cc1>\n"
-       << "-f <Form Factor model>==<kelly>\n\n\n";
+       << "-f <Form Factor model>==<kelly>\n"
+       << "-r: Randomize uncertain parameters\n"
+       << "-R: Use same randomized parameters as given file\n\n\n";
 }
 
 int main(int argc, char ** argv)
@@ -56,14 +62,20 @@ int main(int argc, char ** argv)
   char* u = "AV18";
   bool do_sCM = false;
   double sCM;
-  double Estar = 0.;
-  double pRel_cut = 0.3;
+  bool do_Estar = false;
+  double Estar;
+  double pRel_cut = 0.25;//0.30;
+  double pRel_range = 0.05;//0.10;
   csMethod csMeth=cc1;
   ffModel ffMod=kelly;
   bool rand_flag = false;
   bool doRad = true;
+  bool doSCX = false;
   bool print_full_tree=false;
   bool print_zeros = false;
+  bool use_input_params = false;
+  TFile * param_file;
+  TVectorT<double> params(19);
   // Probability windows
   bool custom_ps = false;
   char* phase_space;
@@ -81,7 +93,7 @@ int main(int argc, char ** argv)
   double deltaHard(double QSq);
   
   int c;
-  while ((c=getopt (argc-4, &argv[4], "hvTzs:E:u:k:c:f:rRP:o")) != -1) // First five arguments are not optional flags.
+  while ((c=getopt (argc-5, &argv[5], "hvTzs:E:u:k:c:f:rP:OoR:")) != -1) // First five arguments are not optional flags.
     switch(c)
       {
       case 'h':
@@ -101,6 +113,7 @@ int main(int argc, char ** argv)
 	sCM = atof(optarg);
         break;
       case 'E':
+	do_Estar = true;
 	Estar = atof(optarg);
         break;
       case 'u':
@@ -139,15 +152,19 @@ int main(int argc, char ** argv)
       case 'r':
 	rand_flag = true;
 	break;
-      case 'R':
-	doRad = false;
-	break;
       case 'P':
 	custom_ps = true;
 	phase_space = optarg;
 	break;
-      case 'o':
+      case 'O':
 	doRad = false;
+	break;
+      case 'o':
+	doSCX = true;
+	break;
+      case 'R':
+	use_input_params = true;
+	param_file = new TFile(optarg,"READ");
 	break;
       case '?':
 	return -1;
@@ -224,7 +241,41 @@ int main(int argc, char ** argv)
   Nuclear_Info myInfo(Z,N,u);
   if (do_sCM)
     myInfo.set_sigmaCM(sCM);
-  myInfo.set_Estar(Estar);
+  if (do_Estar)
+    myInfo.set_Estar(Estar);
+
+  // Randomization
+  TRandom3 myRand(0);
+  if (rand_flag)
+    {
+      myInfo.randomize();
+      pRel_cut = pRel_cut + (myRand.Uniform() - 0.5)*pRel_range;
+    }
+  else if (use_input_params)
+    {
+      params = *(TVectorT<double>*)param_file->Get("parameters");
+      param_file->Close();
+      myInfo.set_sigmaCM(params[0]);
+      myInfo.set_Cpp0(params[1]);
+      myInfo.set_Cpn0(params[2]);
+      myInfo.set_Cnn0(params[3]);
+      myInfo.set_Cpn1(params[4]);
+      myInfo.set_Estar(params[5]);
+      
+      std::vector<double> Pscx = myInfo.get_SCX_Ps();
+      myInfo.set_SCX_Ps(Pscx[0],
+			Pscx[1],
+			Pscx[2],
+			Pscx[3],
+			Pscx[4],
+			Pscx[5],
+			Pscx[6],
+			Pscx[7],
+			Pscx[8],
+			Pscx[9],
+			Pscx[10],
+			Pscx[11]);
+    }
   
   // Adapt cross section to custom arguments
   Cross_Sections myCS(csMeth,ffMod);
@@ -233,6 +284,7 @@ int main(int argc, char ** argv)
   const double lambda_ei = alpha/M_PI * (log( 4.*Ebeam*Ebeam/(me*me)) - 1.);
   
   // Set up the tree
+  outfile->cd();
   TTree * outtree = new TTree("genT","Generator Tree");
   Double_t pe[3], q[3], pLead[3], pRec[3], pMiss[3], pCM[3], pRel[3];
   Double_t  QSq, xB, nu, pe_Mag, q_Mag, pLead_Mag, pRec_Mag, pMiss_Mag, pCM_Mag, pRel_Mag, theta_pmq, theta_prq, weight, lcweight;
@@ -244,14 +296,14 @@ int main(int argc, char ** argv)
   outtree->Branch("pRec",pRec,"pRec[3]/D");
   outtree->Branch("weight",&weight,"weight/D");
   outtree->Branch("lcweight",&lcweight,"lcweight/D");
+  outtree->Branch("QSq",&QSq,"QSq/D");
+  outtree->Branch("xB",&xB,"xB/D");
   if (print_full_tree)
     {
       outtree->Branch("q",q,"q[3]/D");
       outtree->Branch("pMiss",pMiss,"pMiss[3]/D");
       outtree->Branch("pCM",pCM,"pCM[3]/D");
       outtree->Branch("pRel",pRel,"pRel[3]/D");
-      outtree->Branch("QSq",&QSq,"QSq/D");
-      outtree->Branch("xB",&xB,"xB/D");
       outtree->Branch("nu",&nu,"nu/D");
       outtree->Branch("pe_Mag",&pe_Mag,"pe_Mag/D");
       outtree->Branch("q_Mag",&q_Mag,"q_Mag/D");
@@ -265,14 +317,35 @@ int main(int argc, char ** argv)
     }
 
   // Masses and sigma of CM momentum
-  TRandom3 myRand(0);
   const double mA = myInfo.get_mA();
   const double mbar = mA/Anum;
   const double mAmpp = myInfo.get_mAmpp(); // this includes the effect of Estar
   const double mAmpn = myInfo.get_mAmpn();
   const double mAmnn = myInfo.get_mAmnn();
-  const double sigCM =myInfo.get_sigmaCM();
+  const double sigCM = myInfo.get_sigmaCM();
 
+  // Prepare vector of parameters to be output
+  params[0] = sigCM;
+  params[1] = myInfo.get_Cpp0();
+  params[2] = myInfo.get_Cpn0();
+  params[3] = myInfo.get_Cnn0();
+  params[4] = myInfo.get_Cpn1();
+  params[5] = myInfo.get_Estar();
+  std::vector<double> Ps = myInfo.get_SCX_Ps();
+  params[6] = Ps[0];
+  params[7] = Ps[1];
+  params[8] = Ps[2];
+  params[9] = Ps[3];
+  params[10] = Ps[4];
+  params[11] = Ps[5];
+  params[12] = Ps[6];
+  params[13] = Ps[7];
+  params[14] = Ps[8];
+  params[15] = Ps[9];
+  params[16] = Ps[10];
+  params[17] = Ps[11];
+  params[18] = pRel_cut;
+  
   // Loop over events
   for (int event=0 ; event < nEvents ; event++)
     {
@@ -448,7 +521,13 @@ int main(int argc, char ** argv)
 	    }
 	  
 	}
-            
+
+      // Here is where we do single charge exchange
+      if (doSCX)
+	{
+	  myInfo.do_SCX(lead_type, rec_type, gRandom->Rndm());
+	}
+      
       // Fill the tree
       if ((weight > 0.) || (lcweight > 0.) || print_zeros)
 	outtree->Fill();
@@ -457,6 +536,7 @@ int main(int argc, char ** argv)
 
   // Clean up
   outtree->Write();
+  params.Write("parameters");
   outfile->Close();
   return 0;
 }
