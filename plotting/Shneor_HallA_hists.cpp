@@ -79,16 +79,16 @@ int main(int argc, char ** argv)
   h_list.push_back(hp_p_setting);
   TH1D * hpp_setting = new TH1D("epp_setting","epp;pMiss [MeV];Counts",3,300,600);
   h_list.push_back(hpp_setting);
-  TH1D * hp_Pm_tot = new TH1D("ep_pmiss_tot","ep;pMiss [MeV];Counts",3,0.300,0.600);
+  TH1D * hp_Pm_tot = new TH1D("ep_pmiss_tot","ep;pMiss [MeV];Counts",3,300,600);
   h_list.push_back(hp_Pm_tot);
-  TH1D * hp_p_Pm_tot = new TH1D("ep_p_pmiss_tot","epp;pMiss [MeV];Counts",3,0.300,0.600);
+  TH1D * hp_p_Pm_tot = new TH1D("ep_p_pmiss_tot","epp;pMiss [MeV];Counts",3,300,600);
   h_list.push_back(hp_p_Pm_tot);
-  TH1D * hpp_Pm_tot = new TH1D("epp_pmiss_tot","epp;pMiss [MeV];Counts",3,0.300,0.600);
+  TH1D * hpp_Pm_tot = new TH1D("epp_pmiss_tot","epp;pMiss [MeV];Counts",3,300,600);
   h_list.push_back(hpp_Pm_tot);
 
   TH1D * hpp_cosgamma = new TH1D("epp_cosgamma","epp;cos gamma;Counts",8*4,-1.,-0.90);
   h_list.push_back(hpp_cosgamma);
-  TH1D * hp_Em = new TH1D("ep_Em","ep;EMiss [GeV];Counts",150,0.0,0.35);
+  TH1D * hp_Em = new TH1D("ep_Em","ep;EMiss [GeV];Counts",100,0.0,0.4);
   h_list.push_back(hp_Em);
 
   TH1D * hpp_cosgamma_set[3];
@@ -97,10 +97,14 @@ int main(int argc, char ** argv)
   TH1D * hp_q_set[3];
   TH1D * hp_xB_set[3];
   TH1D * hp_thetaM_set[3];
+  TH1D * hp_thetaPmq_set[3];
   TH1D * hp_thetaRec_set[3];
   TH1D * hpp_thetaM_set[3];
   TH1D * hp_Pm_set[3];
   TH1D * hpp_Pm_set[3];
+  TH1D * hp_Pm_bin[3];
+  TH1D * hp_p_Pm_bin[3];
+  TH1D * hpp_Pm_bin[3];
   TH2D * hp_Em_thetaM_set[3];
   TH2D * hp_phiM_thetaM_set[3];
   TH2D * hp_phiRec_thetaRec_set[3];
@@ -133,7 +137,7 @@ int main(int argc, char ** argv)
       h_list.push_back(hpp_cosgamma_set[i]);
       
       sprintf(temp,"ep_Em_%i",set);
-      hp_Em_set[i] = new TH1D(temp,"ep;Emiss [GeV];Counts",150,0.0,0.350);
+      hp_Em_set[i] = new TH1D(temp,"ep;Emiss [GeV];Counts",100,0.0,0.40);
       h_list.push_back(hp_Em_set[i]);
 
       sprintf(temp,"ep_omega_%i",set);
@@ -152,6 +156,10 @@ int main(int argc, char ** argv)
       hp_thetaM_set[i] = new TH1D(temp,"ep;thetaM [degrees];Counts",100,40.,130.);
       h_list.push_back(hp_thetaM_set[i]);
 
+      sprintf(temp,"ep_thetaPmq_%i",set);
+      hp_thetaPmq_set[i] = new TH1D(temp,"ep;thetaPmq [degrees];Counts",100,110.,160.);
+      h_list.push_back(hp_thetaPmq_set[i]);
+
       sprintf(temp,"ep_thetaRec_%i",set);
       hp_thetaRec_set[i] = new TH1D(temp,"ep;thetaRec [degrees];Counts",100,40.,130.);
       h_list.push_back(hp_thetaRec_set[i]);
@@ -161,12 +169,24 @@ int main(int argc, char ** argv)
       h_list.push_back(hpp_thetaM_set[i]);
 
       sprintf(temp,"ep_Pm_%i",set);
-      hp_Pm_set[i] = new TH1D(temp,"ep;Pm [GeV];Counts",60,0.1,0.7);
+      hp_Pm_set[i] = new TH1D(temp,"ep;Pm [GeV];Counts",90,0.1,0.7);
       h_list.push_back(hp_Pm_set[i]);
 
       sprintf(temp,"epp_Pm_%i",set);
-      hpp_Pm_set[i] = new TH1D(temp,"epp;Pm [GeV];Counts",60,0.1,0.7);
+      hpp_Pm_set[i] = new TH1D(temp,"epp;Pm [GeV];Counts",90,0.1,0.7);
       h_list.push_back(hpp_Pm_set[i]);
+
+      sprintf(temp,"ep_Pm_bin_%i",set);
+      hp_Pm_bin[i] = new TH1D(temp,"ep;Pm [GeV];Counts",3,300,600);
+      h_list.push_back(hp_Pm_bin[i]);
+
+      sprintf(temp,"ep_p_Pm_bin_%i",set);
+      hp_p_Pm_bin[i] = new TH1D(temp,"ep_p;Pm [GeV];Counts",3,300,600);
+      h_list.push_back(hp_p_Pm_bin[i]);
+
+      sprintf(temp,"epp_Pm_bin_%i",set);
+      hpp_Pm_bin[i] = new TH1D(temp,"epp;Pm [GeV];Counts",3,300,600);
+      h_list.push_back(hpp_Pm_bin[i]);
 
       sprintf(temp,"ep_Em_thetaM_%i",set);
       hp_Em_thetaM_set[i] = new TH2D(temp,"epp;Em [GeV]; thetaM [degrees]",150,0.0,0.350,100,40.,130.);
@@ -260,24 +280,16 @@ int main(int argc, char ** argv)
 	  set_bin = 0;
 	  pmiss_lo = 0.300;
 	  pmiss_hi = 0.400;
-	  weightp *= 24.2/14.5;
-	  Tp = 0.79;
-	  Tpp = Tp*0.84;
 	  break;
 	case 450:
 	  set_bin = 1;
 	  pmiss_lo = 0.400;
 	  pmiss_hi = 0.500;
-	  weightp *= 20.1/14.5;
-	  Tp = 0.77;
-	  Tpp = Tp*0.82;
 	  break;
 	case 550:
 	  set_bin = 2;
 	  pmiss_lo = 0.500;
 	  pmiss_hi = 0.600;
-	  Tp = 0.76;
-	  Tpp = Tp*0.81;
 	  break;
 	default:
 	  abort();
@@ -286,7 +298,45 @@ int main(int argc, char ** argv)
       TVector3 ve(Pe[0],Pe[1],Pe[2]);
       TVector3 vlead(Pp[0][0],Pp[0][1],Pp[0][2]);
       TVector3 vrec(Pp[1][0],Pp[1][1],Pp[1][2]);
-      
+
+      double pRec = vrec.Mag();
+
+      if (pRec < 0.25)
+	{
+	  Tp = 0.85;
+	  Tpp = Tp*0.88;
+	}
+      else if (pRec < 0.35)
+	{
+	  Tp = 0.79;
+	  Tpp = Tp*0.84;
+	}
+      else if (pRec < 0.45)
+	{
+	  Tp = 0.77;
+	  Tpp = Tp*0.82;
+	}
+      else if (pRec < 0.55)
+	{
+	  Tp = 0.76;
+	  Tpp = Tp*0.81;
+	}
+      else if (pRec < 0.65)
+	{
+	  Tp = 0.75;
+	  Tpp = Tp*0.80;
+	}
+      else if (pRec < 0.75)
+	{
+	  Tp = 0.745;
+	  Tpp = Tp*0.80;
+	}
+      else if (pRec < 0.85)
+	{
+	  Tp = 0.74;
+	  Tpp = Tp*0.80;
+	}
+
       TVector3 vq = vBeam - ve;
       TVector3 vmiss = vq - vlead;
       double pmiss = vmiss.Mag();
@@ -306,6 +356,7 @@ int main(int argc, char ** argv)
       hp_xB_set[set_bin]->Fill(xB,weightp);
       hp_thetaM_set[set_bin]->Fill(vmiss.Phi()*180./M_PI,weightp);  
       hp_Pm_set[set_bin]->Fill(vmiss.Mag(),weightp);  
+      hp_thetaPmq_set[set_bin]->Fill(vmiss.Angle(-vq)*180./M_PI,weightp);  
 
       hp_Em_thetaM_set[set_bin]->Fill(Em,vmiss.Phi()*180./M_PI,weightp);  
 
@@ -318,16 +369,17 @@ int main(int argc, char ** argv)
       if (rec_code == pCode)
 	{
 	  if ((pmiss < pmiss_hi) and (pmiss > pmiss_lo))
-	    hp_p_setting->Fill(setting,weightp*Tpp/Tp*eta_pp);
-	  hp_p_Pm_tot->Fill(vmiss.Mag(),weightp*Tpp/Tp*eta_pp);  
+	    hp_p_setting->Fill(setting,weightp*Tpp/Tp);
+	  
+	  hp_p_Pm_bin[set_bin]->Fill(vmiss.Mag()*1000.,weightp*Tpp/Tp);
 	}
       
       hp_thetaRec_set[set_bin]->Fill(vrec.Phi()*180./M_PI,weightp);  
 
       hp_phiRec_thetaRec_set[set_bin]->Fill(vrec.Theta()*180./M_PI-90.,vrec.Phi()*180./M_PI,weightp);  
 
-      hp_Pm_tot->Fill(vmiss.Mag(),weightp);  
-
+      hp_Pm_bin[set_bin]->Fill(vmiss.Mag()*1000.,weightp);  
+      
     }
 
   infile_full->Close();
@@ -366,24 +418,16 @@ int main(int argc, char ** argv)
 	  set_bin = 0;
 	  pmiss_lo = 0.300;
 	  pmiss_hi = 0.400;
-	  weightpp *= 24.2/14.5;
-	  Tp = 0.79;
-	  Tpp = Tp*0.84;
 	  break;
 	case 450:
 	  set_bin = 1;
 	  pmiss_lo = 0.400;
 	  pmiss_hi = 0.500;
-	  weightpp *= 20.1/14.5;
-	  Tp = 0.77;
-	  Tpp = Tp*0.82;
 	  break;
 	case 550:
 	  set_bin = 2;
 	  pmiss_lo = 0.500;
 	  pmiss_hi = 0.600;
-	  Tp = 0.76;
-	  Tpp = Tp*0.81;
 	  break;
 	default:
 	  abort();
@@ -392,6 +436,43 @@ int main(int argc, char ** argv)
       TVector3 ve(Pe[0],Pe[1],Pe[2]);
       TVector3 vlead(Pp[0][0],Pp[0][1],Pp[0][2]);
       TVector3 vrec(Pp[1][0],Pp[1][1],Pp[1][2]);
+      double pRec = vrec.Mag();
+
+      if (pRec < 0.25)
+	{
+	  Tp = 0.85;
+	  Tpp = Tp*0.88;
+	}
+      else if (pRec < 0.35)
+	{
+	  Tp = 0.79;
+	  Tpp = Tp*0.84;
+	}
+      else if (pRec < 0.45)
+	{
+	  Tp = 0.77;
+	  Tpp = Tp*0.82;
+	}
+      else if (pRec < 0.55)
+	{
+	  Tp = 0.76;
+	  Tpp = Tp*0.81;
+	}
+      else if (pRec < 0.65)
+	{
+	  Tp = 0.75;
+	  Tpp = Tp*0.80;
+	}
+      else if (pRec < 0.75)
+	{
+	  Tp = 0.745;
+	  Tpp = Tp*0.80;
+	}
+      else if (pRec < 0.85)
+	{
+	  Tp = 0.74;
+	  Tpp = Tp*0.80;
+	}
 
       TVector3 vq = vBeam - ve;
       TVector3 vmiss = vq - vlead;
@@ -405,12 +486,12 @@ int main(int argc, char ** argv)
 	{
 	  hpp_cosgamma_set[set_bin]->Fill(cosgamma,weightpp);
 	  if ((pmiss < pmiss_hi) and (pmiss > pmiss_lo))
-	    hpp_setting->Fill(setting,weightpp);
+	    hpp_setting->Fill(setting,weightpp/eta_pp);
 	  
 	  hpp_thetaM_set[set_bin]->Fill(vmiss.Phi()*180./M_PI,weightpp);  
 	  hpp_Pm_set[set_bin]->Fill(vmiss.Mag(),weightpp);  
 
-	  hpp_Pm_tot->Fill(vmiss.Mag(),weightpp);  
+	  hpp_Pm_bin[set_bin]->Fill(vmiss.Mag()*1000.,weightpp/eta_pp);  
 
 	}
  	  
@@ -418,17 +499,16 @@ int main(int argc, char ** argv)
 
   infile_sub->Close();
 
-  double Q [] = {24.2, 20.1, 14.5};
-  
   double normp;
   double normpp;
 
+  double Np [] = {27338., 15746., 4611.};
+  
   for (int i = 0; i<3; i++)
     {
-      normp = 87000./hp_Em_set[2]->Integral();
-      normp = 142000./hp_Em_set[0]->Integral();
+      normp = Np[i]/hp_Em_set[i]->Integral();
       normpp = normp;
-      
+
       hpp_cosgamma_set[i]->Scale(normpp);
       hp_Em_set[i]->Scale(normp);      
       
@@ -438,11 +518,19 @@ int main(int argc, char ** argv)
       hp_thetaM_set[i]->Scale(normp);      
       hp_thetaRec_set[i]->Scale(normp);      
       hp_Pm_set[i]->Scale(normp);      
+      hp_Pm_bin[i]->Scale(normp);      
+
+      hp_p_Pm_bin[i]->Scale(normpp);      
 
       hpp_cosgamma_set[i]->Scale(normpp);
       hpp_thetaM_set[i]->Scale(normpp);      
       hpp_Pm_set[i]->Scale(normpp);      
+      hpp_Pm_bin[i]->Scale(normpp);      
 
+      hp_Pm_tot->Add(hp_Pm_bin[i]);
+      hp_p_Pm_tot->Add(hp_p_Pm_bin[i]);
+      hpp_Pm_tot->Add(hpp_Pm_bin[i]);
+      
     }
 
   for (int i = 1; i<3; i++)
@@ -466,11 +554,9 @@ int main(int argc, char ** argv)
   pp_to_p_bin->Write();
 
   pp_to_p_cor->BayesDivide(hp_p_setting,hp_setting);
-  //pp_to_p_cor->Scale(Tp/Tpp*1/eta_pp);
   pp_to_p_cor->Write();
 
   pp_to_p_bin_cor->BayesDivide(hp_p_Pm_tot,hp_Pm_tot);
-  //pp_to_p_cor->Scale(Tp/Tpp*1/eta_pp);
   pp_to_p_bin_cor->Write();
 
   for (int i=0; i<h_list.size(); i++)

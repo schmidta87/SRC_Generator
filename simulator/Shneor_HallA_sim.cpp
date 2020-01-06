@@ -66,7 +66,7 @@ int main(int argc, char ** argv)
   bool doFCuts = true;
 
   int c;
-  while ((c=getopt (argc-2, &argv[2], "vrC")) != -1)
+  while ((c=getopt (argc-2, &argv[2], "vrCx")) != -1)
     switch(c)
       {
       case 'v':
@@ -77,6 +77,10 @@ int main(int argc, char ** argv)
 	break;
       case 'C':
 	doFCuts = false;
+	break;
+      case 'x':
+	thetaMcut = false;
+	xcut = true;; 
 	break;
       case '?':
 	return -1;
@@ -144,6 +148,45 @@ int main(int argc, char ** argv)
       TVector3 vlead(gen_pLead[2],gen_pLead[0],gen_pLead[1]);
       TVector3 vrec(gen_pRec[2],gen_pRec[0],gen_pRec[1]);
 
+      // Recoil momentum-dependent Transparency factors:
+      double pRec = vrec.Mag();
+
+      if (pRec < 0.25)
+	{
+	  Tp = 0.85;
+	  Tpp = Tp*0.88;
+	}
+      else if (pRec < 0.35)
+	{
+	  Tp = 0.79;
+	  Tpp = Tp*0.84;
+	}
+      else if (pRec < 0.45)
+	{
+	  Tp = 0.77;
+	  Tpp = Tp*0.82;
+	}
+      else if (pRec < 0.55)
+	{
+	  Tp = 0.76;
+	  Tpp = Tp*0.81;
+	}
+      else if (pRec < 0.65)
+	{
+	  Tp = 0.75;
+	  Tpp = Tp*0.80;
+	}
+      else if (pRec < 0.75)
+	{
+	  Tp = 0.745;
+	  Tpp = Tp*0.80;
+	}
+      else if (pRec < 0.85)
+	{
+	  Tp = 0.74;
+	  Tpp = Tp*0.80;
+	}
+      
       // Electron Detection and Fiducial Cuts; common to all settings
       if (!HRS_hallA(ve, pe_central, phie_central))
 	continue;
@@ -186,18 +229,12 @@ int main(int argc, char ** argv)
       switch(setting)
 	{
 	case 350:
-	  Tp = 0.79;
-	  Tpp = Tp*0.84;
 	  thetaMmin = 76.*M_PI/180.;
 	  break;
 	case 450:
-	  Tp = 0.77;
-	  Tpp = Tp*0.82;
 	  thetaMmin = 84.*M_PI/180.;
 	  break;
 	case 550:
-	  Tp = 0.76;
-	  Tpp = Tp*0.81;
 	  thetaMmin = 88.*M_PI/180.;
 	  break;
 	default:
@@ -260,15 +297,13 @@ int main(int argc, char ** argv)
       if (Emiss < 0.032)
 	continue;
       
-      if (thetaMcut)
-	{
-	  if (vmiss.Phi() < thetaMmin)
-	    continue;
-	}
+      if (thetaMcut and vmiss.Phi() < thetaMmin)
+	continue;
+      
       double QSq = vq.Mag2() - sq(omega);
       double xB = QSq/(2*mN*omega);
 
-      if (xB < 1. and xcut)
+      if (xcut and xB < 1.)
 	continue;
 	
       // Load up tree
