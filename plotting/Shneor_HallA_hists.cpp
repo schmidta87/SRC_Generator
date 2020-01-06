@@ -20,6 +20,8 @@
 
 using namespace std;
 
+bool xcut = false;
+
 double eta_pp = 0.85;
 
 double Tp;
@@ -64,6 +66,10 @@ int main(int argc, char ** argv)
 	break;
       case 'l':
 	use_lc = false;
+	break;
+      case 'x':
+	xcut = true;
+	break;
       case '?':
 	return -1;
       default:
@@ -503,6 +509,12 @@ int main(int argc, char ** argv)
   double normpp;
 
   double Np [] = {27338., 15746., 4611.};
+  if (xcut)
+    {
+      Np[0] = 22134.;
+      Np[1] = 15751.;
+      Np[2] = 6042.;
+    }
   
   for (int i = 0; i<3; i++)
     {
